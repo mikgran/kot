@@ -1,4 +1,3 @@
-repositories {
-    mavenCentral()
-    jcenter()
-}
+apply plugin: 'application'
+mainClassName = 'mg.util.Common'
+
