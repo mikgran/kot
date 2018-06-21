@@ -1,5 +1,11 @@
 package mg.util
 
-fun main(args: Array<String>) {
-    println("Hello World!")
+class Common {
+
+    fun main(args: Array<String>) {
+        println("Hello World!")
+    }
+
+
+
 }

@@ -16,7 +16,7 @@
     </modules>
     
     <properties>
-        <kotlin.version>1.2.41</kotlin.version>
+        <kotlin.version>1.2.50</kotlin.version>
         <junit.version>4.12</junit.version>
         <main.class>mg.util.CommonKT</main.class>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -69,7 +69,7 @@
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                                 <sourceDir>${project.basedir}/src/test/java</sourceDir>
-                                <sourceDir>${project.basedir}/src/main/resources</sourceDir>
+                                <sourceDir>${project.basedir}/src/test/resources</sourceDir>
                             </sourceDirs>
                         </configuration>
                     </execution>
