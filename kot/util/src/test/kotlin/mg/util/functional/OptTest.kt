@@ -36,4 +36,34 @@ class OptTest {
         assertNotNull(opt)
         assertEquals("value", opt.get())
     }
+
+
+    @Test
+    fun test_get() {
+
+        val opt = Opt.of("value")
+
+        assertNotNull(opt)
+        assertEquals("value", opt.get())
+
+        val nullStr: String? = null
+        val opt2 = Opt.of(nullStr)
+
+        assertNotNull(opt2)
+        assertEquals(null, opt2.get())
+    }
+
+    @Test
+    fun test_map() {
+
+        val opt = Opt.of("value")
+        val get = opt
+                .map { v -> "$v!" }
+                .get()
+
+        assertNotNull(get)
+        assertEquals("value!", get)
+        // TOIMPROVE: coverage
+    }
+
 }
