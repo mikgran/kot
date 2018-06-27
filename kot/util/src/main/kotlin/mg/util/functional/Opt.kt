@@ -1,22 +1,33 @@
 package mg.util.functional
 
-class Opt<out T>(v: T?) {
+class Opt<T>(v: T?) {
 
     private val value = v
 
     fun get() = value
 
     @Suppress("UNCHECKED_CAST")
-    fun <R> map(mapper: (T?) -> R?) : Opt<R?> {
-        return if (ifPresent()) {
-            val newValue : R? = mapper(value)
+    fun <R> map(mapper: (T?) -> R?): Opt<R?> {
+        return if (isPresent()) {
+            val newValue: R? = mapper(value)
             of(newValue)
         } else {
             EMPTY as Opt<R?>
         }
     }
 
-    private fun ifPresent(): Boolean = value != null
+    private fun isPresent(): Boolean = value != null
+
+    fun ifEmpty(function: () -> T?): Opt<T?> {
+        return of(function())
+    }
+
+    fun filter(filter: (T?) -> Boolean) : Opt<T?> {
+        return when {
+            filter(value) -> of(value)
+            else -> EMPTY as Opt<T?>
+        }
+    }
 
     companion object Factory {
 
