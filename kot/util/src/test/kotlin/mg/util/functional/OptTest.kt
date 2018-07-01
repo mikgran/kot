@@ -30,7 +30,7 @@ class OptTest {
     @Test
     fun test_ofOpt() {
 
-        val anotherOpt = Opt.of("value")
+        val anotherOpt = Opt.of(VALUE)
         val opt = Opt.of(anotherOpt)
 
         assertNotNull(opt)
@@ -41,7 +41,7 @@ class OptTest {
     @Test
     fun test_get() {
 
-        val opt = Opt.of("value")
+        val opt = Opt.of(VALUE)
 
         assertNotNull(opt)
         assertEquals("value", opt.get())
@@ -56,26 +56,27 @@ class OptTest {
     @Test
     fun test_map() {
 
-        val opt = Opt.of("value")
+
+        val opt = Opt.of(VALUE)
         val get = opt
                 .map { s -> "$s!" }
                 .get()
 
         assertNotNull(get)
-        assertEquals("value!", get)
+        assertEquals("$VALUE!", get)
         // TOIMPROVE: coverage
     }
 
     @Test
     fun test_ifEmpty() {
 
-        val opt = Opt.of("aString")
+        val opt = Opt.of(VALUE)
 
         opt.ifEmpty { "newString" }
 
         assertNotNull(opt)
         assertNotNull(opt.get())
-        assertEquals("aString", opt.get())
+        assertEquals(VALUE, opt.get())
 
         val nullStr: String? = null
         val opt2 = Opt.of(nullStr)
@@ -83,36 +84,85 @@ class OptTest {
         assertNotNull(opt2)
         assertNull(opt2.get())
 
-        val opt3 = opt2.ifEmpty { "newString" }
+        val opt3 = opt2.ifEmpty { NEW_STRING }
 
         assertNotNull(opt3)
         assertNotNull(opt3.get())
-        assertEquals("newString", opt3.get())
+        assertEquals(NEW_STRING, opt3.get())
 
         val str2 = opt2
-                .ifEmpty { "anotherString" }
+                .ifEmpty { ANOTHER_STRING }
                 .get()
 
         assertNotNull(str2)
-        assertEquals("anotherString", str2)
+        assertEquals(ANOTHER_STRING, str2)
     }
 
     @Test
     fun test_filter() {
 
         val candidate = Opt
-                .of("aString")
-                .filter { it == "anotherString" }
+                .of(VALUE)
+                .filter { it == ANOTHER_STRING }
                 .get()
 
         assertNull(candidate)
 
         val candidate2 = Opt
-                .of("aString")
-                .filter { it == "aString" }
+                .of(VALUE)
+                .filter { it == VALUE }
                 .get()
 
         assertNotNull(candidate2)
-        assertEquals("aString", candidate2)
+        assertEquals(VALUE, candidate2)
+    }
+
+    @Test
+    fun test_equals() {
+        val opt1 = Opt.of(VALUE1)
+        val opt2 = Opt.of(VALUE2)
+
+        assertNotNull(opt1)
+        assertNotNull(opt2)
+        assertFalse(opt1 == opt2)
+
+        val opt3 = Opt.of(VALUE2)
+
+        assertNotNull(opt3)
+        assertTrue(opt2 == opt3)
+    }
+
+    @Test
+    fun test_hashCode() {
+        // collisions aside, testing with 99% deterministic way
+        val opt1 = Opt.of(VALUE1)
+        val opt2 = Opt.of(VALUE2)
+        val opt3 = Opt.of(VALUE3)
+
+        assertNotNull(opt1)
+        assertNotNull(opt2)
+        assertNotEquals(opt1.hashCode(), opt2.hashCode())
+
+        assertNotNull(opt3)
+        assertEquals(opt2.hashCode(), opt3.hashCode())
+    }
+
+    @Test
+    fun test_match() {
+
+        val opt = Opt.of(VALUE1)
+
+        opt.match { aa -> aa!!::class == Int::class }
+                .get()
+
+    }
+
+    companion object {
+        const val ANOTHER_STRING = "anotherString"
+        const val NEW_STRING = "newString"
+        const val VALUE = "value"
+        const val VALUE1 = "value1"
+        const val VALUE2 = "value2"
+        const val VALUE3 = "value2"
     }
 }
