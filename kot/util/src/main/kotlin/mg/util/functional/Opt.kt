@@ -24,9 +24,9 @@ class Opt<out T>(v: T) {
     }
 
     // @Suppress("UNCHECKED_CAST")
-    fun filter(filterFunction: (T?) -> Boolean): Opt<T?> {
+    fun filter(predicate: (T?) -> Boolean): Opt<T?> {
 
-        return if (filterFunction(value)) {
+        return if (predicate(value)) {
             of(value)
         } else {
             EMPTY
@@ -53,16 +53,10 @@ class Opt<out T>(v: T) {
     }
 
     fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
-
-        value?.let {
-            println("value  $value")
-            println("this::class  ${this::class}")
-            println("ref::class  ${ref::class}")
-
-            it::class == ref::class } ?: false
-        }
-
-        return true
+        return value?.let {
+            val valueAsAny = it as Any
+            valueAsAny::class == ref::class
+        } ?: false
     }
 
     fun <R : Any, V : Any> match(ref: R,

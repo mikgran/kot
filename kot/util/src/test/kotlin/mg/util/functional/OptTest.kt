@@ -155,6 +155,7 @@ class OptTest {
                 .get()
 
         assertNotNull(rr)
+        assertEquals(3, rr)
     }
 
     companion object {
