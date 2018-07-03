@@ -2,40 +2,40 @@ package mg.util.functional
 
 import java.util.*
 
-class Opt<T>(v: T?) {
+class Opt<out T>(v: T) {
 
     // match
     // ifEmpty
-    // ifPresent () -> T?
+    // ifPresent () -> T non Any
     // caseOf
 
-    private val value = v
+    private val value: T? = v
 
     fun get() = value
 
     @Suppress("UNCHECKED_CAST")
-    fun <R> map(mapper: (T?) -> R?): Opt<R?> {
+    fun <R : Any> map(mapper: (T?) -> R?): Opt<R?> {
         return if (isPresent()) {
             val newValue: R? = mapper(value)
             of(newValue)
         } else {
-            EMPTY as Opt<R?>
+            EMPTY
+        }
+    }
+
+    // @Suppress("UNCHECKED_CAST")
+    fun filter(filterFunction: (T?) -> Boolean): Opt<T?> {
+
+        return if (filterFunction(value)) {
+            of(value)
+        } else {
+            EMPTY
         }
     }
 
     private fun isPresent(): Boolean = value != null
 
-    fun ifEmpty(function: () -> T?): Opt<T?> {
-        return of(function())
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun filter(filter: (T?) -> Boolean): Opt<T?> {
-        return when {
-            filter(value) -> of(value)
-            else -> EMPTY as Opt<T?>
-        }
-    }
+    fun <T : Any> ifEmpty(function: () -> T?): Opt<T?> = of(function())
 
     override fun equals(other: Any?): Boolean {
         return when {
@@ -52,28 +52,52 @@ class Opt<T>(v: T?) {
         return Objects.hashCode(value)
     }
 
-    fun match(function: (T) -> Boolean) : Opt<T?> {
+    fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
 
         value?.let {
-            if(function(it)) {
+            println("value  $value")
+            println("this::class  ${this::class}")
+            println("ref::class  ${ref::class}")
 
-            }
+            it::class == ref::class } ?: false
         }
 
-        @Suppress("UNCHECKED_CAST")
-        return EMPTY as Opt<T?>
+        return true
+    }
+
+    fun <R : Any, V : Any> match(ref: R,
+                                 filter: (T?) -> Boolean,
+                                 mapper: (T?) -> V?): Opt<V?> {
+
+//        println("isPresent() ${isPresent()}")
+//        println("isValueClassSameAsRefClass(ref) ${isValueClassSameAsRefClass(ref)}")
+//        println("filter(value) ${filter(value)}")
+
+        return if (isPresent() &&
+                isValueClassSameAsRefClass(ref) &&
+                filter(value)) {
+
+            of(mapper(value))
+        } else {
+            EMPTY
+        }
     }
 
     companion object Factory {
 
-        private val EMPTY: Opt<*> = Opt(null)
-
-        @Suppress("UNCHECKED_CAST")
-        @JvmStatic
-        fun <T> of(value: T?): Opt<T?> = if (value == null) EMPTY as Opt<T?> else Opt(value)
+        private val EMPTY = Opt(null)
 
         @JvmStatic
-        fun <T> of(value: Opt<T?>) = Opt(value.get())
+        fun <T> of(t: T?): Opt<T?> = when (t) {
+            null -> EMPTY
+            else -> Opt(t)
+        }
+
+        @JvmStatic
+        fun <T> of(t: Opt<T?>): Opt<T?> = when {
+            t.isPresent() -> t
+            else -> EMPTY
+        }
     }
 
 

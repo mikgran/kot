@@ -3,7 +3,6 @@ package mg.util.functional
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-
 class OptTest {
 
     @Test
@@ -16,6 +15,7 @@ class OptTest {
         assertEquals("a", opt.get())
     }
 
+
     @Test
     fun test_ofWithNull() {
 
@@ -24,7 +24,7 @@ class OptTest {
         val opt = Opt.of(nullStr)
 
         assertNotNull(opt)
-        assertEquals(null, opt.get())
+        assertNull(opt.get())
     }
 
     @Test
@@ -36,7 +36,6 @@ class OptTest {
         assertNotNull(opt)
         assertEquals("value", opt.get())
     }
-
 
     @Test
     fun test_get() {
@@ -56,7 +55,6 @@ class OptTest {
     @Test
     fun test_map() {
 
-
         val opt = Opt.of(VALUE)
         val get = opt
                 .map { s -> "$s!" }
@@ -64,7 +62,6 @@ class OptTest {
 
         assertNotNull(get)
         assertEquals("$VALUE!", get)
-        // TOIMPROVE: coverage
     }
 
     @Test
@@ -152,9 +149,12 @@ class OptTest {
 
         val opt = Opt.of(VALUE1)
 
-        opt.match { aa -> aa!!::class == Int::class }
+        val rr = opt.match("",
+                { f -> true },
+                { m -> 3 })
                 .get()
 
+        assertNotNull(rr)
     }
 
     companion object {
