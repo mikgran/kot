@@ -16,7 +16,7 @@
     </modules>
     
     <properties>
-        <kotlin.version>1.2.50</kotlin.version>
+        <kotlin.version>1.2.60</kotlin.version>
         <junit.version>5.2.0</junit.version>
         <main.class>mg.util.CommonKt</main.class>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

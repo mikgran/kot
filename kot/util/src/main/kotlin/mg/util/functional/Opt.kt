@@ -52,6 +52,7 @@ class Opt<out T>(v: T) {
         return Objects.hashCode(value)
     }
 
+    // no reified
     fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
         return value?.let {
             val valueAsAny = it as Any
@@ -59,19 +60,27 @@ class Opt<out T>(v: T) {
         } ?: false
     }
 
+
+    /**
+     * Performs a mapper function against contents of this Opt if the filter
+     * returns true and there are contents.
+     */
+    @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
-                                 filter: (T?) -> Boolean,
-                                 mapper: (T?) -> V?): Opt<V?> {
+                                 filter: (R) -> Boolean,
+                                 mapper: (R) -> V?): Opt<V?> {
 
-//        println("isPresent() ${isPresent()}")
-//        println("isValueClassSameAsRefClass(ref) ${isValueClassSameAsRefClass(ref)}")
-//        println("filter(value) ${filter(value)}")
-
+        println("isPresent() ${isPresent()}")
+        println("isValueClassSameAsRefClass(ref) ${isValueClassSameAsRefClass(ref)}")
+//        value?.let {
+//            println("filter(value) ${filter(value)}")
+//        }
+        // maps only non null values of the same class
         return if (isPresent() &&
                 isValueClassSameAsRefClass(ref) &&
-                filter(value)) {
+                filter(value as R)) {
 
-            of(mapper(value))
+            of(mapper(value as R))
         } else {
             EMPTY
         }
@@ -92,6 +101,9 @@ class Opt<out T>(v: T) {
             t.isPresent() -> t
             else -> EMPTY
         }
+
+        @JvmStatic
+        fun <T> empty(): Opt<T?> = EMPTY
     }
 
 
