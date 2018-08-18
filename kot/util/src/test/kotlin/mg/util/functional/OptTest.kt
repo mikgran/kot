@@ -176,21 +176,31 @@ class OptTest {
     }
 
     @Test
-    fun test_matchWithNullAndValuePresent() {
+    fun test_matchStringValueAgainstInt() {
 
-        val opt = Opt.of(VALUE)
+        val value = Opt.of(VALUE)
 
-        val matched = opt.match(3,
+        val candidate = value.match(3,
                 { _ -> true },
-                { m -> m + 1 })
+                { s -> s + 1 })
 
         val empty = Opt.empty<Int>()
 
-        assertNotNull(matched)
-        assertNull(matched.get())
-        assertEquals(empty.get(), matched.get())
+        assertNotNull(candidate)
+        assertEquals(empty.get(), candidate.get())
+    }
 
-        // test coverage ++
+    @Test
+    fun test_matchStringValueAgainstString() {
+
+        val value = Opt.of(VALUE)
+
+        val candidate = value.match("", { s -> s == "value" }, { s -> "$s!" })
+
+        val expected = Opt.of("$VALUE!")
+
+        assertNotNull(candidate)
+        assertEquals(expected.get(), candidate.get())
     }
 
     companion object {
