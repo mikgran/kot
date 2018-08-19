@@ -70,11 +70,10 @@ class Opt<out T>(v: T) {
                                  filter: (R) -> Boolean,
                                  mapper: (R) -> V?): Opt<V?> {
 
-        println("isPresent() ${isPresent()}")
-        println("isValueClassSameAsRefClass(ref) ${isValueClassSameAsRefClass(ref)}")
-//        value?.let {
-//            println("filter(value) ${filter(value)}")
-//        }
+//        println("isPresent() ${isPresent()}")
+//        println("isValueClassSameAsRefClass(ref) ${isValueClassSameAsRefClass(ref)}")
+//        println("filter(value) ${filter(value)}")
+
         // maps only non null values of the same class
         return if (isPresent() &&
                 isValueClassSameAsRefClass(ref) &&

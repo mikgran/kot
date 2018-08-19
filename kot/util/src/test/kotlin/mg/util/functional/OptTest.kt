@@ -195,7 +195,9 @@ class OptTest {
 
         val value = Opt.of(VALUE)
 
-        val candidate = value.match("", { s -> s == "value" }, { s -> "$s!" })
+        val candidate = value.match("",
+                { s -> s == "value" },
+                { s -> "$s!" })
 
         val expected = Opt.of("$VALUE!")
 
