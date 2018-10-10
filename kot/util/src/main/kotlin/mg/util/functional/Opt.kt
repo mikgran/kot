@@ -2,7 +2,7 @@ package mg.util.functional
 
 import java.util.*
 
-class Opt<out T>(v: T) {
+class Opt<T>(v: T) {
 
     // match
     // ifEmpty
@@ -19,7 +19,7 @@ class Opt<out T>(v: T) {
             val newValue: R? = mapper(value)
             of(newValue)
         } else {
-            EMPTY
+            empty()
         }
     }
 
@@ -29,7 +29,7 @@ class Opt<out T>(v: T) {
         return if (predicate(value)) {
             of(value)
         } else {
-            EMPTY
+            empty()
         }
     }
 
@@ -53,13 +53,12 @@ class Opt<out T>(v: T) {
     }
 
     // no reified
-    fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
+    private fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
         return value?.let {
             val valueAsAny = it as Any
             valueAsAny::class == ref::class
         } ?: false
     }
-
 
     /**
      * Performs a mapper function against contents of this Opt if the filter
@@ -70,10 +69,6 @@ class Opt<out T>(v: T) {
                                  filter: (R) -> Boolean,
                                  mapper: (R) -> V?): Opt<V?> {
 
-//        println("isPresent() ${isPresent()}")
-//        println("isValueClassSameAsRefClass(ref) ${isValueClassSameAsRefClass(ref)}")
-//        println("filter(value) ${filter(value)}")
-
         // maps only non null values of the same class
         return if (isPresent() &&
                 isValueClassSameAsRefClass(ref) &&
@@ -81,28 +76,44 @@ class Opt<out T>(v: T) {
 
             of(mapper(value as R))
         } else {
-            EMPTY
+            empty()
         }
+    }
+
+    // consumer
+    fun ifPresent(f: (T?) -> Unit) {
+        if (isPresent()) {
+            f(value)
+        }
+    }
+
+    fun <R> getAndMap(f: (T?) -> R?): R? {
+        return when {
+            isPresent() -> f(value)
+            else -> empty<R>().get()
+        }
+    }
+
+    fun getOrElse(default: T): T {
+        return value ?: default
     }
 
     companion object Factory {
 
-        private val EMPTY = Opt(null)
-
         @JvmStatic
         fun <T> of(t: T?): Opt<T?> = when (t) {
-            null -> EMPTY
+            null -> empty()
             else -> Opt(t)
         }
 
         @JvmStatic
         fun <T> of(t: Opt<T?>): Opt<T?> = when {
             t.isPresent() -> t
-            else -> EMPTY
+            else -> empty()
         }
 
         @JvmStatic
-        fun <T> empty(): Opt<T?> = EMPTY
+        fun <T> empty(): Opt<T?> = Opt(null)
     }
 
 

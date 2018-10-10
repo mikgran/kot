@@ -15,7 +15,6 @@ class OptTest {
         assertEquals("a", opt.get())
     }
 
-
     @Test
     fun test_ofWithNull() {
 
@@ -159,6 +158,36 @@ class OptTest {
     }
 
     @Test
+    fun test_kotlin_match() {
+
+        val anyValue = VALUE1 as Any // really not needed, but simulating incoming unknown type.
+
+        val candidate = when {
+            anyValue is String && "value1" == anyValue -> 3
+            else -> 0
+        }
+
+        assertEquals(3, candidate)
+
+        val candidate2 = when (anyValue) {
+            "value1" -> 3
+            5 -> 6
+            else -> 0
+        }
+
+        assertEquals(3, candidate2)
+
+        val anyValue2 = 5 as Any
+        val candidate3 = when (anyValue2) {
+            "value1" -> 3
+            5 -> 6
+            else -> 0
+        }
+
+        assertEquals(6, candidate3)
+    }
+
+    @Test
     fun test_matchWithNullAndNoValue() {
 
         val stringNull: String? = null
@@ -204,6 +233,48 @@ class OptTest {
         assertNotNull(candidate)
         assertEquals(expected.get(), candidate.get())
     }
+
+    // ifPresent consumer & producer
+    @Test
+    fun test_ifPresentConsumer() {
+
+        val value = Opt.of(VALUE)
+
+        var candidate = TempValue("")
+
+        value.ifPresent { s -> candidate.a = s }
+
+        // assertNotNull()
+        assertEquals(VALUE, candidate.a)
+    }
+
+    // kotlin return type definition eliminates the need for Opt.flatMap similar to in
+    // java mg.util.functional.option.Opt.flatMap
+
+    @Test
+    fun test_getOrElse() {
+
+        val opt = Opt.of(VALUE)
+
+        opt.getOrElse("ANOTHER_VALUE")
+
+    }
+
+
+//        println("isPresent() ${isPresent()}")
+//        println("isValueClassSameAsRefClass(ref) ${isValueClassSameAsRefClass(ref)}")
+//        println("filter(value) ${filter(value)}")
+
+    @Test
+    fun tes_getAndMap() {
+
+        val candidate = Opt.of(VALUE)
+                .getAndMap { s -> s + "B" }
+
+        assertEquals(VALUE + "B", candidate)
+    }
+
+    class TempValue(var a: String?)
 
     companion object {
         const val ANOTHER_STRING = "anotherString"
