@@ -244,7 +244,6 @@ class OptTest {
 
         value.ifPresent { s -> candidate.a = s }
 
-        // assertNotNull()
         assertEquals(VALUE, candidate.a)
     }
 
@@ -256,8 +255,15 @@ class OptTest {
 
         val opt = Opt.of(VALUE)
 
-        opt.getOrElse("ANOTHER_VALUE")
+        val candidate = opt.getOrElse(ANOTHER_STRING)
 
+        assertEquals(VALUE, candidate)
+
+        val opt2 = Opt.of<String>(null)
+
+        val candidate2 = opt2.getOrElse(ANOTHER_STRING)
+
+        assertEquals(ANOTHER_STRING, candidate2)
     }
 
 
