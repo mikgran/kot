@@ -4,17 +4,12 @@ import java.util.*
 
 class Opt<T>(v: T) {
 
-    // match
-    // ifEmpty
-    // ifPresent () -> T non Any
-    // caseOf
-
     private val value: T? = v
 
     fun get() = value
 
-    @Suppress("UNCHECKED_CAST")
     fun <R : Any> map(mapper: (T?) -> R?): Opt<R?> {
+        @Suppress("UNCHECKED_CAST")
         return if (isPresent()) {
             val newValue: R? = mapper(value)
             of(newValue)
@@ -23,7 +18,6 @@ class Opt<T>(v: T) {
         }
     }
 
-    // @Suppress("UNCHECKED_CAST")
     fun filter(predicate: (T?) -> Boolean): Opt<T?> {
 
         return if (predicate(value)) {
@@ -38,6 +32,7 @@ class Opt<T>(v: T) {
     fun <T : Any> ifEmpty(function: () -> T?): Opt<T?> = of(function())
 
     override fun equals(other: Any?): Boolean {
+
         return when {
             this === other -> true
             other !is Opt<*> -> false
@@ -52,8 +47,9 @@ class Opt<T>(v: T) {
         return Objects.hashCode(value)
     }
 
-    // no reified
     private fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
+
+        // no reified
         return value?.let {
             val valueAsAny = it as Any
             valueAsAny::class == ref::class
@@ -64,12 +60,12 @@ class Opt<T>(v: T) {
      * Performs a mapper function against contents of this Opt if the filter
      * returns true and there are contents.
      */
-    @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
                                  filter: (R) -> Boolean,
                                  mapper: (R) -> V?): Opt<V?> {
 
         // maps only non null values of the same class
+        @Suppress("UNCHECKED_CAST")
         return if (isPresent() &&
                 isValueClassSameAsRefClass(ref) &&
                 filter(value as R)) {
@@ -80,7 +76,6 @@ class Opt<T>(v: T) {
         }
     }
 
-    // consumer
     fun ifPresent(f: (T?) -> Unit) {
         if (isPresent()) {
             f(value)
@@ -115,7 +110,5 @@ class Opt<T>(v: T) {
         @JvmStatic
         fun <T> empty(): Opt<T?> = Opt(null)
     }
-
-
 }
 

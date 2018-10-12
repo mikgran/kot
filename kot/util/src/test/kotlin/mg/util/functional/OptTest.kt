@@ -167,6 +167,7 @@ class OptTest {
             else -> 0
         }
 
+        assertNotNull(candidate)
         assertEquals(3, candidate)
 
         val candidate2 = when (anyValue) {
@@ -175,6 +176,7 @@ class OptTest {
             else -> 0
         }
 
+        assertNotNull(candidate2)
         assertEquals(3, candidate2)
 
         val anyValue2 = 5 as Any
@@ -184,6 +186,7 @@ class OptTest {
             else -> 0
         }
 
+        assertNotNull(candidate3)
         assertEquals(6, candidate3)
     }
 
@@ -244,32 +247,28 @@ class OptTest {
 
         value.ifPresent { s -> candidate.a = s }
 
+        assertNotNull(candidate.a)
         assertEquals(VALUE, candidate.a)
     }
 
-    // kotlin return type definition eliminates the need for Opt.flatMap similar to in
+    // Note: kotlin return type definition eliminates the need for Opt.flatMap similar to in
     // java mg.util.functional.option.Opt.flatMap
 
     @Test
     fun test_getOrElse() {
 
         val opt = Opt.of(VALUE)
-
         val candidate = opt.getOrElse(ANOTHER_STRING)
 
+        assertNotNull(candidate)
         assertEquals(VALUE, candidate)
 
         val opt2 = Opt.of<String>(null)
-
         val candidate2 = opt2.getOrElse(ANOTHER_STRING)
 
+        assertNotNull(candidate2)
         assertEquals(ANOTHER_STRING, candidate2)
     }
-
-
-//        println("isPresent() ${isPresent()}")
-//        println("isValueClassSameAsRefClass(ref) ${isValueClassSameAsRefClass(ref)}")
-//        println("filter(value) ${filter(value)}")
 
     @Test
     fun tes_getAndMap() {
@@ -277,7 +276,13 @@ class OptTest {
         val candidate = Opt.of(VALUE)
                 .getAndMap { s -> s + "B" }
 
+        assertNotNull(candidate)
         assertEquals(VALUE + "B", candidate)
+
+        val candidate2 = Opt.of<String>(null)
+                .getAndMap { s -> s + "X" }
+        
+        assertNull(candidate2) // no mapping if value == null
     }
 
     class TempValue(var a: String?)
