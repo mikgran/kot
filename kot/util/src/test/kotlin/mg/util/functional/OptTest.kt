@@ -243,7 +243,7 @@ class OptTest {
 
         val value = Opt.of(VALUE)
 
-        var candidate = TempValue("")
+        val candidate = TempValue("")
 
         value.ifPresent { s -> candidate.a = s }
 
@@ -281,7 +281,7 @@ class OptTest {
 
         val candidate2 = Opt.of<String>(null)
                 .getAndMap { s -> s + "X" }
-        
+
         assertNull(candidate2) // no mapping if value == null
     }
 

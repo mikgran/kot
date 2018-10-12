@@ -76,15 +76,16 @@ class Opt<T>(v: T) {
         }
     }
 
-    fun ifPresent(f: (T?) -> Unit) {
+    fun ifPresent(consumer: (T?) -> Unit) : Opt<T?> {
         if (isPresent()) {
-            f(value)
+            consumer(value)
         }
+        return of(value)
     }
 
-    fun <R> getAndMap(f: (T?) -> R?): R? {
+    fun <R> getAndMap(mapper: (T?) -> R?): R? {
         return when {
-            isPresent() -> f(value)
+            isPresent() -> mapper(value)
             else -> empty<R>().get()
         }
     }
@@ -111,4 +112,3 @@ class Opt<T>(v: T) {
         fun <T> empty(): Opt<T?> = Opt(null)
     }
 }
-
