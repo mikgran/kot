@@ -217,7 +217,7 @@ internal class OptTest {
         val empty = Opt.empty<Int>()
 
         assertNotNull(candidate)
-        assertEquals(empty.get(), candidate.left())
+        assertEquals(empty, candidate.left())
     }
 
     @Test
