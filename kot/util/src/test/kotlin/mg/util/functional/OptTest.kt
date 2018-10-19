@@ -154,7 +154,7 @@ internal class OptTest {
                 .right()
 
         assertNotNull(rr)
-        assertEquals(3, rr)
+        assertEquals(3, rr.get())
     }
 
     @Test
@@ -201,8 +201,8 @@ internal class OptTest {
         val empty = Opt.empty<String>()
 
         assertNotNull(matched)
-        assertNull(matched.right())
-        assertEquals(empty.get(), matched.right())
+        assertNull(matched.right().get())
+        assertEquals(empty.get(), matched.right().get())
     }
 
     @Test
@@ -231,8 +231,11 @@ internal class OptTest {
 
         val expected = Opt.of("$VALUE!")
 
+        println(candidate.right().get())
+
+
         assertNotNull(candidate)
-        assertEquals(expected.get(), candidate.left())
+        assertEquals(expected.get(), candidate.right().get())
     }
 
     // ifPresent consumer & producer
