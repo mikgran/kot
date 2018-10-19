@@ -2,34 +2,39 @@ package mg.util.functional
 
 import java.util.*
 
-class Opt<T>(v: T) {
+class Opt<T>(v: T?) {
 
     private val value: T? = v
 
     fun get() = value
 
+    @Suppress("UNCHECKED_CAST")
     fun <R : Any> map(mapper: (T?) -> R?): Opt<R?> {
-        @Suppress("UNCHECKED_CAST")
-        return if (isPresent()) {
-            val newValue: R? = mapper(value)
-            of(newValue)
-        } else {
-            empty()
+        return when {
+            isPresent() -> {
+                val newValue = mapper(value)
+                of(newValue)
+            }
+            else -> empty()
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun filter(predicate: (T?) -> Boolean): Opt<T?> {
-
-        return if (predicate(value)) {
-            of(value)
-        } else {
-            empty()
+        return when {
+            isPresent() && predicate(value) -> thisAsOptNullableT()
+            else -> empty()
         }
     }
 
-    private fun isPresent(): Boolean = value != null
+    fun isPresent(): Boolean = value != null
 
-    fun <T : Any> ifEmpty(function: () -> T?): Opt<T?> = of(function())
+    fun ifEmpty(function: () -> T): Opt<T?> {
+        return when {
+            !isPresent() -> Opt(function())
+            else -> thisAsOptNullableT()
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
 
@@ -56,33 +61,38 @@ class Opt<T>(v: T) {
         } ?: false
     }
 
+    // XXX: create BiOpt for tracking the original and the result values.
+    // XXX: match { consumer }
+    // XXX: match { func } : BiOpt
+
     /**
      * Performs a mapper function against contents of this Opt if the filter
      * returns true and there are contents.
      */
+    @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
-                                 filter: (R) -> Boolean,
-                                 mapper: (R) -> V?): Opt<V?> {
+                                 filter: (R?) -> Boolean,
+                                 mapper: (R?) -> V?): BiOpt<R, V> {
 
-        // maps only non null values of the same class
-        @Suppress("UNCHECKED_CAST")
-        return if (isPresent() &&
-                isValueClassSameAsRefClass(ref) &&
-                filter(value as R)) {
-
-            of(mapper(value as R))
-        } else {
-            empty()
-        }
+        // maps and filters only non null values of the same class.
+        return this.filter { isPresent() }
+                .filter { isValueClassSameAsRefClass(ref) }
+                .map { v -> v as R }
+                .filter { v -> filter(v) }
+                .map { v -> mapper(v) }
+                .map { v -> BiOpt.of(value, v) }
+                .getOrElse(BiOpt.empty()) as BiOpt<R, V>
     }
 
-    fun ifPresent(consumer: (T?) -> Unit) : Opt<T?> {
+    @Suppress("UNCHECKED_CAST")
+    fun ifPresent(consumer: (T?) -> Unit): Opt<T?> {
         if (isPresent()) {
             consumer(value)
         }
-        return of(value)
+        return thisAsOptNullableT()
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun <R> getAndMap(mapper: (T?) -> R?): R? {
         return when {
             isPresent() -> mapper(value)
@@ -90,22 +100,29 @@ class Opt<T>(v: T) {
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun getOrElse(default: T): T {
-        return value ?: default
+        return when {
+            isPresent() -> value as T
+            else -> default
+        }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun thisAsOptNullableT() = this as Opt<T?>
 
     companion object Factory {
 
         @JvmStatic
         fun <T> of(t: T?): Opt<T?> = when (t) {
-            null -> empty()
+            null -> Opt(null)
             else -> Opt(t)
         }
 
         @JvmStatic
         fun <T> of(t: Opt<T?>): Opt<T?> = when {
-            t.isPresent() -> t
-            else -> empty()
+            t.isPresent() -> Opt(t.value)
+            else -> Opt(null)
         }
 
         @JvmStatic

@@ -3,7 +3,7 @@ package mg.util.functional
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class OptTest {
+internal class OptTest {
 
     @Test
     fun test_of() {
@@ -151,7 +151,7 @@ class OptTest {
         val rr = opt.match("",
                 { _ -> true },
                 { _ -> 3 })
-                .get()
+                .right()
 
         assertNotNull(rr)
         assertEquals(3, rr)
@@ -196,15 +196,13 @@ class OptTest {
         val stringNull: String? = null
         val opt = Opt.of(stringNull)
 
-        val matched = opt.match("",
-                { _ -> true },
-                { _ -> 3 })
+        val matched: BiOpt<String, Int> = opt.match("", { _ -> true }, { _ -> 3 })
 
         val empty = Opt.empty<String>()
 
         assertNotNull(matched)
-        assertNull(matched.get())
-        assertEquals(empty.get(), matched.get())
+        assertNull(matched.right())
+        assertEquals(empty.get(), matched.right())
     }
 
     @Test
@@ -214,12 +212,12 @@ class OptTest {
 
         val candidate = value.match(3,
                 { _ -> true },
-                { s -> s + 1 })
+                { s -> s as Int + 1 })
 
         val empty = Opt.empty<Int>()
 
         assertNotNull(candidate)
-        assertEquals(empty.get(), candidate.get())
+        assertEquals(empty.get(), candidate.left())
     }
 
     @Test
@@ -227,14 +225,14 @@ class OptTest {
 
         val value = Opt.of(VALUE)
 
-        val candidate = value.match("",
+        val candidate: BiOpt<String, String> = value.match("",
                 { s -> s == "value" },
                 { s -> "$s!" })
 
         val expected = Opt.of("$VALUE!")
 
         assertNotNull(candidate)
-        assertEquals(expected.get(), candidate.get())
+        assertEquals(expected.get(), candidate.left())
     }
 
     // ifPresent consumer & producer
