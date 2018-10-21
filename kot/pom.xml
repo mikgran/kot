@@ -16,8 +16,9 @@
     </modules>
 
     <properties>
-        <kotlin.version>1.2.60</kotlin.version>
-        <junit.version>5.2.0</junit.version>
+        <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
+        <kotlin.version>1.2.71</kotlin.version>
+        <junit.version>5.3.1</junit.version>
         <main.class>mg.util.CommonKt</main.class>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -36,19 +37,19 @@
             <scope>test</scope>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>org.jetbrains.kotlin</groupId>-->
-        <!--<artifactId>kotlin-test-junit</artifactId>-->
-        <!--<version>${kotlin.version}</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 
     <build>
-
-        <pluginManagement>
             <plugins>
+
                 <plugin>
                     <artifactId>kotlin-maven-plugin</artifactId>
                     <groupId>org.jetbrains.kotlin</groupId>
@@ -56,37 +57,30 @@
                     <executions>
                         <execution>
                             <id>compile</id>
-                            <goals>
-                                <goal>compile</goal>
-                            </goals>
+                            <goals> <goal>compile</goal> </goals>
                             <configuration>
                                 <sourceDirs>
                                     <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
                                     <sourceDir>${project.basedir}/src/main/java</sourceDir>
-                                    <sourceDir>${project.basedir}/src/main/resources</sourceDir>
                                 </sourceDirs>
                             </configuration>
                         </execution>
                         <execution>
                             <id>test-compile</id>
-                            <goals>
-                                <goal>test-compile</goal>
-                            </goals>
+                            <goals> <goal>test-compile</goal> </goals>
                             <configuration>
                                 <sourceDirs>
                                     <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                                     <sourceDir>${project.basedir}/src/test/java</sourceDir>
-                                    <sourceDir>${project.basedir}/src/test/resources</sourceDir>
                                 </sourceDirs>
                             </configuration>
                         </execution>
                     </executions>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.7.0</version>
+                    <version>${maven.compiler.plugin.version}</version>
                     <executions>
                         <!-- Replacing default-compile as it is treated specially by maven -->
                         <execution>
@@ -101,42 +95,15 @@
                         <execution>
                             <id>java-compile</id>
                             <phase>compile</phase>
-                            <goals>
-                                <goal>compile</goal>
-                            </goals>
+                            <goals> <goal>compile</goal> </goals>
                         </execution>
                         <execution>
                             <id>java-test-compile</id>
                             <phase>test-compile</phase>
-                            <goals>
-                                <goal>testCompile</goal>
-                            </goals>
+                            <goals> <goal>testCompile</goal> </goals>
                         </execution>
                     </executions>
                 </plugin>
-
-                <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-assembly-plugin</artifactId>-->
-                <!--<version>3.1.0</version>-->
-                <!--<executions>-->
-                <!--<execution>-->
-                <!--<id>make-assembly</id>-->
-                <!--<phase>package</phase>-->
-                <!--<goals> <goal>single</goal> </goals>-->
-                <!--<configuration>-->
-                <!--<archive>-->
-                <!--<manifest>-->
-                <!--<mainClass>${main.class}</mainClass>-->
-                <!--</manifest>-->
-                <!--</archive>-->
-                <!--<descriptorRefs>-->
-                <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
-                <!--</descriptorRefs>-->
-                <!--</configuration>-->
-                <!--</execution>-->
-                <!--</executions>-->
-                <!--</plugin>-->
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -163,7 +130,5 @@
                 </plugin>
 
             </plugins>
-        </pluginManagement>
     </build>
-
 </project>
