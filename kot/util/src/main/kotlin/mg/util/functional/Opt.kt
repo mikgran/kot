@@ -97,7 +97,7 @@ class Opt<T>(v: T?) {
     fun <R> getAndMap(mapper: (T?) -> R?): R? {
         return when {
             isPresent() -> mapper(value)
-            else -> empty<R>().get()
+            else -> null
         }
     }
 
