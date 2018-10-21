@@ -72,16 +72,17 @@ class Opt<T>(v: T?) {
     @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
                                  filter: (R?) -> Boolean,
-                                 mapper: (R?) -> V?): BiOpt<R, V> {
+                                 mapper: (R?) -> V?) : BiOpt<T, V> {
 
         // maps and filters only non null values of the same class.
-        return this.filter { isPresent() }
+        return this
+                .filter { isPresent() }
                 .filter { isValueClassSameAsRefClass(ref) }
                 .map { v -> v as R }
-                .filter { v -> filter(v) }
-                .map { v -> mapper(v) }
+                .filter(filter)
+                .map(mapper)
                 .map { v -> BiOpt.of(value, v) }
-                .getOrElse(BiOpt.empty()) as BiOpt<R, V>
+                .getOrElse(BiOpt.empty()) as BiOpt<T, V>
     }
 
     @Suppress("UNCHECKED_CAST")

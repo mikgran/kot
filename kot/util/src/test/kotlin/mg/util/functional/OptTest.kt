@@ -196,7 +196,7 @@ internal class OptTest {
         val stringNull: String? = null
         val opt = Opt.of(stringNull)
 
-        val matched: BiOpt<String, Int> = opt.match("", { _ -> true }, { _ -> 3 })
+        val matched: BiOpt<String?, Int> = opt.match("", { _ -> true }, { _ -> 3 })
 
         val empty = Opt.empty<String>()
 
@@ -225,14 +225,13 @@ internal class OptTest {
 
         val value = Opt.of(VALUE)
 
-        val candidate: BiOpt<String, String> = value.match("",
+        val candidate: BiOpt<String?, String> = value.match("",
                 { s -> s == "value" },
                 { s -> "$s!" })
 
         val expected = Opt.of("$VALUE!")
 
         println(candidate.right().get())
-
 
         assertNotNull(candidate)
         assertEquals(expected.get(), candidate.right().get())
