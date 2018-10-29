@@ -1,4 +1,4 @@
-rootProject.name = 'kot'
+rootProject.name = 'mg.kot'
+include ':mg.kot.util'
 
-include 'util'
-
+project(':mg.kot.util').projectDir = "$rootDir/util" as File
