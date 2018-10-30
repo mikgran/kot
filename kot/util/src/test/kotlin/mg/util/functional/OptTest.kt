@@ -231,8 +231,6 @@ internal class OptTest {
 
         val expected = Opt.of("$VALUE!")
 
-        println(candidate.right().get())
-
         assertNotNull(candidate)
         assertEquals(expected.get(), candidate.right().get())
     }

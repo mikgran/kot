@@ -16,7 +16,6 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
         return left.match(ref, filter, mapper) as BiOpt<T, V>
     }
 
-
     companion object Factory {
 
         @JvmStatic
