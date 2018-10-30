@@ -8,9 +8,18 @@ internal class BiOptTest {
     @Test
     fun test_match() {
 
+        val biOpt = BiOpt(Opt.of("a"), Opt.empty<String>())
 
+        assertNotNull(biOpt)
+        assertNotNull(biOpt.left())
+        assertNotNull(biOpt.right())
 
+        val candidate = biOpt.match("", { s -> "a" == s }, { s -> s + s })
 
+        assertNotNull(candidate.left())
+        assertNotNull(candidate.right())
+        assertEquals("a", candidate.left().get())
+        assertEquals("aa", candidate.right().get())
     }
 
     @Test
@@ -26,7 +35,6 @@ internal class BiOptTest {
         assertNotNull(biOpt.right())
         assertEquals("a", opt.get())
 
-        
 
     }
 
