@@ -10,11 +10,11 @@ buildscript {
     }
 }
 
-allprojects  {
+allprojects {
     apply plugin: 'maven'
 
     group = 'mg.kot'
-version = '1.0-SNAPSHOT'
+    version = '1.0-SNAPSHOT'
 
 }
 
@@ -22,31 +22,31 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'kotlin'
 
-  sourceCompatibility = 1.8
-  targetCompatibility = 1.8
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-  tasks.withType(JavaCompile) {
-  	options.encoding = 'UTF-8'
-  }
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
 
-sourceSets {
-    main.kotlin.srcDirs += 'src/main/kotlin'
-    main.java.srcDirs += 'src/main/java'
-}
+    sourceSets {
+        main.kotlin.srcDirs += 'src/main/kotlin'
+        main.java.srcDirs += 'src/main/java'
+    }
 
     repositories {
-    mavenLocal()
-    maven { url "http://repo.maven.apache.org/maven2" }
-  }
+        mavenLocal()
+        maven { url "http://repo.maven.apache.org/maven2" }
+    }
 
-  
-  dependencies {
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version:'1.2.71'
+
+    dependencies {
+        compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.2.71'
 //    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version:'5.3.1'
 //    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.3.1'
 
-      testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-      testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     }
 
     test {
@@ -67,7 +67,7 @@ sourceSets {
         }
     }
 
-    task report(type:Exec) {
+    task report(type: Exec) {
         workingDir './build/reports/tests/test'
 
         //on windows:
