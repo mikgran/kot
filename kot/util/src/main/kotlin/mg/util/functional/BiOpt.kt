@@ -37,7 +37,7 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
             return BiOpt.of(left.get(), newRight)
         }
 
-        return BiOpt.empty()
+        return this
     }
 
     companion object Factory {
