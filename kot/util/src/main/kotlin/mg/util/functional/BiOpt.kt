@@ -16,6 +16,16 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
         return left.match(ref, filter, mapper) as BiOpt<T, V>
     }
 
+    @Suppress("UNCHECKED_CAST")
+    fun <R : Any, V : Any> matchRight(ref: R,
+                                      filter: (R?) -> Boolean,
+                                      mapper: (R?) -> V?): BiOpt<T, V> {
+
+        val matchedRight = right.match(ref, filter, mapper)
+
+        return BiOpt.of(right, matchedRight.right()) as BiOpt<T, V>
+    }
+
     companion object Factory {
 
         @JvmStatic

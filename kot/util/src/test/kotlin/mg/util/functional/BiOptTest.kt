@@ -23,6 +23,26 @@ internal class BiOptTest {
     }
 
     @Test
+    fun test_matchRight() {
+
+        val biOpt = BiOpt.of("a", "aa")
+
+        assertNotNull(biOpt)
+        assertNotNull(biOpt.left())
+        assertNotNull(biOpt.right())
+        assertEquals(Opt.of("a"), biOpt.left())
+        assertEquals(Opt.of("aa"), biOpt.right())
+
+        val candidate = biOpt.matchRight("", { s -> "aa" == s }, { s -> s + s })
+
+        assertNotNull(candidate)
+        assertNotNull(candidate.left())
+        assertNotNull(candidate.right())
+        assertEquals(Opt.of("aa"), candidate.left()) // new left is the old right.
+        assertEquals(Opt.of("aaaa"), candidate.right())
+    }
+
+    @Test
     fun test_of() {
 
         val opt = Opt.of("a")
