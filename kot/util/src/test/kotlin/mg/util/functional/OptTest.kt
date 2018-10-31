@@ -269,7 +269,7 @@ internal class OptTest {
     }
 
     @Test
-    fun tes_getAndMap() {
+    fun test_getAndMap() {
 
         val candidate = Opt.of(VALUE)
                 .getAndMap { s -> s + "B" }
@@ -281,6 +281,15 @@ internal class OptTest {
                 .getAndMap { s -> s + "X" }
 
         assertNull(candidate2) // no mapping if value == null
+    }
+
+    @Test
+    fun test_toString() {
+
+        val str = Opt.of("aString").toString()
+
+        assertNotNull(str)
+        assertEquals("aString", str)
     }
 
     class TempValue(var a: String?)
