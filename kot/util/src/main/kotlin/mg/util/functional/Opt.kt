@@ -108,6 +108,18 @@ class Opt<T>(v: T?) {
         }
     }
 
+    fun <V> caseOf(predicate: (T?) -> Boolean,
+                   mapper: (T?) -> V?): BiOpt<T, V> {
+
+        if (isPresent() && predicate(value)) {
+
+            val newRight = mapper(value)
+            return BiOpt.of(value, newRight)
+        }
+
+        return BiOpt.of(value, null)
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun thisAsOptNullableT() = this as Opt<T?>
 

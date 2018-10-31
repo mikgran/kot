@@ -292,6 +292,27 @@ internal class OptTest {
         assertEquals("aString", str)
     }
 
+    @Test
+    fun test_caseOf() {
+
+        val opt = Opt.of(1)
+
+        val biOpt = opt.caseOf({ i -> i == 1 }, { i -> i as Int + 1 })
+
+        assertNotNull(biOpt)
+        assertEquals(2, biOpt.right().get())
+
+        val candidate = Opt
+                .of(10)
+                .caseOf({ it == 5 }, { it as Int + 100 }) // predicate is false, not mapped here
+                .caseOf({ it == 10 }, { it as Int + 50 }) // predicate is true, the mapping is applied
+                .caseOf({ it == 20 }, { it as Int + 10 }) // predicate is true, but since the previous result is stored in the right no mapping is done
+
+        assertNotNull(candidate)
+        assertNotNull(candidate.right())
+        assertEquals(60, candidate.right().get())
+    }
+
     class TempValue(var a: String?)
 
     companion object {

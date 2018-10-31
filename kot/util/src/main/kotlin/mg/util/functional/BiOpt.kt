@@ -26,6 +26,20 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
         return BiOpt.of(right, matchedRight.right()) as BiOpt<T, V>
     }
 
+    fun caseOf(predicate: (T?) -> Boolean,
+               mapper: (T?) -> V?): BiOpt<T, V> {
+
+        if (!right.isPresent() &&
+                left.isPresent() &&
+                predicate(left.get())) {
+
+            val newRight = mapper(left.get())
+            return BiOpt.of(left.get(), newRight)
+        }
+
+        return BiOpt.empty()
+    }
+
     companion object Factory {
 
         @JvmStatic
