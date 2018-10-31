@@ -38,9 +38,8 @@ class Opt<T>(v: T?) {
 
     override fun equals(other: Any?): Boolean {
 
-        return when {
-            this === other -> true
-            other !is Opt<*> -> false
+        return when (other) {
+            !is Opt<*> -> false
             else -> {
                 val otherObj: Opt<*> = other
                 value == otherObj.value
@@ -72,7 +71,7 @@ class Opt<T>(v: T?) {
     @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
                                  filter: (R?) -> Boolean,
-                                 mapper: (R?) -> V?) : BiOpt<T, V> {
+                                 mapper: (R?) -> V?): BiOpt<T, V> {
 
         // maps and filters only non null values of the same class.
         return this
@@ -111,6 +110,8 @@ class Opt<T>(v: T?) {
 
     @Suppress("UNCHECKED_CAST")
     private fun thisAsOptNullableT() = this as Opt<T?>
+
+    override fun toString(): String = value?.toString() ?: ""
 
     companion object Factory {
 
