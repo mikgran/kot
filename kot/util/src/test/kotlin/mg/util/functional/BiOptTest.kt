@@ -55,4 +55,26 @@ internal class BiOptTest {
         assertNotNull(biOpt.right())
         assertEquals("a", opt.get())
     }
+
+    @Test
+    fun test_filter() {
+
+        val biOpt = BiOpt.of("a", null)
+
+        val candidate = biOpt.filter { s -> s == "a" }
+
+        assertNotNull(candidate)
+        assertNotNull(candidate.left())
+        assertNotNull(candidate.right())
+        assertNull(candidate.right().get())
+        assertEquals("a", candidate.left().get())
+
+        val candidate2 = biOpt.filter { it == "b" }
+
+        assertNotNull(candidate2)
+        assertNotNull(candidate2.left())
+        assertNotNull(candidate2.right())
+        assertNull(candidate2.left().get())
+        assertNull(candidate2.right().get())
+    }
 }

@@ -40,6 +40,13 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
         return this
     }
 
+    @Suppress("UNCHECKED_CAST")
+    fun filter(filter: (T) -> Boolean): BiOpt<T, V> = when {
+
+        left.isPresent() && filter(left.get() as T) -> this
+        else -> BiOpt.empty()
+    }
+
     companion object Factory {
 
         @JvmStatic
