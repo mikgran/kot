@@ -149,8 +149,8 @@ internal class OptTest {
         val opt = Opt.of(VALUE1)
 
         val rr = opt.match("",
-                { _ -> true },
-                { _ -> 3 })
+                { true },
+                { 3 })
                 .right()
 
         assertNotNull(rr)
@@ -196,7 +196,7 @@ internal class OptTest {
         val stringNull: String? = null
         val opt = Opt.of(stringNull)
 
-        val matched: BiOpt<String?, Int> = opt.match("", { _ -> true }, { _ -> 3 })
+        val matched: BiOpt<String?, Int> = opt.match("", { true }, { 3 })
 
         val empty = Opt.empty<String>()
 
@@ -211,7 +211,7 @@ internal class OptTest {
         val value = Opt.of(VALUE)
 
         val candidate = value.match(3,
-                { _ -> true },
+                { true },
                 { s -> s as Int + 1 })
 
         val empty = Opt.empty<Int>()

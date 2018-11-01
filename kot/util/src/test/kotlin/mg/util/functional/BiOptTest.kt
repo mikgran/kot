@@ -54,8 +54,5 @@ internal class BiOptTest {
         assertNotNull(biOpt.left())
         assertNotNull(biOpt.right())
         assertEquals("a", opt.get())
-
-
     }
-
 }

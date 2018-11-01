@@ -43,21 +43,9 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
     companion object Factory {
 
         @JvmStatic
-        fun <T, V> of(t: T?) = when (t) {
-            null -> empty()
-            else -> BiOpt(Opt.of(t), Opt.empty<V>())
-        }
-
-        @JvmStatic
         fun <T, V> of(t: T?, v: V?) = when (t) {
             null -> empty()
             else -> BiOpt(Opt.of(t), Opt.of(v))
-        }
-
-        @JvmStatic
-        fun <T, V> of(t: Opt<T?>) = when {
-            t.isPresent() -> BiOpt(t, Opt.empty<V>())
-            else -> empty()
         }
 
         @JvmStatic
