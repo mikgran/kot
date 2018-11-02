@@ -1,6 +1,5 @@
 package mg.util.functional
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -98,6 +97,26 @@ internal class BiOptTest {
             val biOpt2 = BiOpt.of<String, String>(null, "")
 
             biOpt2.getLeftOrElseThrow { Exception() }
+        }
+    }
+
+    @Test
+    fun test_getRightOrElseThrow() {
+
+        assertDoesNotThrow {
+
+            val biOpt = BiOpt.of("a", "aa")
+            val rightCandidate = biOpt.getRightOrElseThrow { Exception() }
+
+            assertNotNull(rightCandidate)
+            assertEquals("aa", rightCandidate)
+        }
+
+        assertThrows(Exception::class.java) {
+
+            val biOpt = BiOpt.of<String, String>("", null)
+
+            biOpt.getRightOrElseThrow { Exception() }
         }
     }
 
