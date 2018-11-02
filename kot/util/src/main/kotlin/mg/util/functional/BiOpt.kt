@@ -47,6 +47,13 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
         else -> BiOpt.empty()
     }
 
+    fun getLeftOrElseThrow(exceptionProducer: () -> Throwable): T? {
+        return when {
+            left.isPresent() -> left.get()
+            else -> throw exceptionProducer()
+        }
+    }
+
     companion object Factory {
 
         @JvmStatic

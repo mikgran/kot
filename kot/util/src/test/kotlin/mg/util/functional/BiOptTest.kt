@@ -1,10 +1,13 @@
 package mg.util.functional
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertThrows
 
 internal class BiOptTest {
 
+    // TOIMPROVE: test coverage
     @Test
     fun test_match() {
 
@@ -77,4 +80,25 @@ internal class BiOptTest {
         assertNull(candidate2.left().get())
         assertNull(candidate2.right().get())
     }
+
+    @Test
+    fun test_getLeftOrElseThrow() {
+
+        assertDoesNotThrow {
+
+            val biOpt = BiOpt.of("a", "aa")
+            val leftCandidate = biOpt.getLeftOrElseThrow { Exception() }
+
+            assertNotNull(leftCandidate)
+            assertEquals("a", leftCandidate)
+        }
+
+        assertThrows(Exception::class.java) {
+
+            val biOpt2 = BiOpt.of<String, String>(null, "")
+
+            biOpt2.getLeftOrElseThrow { Exception() }
+        }
+    }
+
 }
