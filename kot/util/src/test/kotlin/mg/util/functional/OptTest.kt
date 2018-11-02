@@ -148,13 +148,18 @@ internal class OptTest {
 
         val opt = Opt.of(VALUE1)
 
-        val rr = opt.match("",
-                { true },
-                { 3 })
+        val rr = opt.match("", { true }, { 3 })
                 .right()
 
         assertNotNull(rr)
         assertEquals(3, rr.get())
+
+        val candidate = opt.match("", { it == "someValue" }, { "$it!" })
+                .match("", { s -> VALUE1 == s }, { "$it!" })
+
+        assertNotNull(candidate)
+        assertEquals("$VALUE1!", candidate.right().get())
+
     }
 
     @Test
@@ -210,14 +215,10 @@ internal class OptTest {
 
         val value = Opt.of(VALUE)
 
-        val candidate = value.match(3,
-                { true },
-                { s -> s as Int + 1 })
-
-        val empty = Opt.empty<Int>()
+        val candidate = value.match(3, { true }, { s -> s as Int + 1 })
 
         assertNotNull(candidate)
-        assertEquals(empty, candidate.left())
+        assertEquals("$VALUE", candidate.left().get())
     }
 
     @Test

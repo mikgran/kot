@@ -64,16 +64,13 @@ class Opt<T>(v: T?) {
     // XXX: match { consumer }
     // XXX: match { func } : BiOpt
 
-    /**
-     * Performs a mapper function against contents of this Opt if the filter
-     * returns true and there are contents.
-     */
     @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
                                  filter: (R?) -> Boolean,
                                  mapper: (R?) -> V?): BiOpt<T, V> {
 
         // maps and filters only non null values of the same class.
+        // returns BiOpt.of(oldValue, newValue/null)
         return this
                 .filter { isPresent() }
                 .filter { isValueClassSameAsRefClass(ref) }
@@ -81,7 +78,7 @@ class Opt<T>(v: T?) {
                 .filter(filter)
                 .map(mapper)
                 .map { v -> BiOpt.of(value, v) }
-                .getOrElse(BiOpt.empty()) as BiOpt<T, V>
+                .getOrElse(BiOpt.of(value, null)) as BiOpt<T, V>
     }
 
     @Suppress("UNCHECKED_CAST")
