@@ -154,7 +154,7 @@ internal class OptTest {
         assertNotNull(rr)
         assertEquals(3, rr.get())
 
-        val candidate = opt.match("", { it == "someValue" }, { "$it!" })
+        val candidate = opt.match("", { it == "someValue" }, { "$it!!" })
                 .match("", { s -> VALUE1 == s }, { "$it!" })
 
         assertNotNull(candidate)
