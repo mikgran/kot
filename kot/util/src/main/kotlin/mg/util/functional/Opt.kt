@@ -120,6 +120,13 @@ class Opt<T>(v: T?) {
         return BiOpt.of(value, null)
     }
 
+    fun getOrElseThrow(exceptionProducer: () -> Throwable): T? {
+        return when {
+            isPresent() -> value
+            else -> throw exceptionProducer()
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun thisAsOptNullableT() = this as Opt<T?>
 

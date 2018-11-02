@@ -313,6 +313,27 @@ internal class OptTest {
         assertEquals(60, candidate.right().get())
     }
 
+    @Test
+    fun test_getOrElseThrow() {
+
+        assertDoesNotThrow {
+
+            val opt = Opt.of("a")
+            val candidate = opt.getOrElseThrow { Exception() }
+
+            assertNotNull(candidate)
+            assertEquals("a", candidate)
+        }
+
+        assertThrows(Exception::class.java) {
+
+            val opt = Opt.of<String>(null)
+
+            opt.getOrElseThrow { Exception() }
+        }
+    }
+
+
     class TempValue(var a: String?)
 
     companion object {
