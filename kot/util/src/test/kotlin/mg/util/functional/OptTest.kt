@@ -17,8 +17,7 @@ internal class OptTest {
 
     @Test
     fun test_ofWithNull() {
-
-        // TOIMPROVE: is there a way in kotlin to pass null parameter?
+        
         val nullStr: String? = null
         val opt = Opt.of(nullStr)
 
