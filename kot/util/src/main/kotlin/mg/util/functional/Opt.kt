@@ -9,14 +9,9 @@ class Opt<T>(v: T?) {
     fun get() = value
 
     @Suppress("UNCHECKED_CAST")
-    fun <R : Any> map(mapper: (T?) -> R?): Opt<R?> {
-        return when {
-            isPresent() -> {
-                val newValue = mapper(value)
-                of(newValue)
-            }
-            else -> empty()
-        }
+    fun <R : Any> map(mapper: (T?) -> R?): Opt<R?> = when {
+        isPresent() -> Opt.of(mapper(value))
+        else -> empty()
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -117,17 +112,21 @@ class Opt<T>(v: T?) {
         return BiOpt.of(value, null)
     }
 
-    fun getOrElseThrow(exceptionProducer: () -> Throwable): T? {
-        return when {
-            isPresent() -> value
-            else -> throw exceptionProducer()
-        }
+    fun getOrElseThrow(exceptionProducer: () -> Throwable): T? = when {
+        isPresent() -> value
+        else -> throw exceptionProducer()
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun thisAsOptNullableT() = this as Opt<T?>
 
     override fun toString(): String = value?.toString() ?: ""
+
+    @Suppress("UNCHECKED_CAST")
+    fun <R> flatMap(mapper: (T) -> Opt<R?>): Opt<R?> = when {
+        isPresent() -> mapper(value as T)
+        else -> Opt.empty()
+    }
 
     companion object Factory {
 

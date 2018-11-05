@@ -17,7 +17,7 @@ internal class OptTest {
 
     @Test
     fun test_ofWithNull() {
-        
+
         val nullStr: String? = null
         val opt = Opt.of(nullStr)
 
@@ -249,9 +249,6 @@ internal class OptTest {
         assertEquals(VALUE, candidate.a)
     }
 
-    // Note: kotlin return type definition eliminates the need for Opt.flatMap similar to in
-    // java mg.util.functional.option.Opt.flatMap
-
     @Test
     fun test_getOrElse() {
 
@@ -333,8 +330,23 @@ internal class OptTest {
         }
     }
 
+    @Test
+    fun test_flatMap() {
+
+        val tempValue = TempValue("a")
+        val tempValue2 = TempValue2(Opt.of(tempValue))
+        val candidate = Opt.of(tempValue2)
+                .flatMap { t -> t?.a ?: Opt.empty() }
+                .map { t -> t?.a }
+                .get()
+
+        assertNotNull(candidate)
+        assertEquals("a", candidate)
+    }
 
     class TempValue(var a: String?)
+
+    class TempValue2(val a: Opt<TempValue?>)
 
     companion object {
         const val ANOTHER_STRING = "anotherString"
