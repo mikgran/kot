@@ -71,7 +71,7 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
 
         @JvmStatic
         fun <T, V> of(t: Opt<T?>, v: Opt<V?>) = when {
-            t.isPresent() && v.isPresent() -> BiOpt(t, v)
+            t.isPresent() || v.isPresent() -> BiOpt(t, v)
             else -> empty()
         }
 
