@@ -330,20 +330,6 @@ internal class OptTest {
         }
     }
 
-    @Test
-    fun test_flatMap() {
-
-        val tempValue = TempValue("a")
-        val tempValue2 = TempValue2(Opt.of(tempValue))
-        val candidate = Opt.of(tempValue2)
-                .flatMap { t -> t?.a ?: Opt.empty() }
-                .map { t -> t?.a }
-                .get()
-
-        assertNotNull(candidate)
-        assertEquals("a", candidate)
-    }
-
     class TempValue(var a: String?)
 
     class TempValue2(val a: Opt<TempValue?>)

@@ -122,12 +122,6 @@ class Opt<T>(v: T?) {
 
     override fun toString(): String = value?.toString() ?: ""
 
-    @Suppress("UNCHECKED_CAST")
-    fun <R> flatMap(mapper: (T) -> Opt<R?>): Opt<R?> = when {
-        isPresent() -> mapper(value as T)
-        else -> Opt.empty()
-    }
-
     companion object Factory {
 
         @JvmStatic
