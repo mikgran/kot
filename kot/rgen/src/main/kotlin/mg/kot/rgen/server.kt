@@ -10,8 +10,8 @@ fun main(args: Array<String>) {
     val server = Server(8080)
     val ctx = ServletContextHandler(ServletContextHandler.NO_SESSIONS)
 
-    ctx.setContextPath("/")
-    server.setHandler(ctx)
+    ctx.contextPath = "/"
+    server.handler = ctx
 
     val servletHolder = ServletHolder(ServletContainer(SimpleApplication()))
 
