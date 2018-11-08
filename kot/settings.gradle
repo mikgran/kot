@@ -1,4 +1,6 @@
 rootProject.name = 'mg.kot'
 include ':mg.kot.util'
+include ':mg.kot.rgen'
 
 project(':mg.kot.util').projectDir = "$rootDir/util" as File
+project(':mg.kot.rgen').projectDir = "$rootDir/rgen" as File
