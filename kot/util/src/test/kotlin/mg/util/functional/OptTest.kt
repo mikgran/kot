@@ -332,8 +332,6 @@ internal class OptTest {
 
     class TempValue(var a: String?)
 
-    class TempValue2(val a: Opt<TempValue?>)
-
     companion object {
         const val ANOTHER_STRING = "anotherString"
         const val NEW_STRING = "newString"
