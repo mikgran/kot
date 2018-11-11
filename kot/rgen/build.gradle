@@ -20,7 +20,7 @@ group = 'mg.kot'
 version = '1.0-SNAPSHOT'
 description = 'mg-kot-rgen'
 
-task runFinalJar(type: JavaExec) {
+task runJar(type: JavaExec) {
     // classpath = files('build/libs/foo.jar')
     classpath += sourceSets.main.runtimeClasspath
     main = 'mg.kot.rgen.ServerKt'
