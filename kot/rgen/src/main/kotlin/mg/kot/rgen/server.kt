@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
     ctx.contextPath = "/"
     server.handler = ctx
 
-    val servletHolder = ServletHolder(ServletContainer(SimpleApplication()))
+    val servletHolder = ServletHolder(ServletContainer(RgenApplication()))
 
     // val serHol = ctx.addServlet(ServletContainer::class.java, "/rest/*")
 
