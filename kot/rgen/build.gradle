@@ -2,9 +2,6 @@ apply plugin: 'java'
 
 dependencies {
 
-    //compile gradleApi()
-    //compile localGroovy()
-
     compile 'org.glassfish.jersey.containers:jersey-container-jetty-http:2.25'
     compile 'org.eclipse.jetty:jetty-util:9.4.0.v20161208'
     compile 'org.glassfish.jersey.core:jersey-server:2.25'
