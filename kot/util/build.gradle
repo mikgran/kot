@@ -1,2 +1,9 @@
 
 description = 'mg-kot-util'
+
+dependencies {
+
+    compile 'mg.util:util:1.0-SNAPSHOT'
+
+}
+
