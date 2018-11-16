@@ -7,4 +7,6 @@ import javax.ws.rs.Path
 class RgenResource {
     @GET
     fun helloWorld() = "Hello World"
+
+// localhost:8080/rgen/<classid>  -> CRUD
 }
