@@ -1,5 +1,14 @@
 package mg.util
 
-fun main(args: Array<String>) {
-    println("Hello World!")
+import java.util.*
+
+object Common {
+
+    fun hasContent(candidate: String?): Boolean = when {
+        candidate != null && candidate.isNotEmpty() -> true
+        else -> false
+    }
+
+
 }
+
