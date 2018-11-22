@@ -11,8 +11,18 @@ class DBConfig(config: Config) {
     private var properties = Properties()
     private var dbDriver: String? = null
     private var dbUrl: String? = null
-    private var userName: String? = null
-    private var password: String? = null
+    private var dbUserName: String? = null
+    private var dbPassword: String? = null
+
+    init {
+        requireNonNull(config, "config $STR_CAN_NOT_BE_NULL")
+        properties = config.loadProperties()
+
+        dbDriver = requireNonNull(properties.getProperty(DB_DRIVER), DB_DRIVER + NOT_DEFINED_IN_PROPERTIES)
+        dbUrl = requireNonNull(properties.getProperty(DB_URL), DB_URL + NOT_DEFINED_IN_PROPERTIES)
+        dbUserName = requireNonNull(properties.getProperty(DB_USER_NAME), DB_USER_NAME + NOT_DEFINED_IN_PROPERTIES)
+        dbPassword = requireNonNull(properties.getProperty(DB_PASSWORD), DB_PASSWORD + NOT_DEFINED_IN_PROPERTIES)
+    }
 
     @get:Synchronized
     @set:Synchronized
@@ -26,33 +36,23 @@ class DBConfig(config: Config) {
 
     private fun getDatasource(): DataSource {
         val basicDataSource = BasicDataSource()
-        basicDataSource.driverClassName = dbDriver
-        basicDataSource.url = dbUrl
-        basicDataSource.username = userName
-        basicDataSource.password = password
+        with (basicDataSource) {
+            driverClassName = dbDriver
+            url = dbUrl
+            username = dbUserName
+            password = dbPassword
+        }
         return basicDataSource
     }
 
     val connection: Connection
         get() = dataSource?.connection ?: throw IllegalArgumentException("Datasource not defined.")
 
-    init {
-        requireNonNull(config, canNotBeNull("config"))
-        properties = config.loadProperties()
-
-        dbDriver = requireNonNull(properties.getProperty(DB_DRIVER), DB_DRIVER + NOT_DEFINED_IN_PROPERTIES)
-        dbUrl = requireNonNull(properties.getProperty(DB_URL), DB_URL + NOT_DEFINED_IN_PROPERTIES)
-        userName = requireNonNull(properties.getProperty(USER_NAME), USER_NAME + NOT_DEFINED_IN_PROPERTIES)
-        password = requireNonNull(properties.getProperty(PASSWORD), PASSWORD + NOT_DEFINED_IN_PROPERTIES)
-    }
-
-    private fun canNotBeNull(str: String) = "$str can not be null"
-
     companion object {
-
+        const val STR_CAN_NOT_BE_NULL = "can not be null"
         const val NOT_DEFINED_IN_PROPERTIES = " not defined in properties."
-        const val USER_NAME = "userName"
-        const val PASSWORD = "password"
+        const val DB_USER_NAME = "userName"
+        const val DB_PASSWORD = "password"
         const val DB_URL = "dbUrl"
         const val DB_DRIVER = "dbDriver"
     }
