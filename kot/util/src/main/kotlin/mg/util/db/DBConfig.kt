@@ -18,24 +18,23 @@ class DBConfig(config: Config) {
     @set:Synchronized
     private var dataSource: DataSource? = null
         get() {
-            return if (field == null) {
-
-                val basicDataSource = BasicDataSource()
-                basicDataSource.driverClassName = dbDriver
-                basicDataSource.url = dbUrl
-                basicDataSource.username = userName
-                basicDataSource.password = password
-
-                this.dataSource = basicDataSource
-                field
-
-            } else {
-                field
+            return when (field) {
+                null -> { field = getDatasource(); field }
+                else -> field
             }
         }
 
-    val connection: Connection?
-        get() = dataSource?.connection
+    private fun getDatasource(): DataSource {
+        val basicDataSource = BasicDataSource()
+        basicDataSource.driverClassName = dbDriver
+        basicDataSource.url = dbUrl
+        basicDataSource.username = userName
+        basicDataSource.password = password
+        return basicDataSource
+    }
+
+    val connection: Connection
+        get() = dataSource?.connection ?: throw IllegalArgumentException("Datasource not defined.")
 
     init {
         requireNonNull(config, canNotBeNull("config"))
