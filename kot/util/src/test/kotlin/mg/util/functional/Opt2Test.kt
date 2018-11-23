@@ -261,16 +261,16 @@ internal class Opt2Test {
 
         val opt = Opt2.of(1)
 
-        val biOpt = opt.caseOf({ i -> i == 1 }, { i -> i + 1 })
+        val biOpt = opt.case({ i -> i == 1 }, { i -> i + 1 })
 
         assertNotNull(biOpt)
         assertEquals(2, biOpt.right().get())
 
         val candidate = Opt2
                 .of(10)
-                .caseOf({ it == 5 }, { it + 100 }) // predicate is false, not mapped here
-                .caseOf({ it == 10 }, { it + 50 }) // predicate is true, the mapping is applied
-                .caseOf({ it == 20 }, { it + 10 }) // predicate is true, but since the previous result is stored in the right no mapping is done
+                .case({ it == 5 }, { it + 100 }) // predicate is false, not mapped here
+                .case({ it == 10 }, { it + 50 }) // predicate is true, the mapping is applied
+                .case({ it == 20 }, { it + 10 }) // predicate is true, but since the previous result is stored in the right no mapping is done
 
         assertNotNull(candidate)
         assertNotNull(candidate.right())

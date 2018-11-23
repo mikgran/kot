@@ -53,8 +53,8 @@ class Opt2<T : Any> {
                 .getOrElse(BiOpt2.of(of(value), empty()))
     }
 
-    fun <V : Any> caseOf(predicate: (T) -> Boolean,
-                         mapper: (T) -> V): BiOpt2<T, V> {
+    fun <V : Any> case(predicate: (T) -> Boolean,
+                       mapper: (T) -> V): BiOpt2<T, V> {
 
         if (isPresent() && predicate(lazyT)) {
 
