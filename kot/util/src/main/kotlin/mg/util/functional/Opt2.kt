@@ -39,7 +39,7 @@ class Opt2<T : Any> {
 
     @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
-                                 filter: (R?) -> Boolean,
+                                 predicate: (R) -> Boolean,
                                  mapper: (R) -> V): BiOpt2<T, V> {
 
         // maps and filters only non null values of the same class.
@@ -47,16 +47,16 @@ class Opt2<T : Any> {
         return filter { isPresent() }
                 .filter { isValueClassSameAsRefClass(ref) }
                 .map { it as R }
-                .filter(filter)
+                .filter(predicate)
                 .map(mapper)
                 .map { v -> BiOpt2.of(lazyT, v) }
                 .getOrElse(BiOpt2.of(of(value), empty()))
     }
 
-    fun <V : Any> caseOf(predicate: (T?) -> Boolean,
+    fun <V : Any> caseOf(predicate: (T) -> Boolean,
                          mapper: (T) -> V): BiOpt2<T, V> {
 
-        if (isPresent() && predicate(value)) {
+        if (isPresent() && predicate(lazyT)) {
 
             val newRight = mapper(lazyT)
             return BiOpt2.of(lazyT, newRight)
