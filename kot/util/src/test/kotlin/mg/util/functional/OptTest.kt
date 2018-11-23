@@ -217,7 +217,7 @@ internal class OptTest {
         val candidate = value.match(3, { true }, { s -> s as Int + 1 })
 
         assertNotNull(candidate)
-        assertEquals("$VALUE", candidate.left().get())
+        assertEquals(VALUE, candidate.left().get())
     }
 
     @Test

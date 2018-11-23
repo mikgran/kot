@@ -1,14 +1,15 @@
 package mg.util.functional
 
-class Opt2<T> {
+import java.util.*
+
+class Opt2<T : Any> {
 
     /*
         The lazyT should be operated behind an isPresent() null check always,
         therefore value!! will never throw an exception.
-        The cost is a lot slower eval with mapper(lazyT) than mapper(value).
+        The cost is a lot slower eval with mapper(lazyT) than with mapper(value).
     */
     private val lazyT: T by lazy { value!! }
-
     private var value: T? = null
 
     constructor()
@@ -17,7 +18,7 @@ class Opt2<T> {
         value = t
     }
 
-    private fun isPresent(): Boolean = value != null
+    fun isPresent(): Boolean = value != null
 
     fun get() = value
 
@@ -36,23 +37,101 @@ class Opt2<T> {
         else -> empty()
     }
 
+    @Suppress("UNCHECKED_CAST")
+    fun <R : Any, V : Any> match(ref: R,
+                                 filter: (R?) -> Boolean,
+                                 mapper: (R) -> V): BiOpt2<T, V> {
+
+        // maps and filters only non null values of the same class.
+        // returns BiOpt.of(oldValue, newValue/null)
+        return filter { isPresent() }
+                .filter { isValueClassSameAsRefClass(ref) }
+                .map { it as R }
+                .filter(filter)
+                .map(mapper)
+                .map { v -> BiOpt2.of(lazyT, v) }
+                .getOrElse(BiOpt2.of(of(value), empty()))
+    }
+
+    fun <V : Any> caseOf(predicate: (T?) -> Boolean,
+                         mapper: (T) -> V): BiOpt2<T, V> {
+
+        if (isPresent() && predicate(value)) {
+
+            val newRight = mapper(lazyT)
+            return BiOpt2.of(lazyT, newRight)
+        }
+
+        return BiOpt2.of(Opt2.of(value), Opt2.empty())
+    }
+
+    private fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
+
+        // no reified
+        return value?.let {
+            val valueAsAny = it as Any
+            valueAsAny::class == ref::class
+        } ?: false
+    }
+
+    fun getOrElse(default: T): T {
+        return when {
+            isPresent() -> lazyT
+            else -> default
+        }
+    }
+
+    fun <R : Any> getAndMap(mapper: (T) -> R): R? {
+        return when {
+            isPresent() -> mapper(lazyT)
+            else -> null
+        }
+    }
+
+    fun getOrElseThrow(exceptionProducer: () -> Throwable): T? = when {
+        isPresent() -> value
+        else -> throw exceptionProducer()
+    }
+
+    fun ifPresent(consumer: (T) -> Unit): Opt2<T> {
+        if (isPresent()) {
+            consumer(lazyT)
+        }
+        return this
+    }
+
     override fun toString(): String = value?.toString() ?: ""
+
+    override fun equals(other: Any?): Boolean {
+
+        return when (other) {
+            !is Opt2<*> -> false
+            else -> {
+                val otherObj: Opt2<*> = other
+                value == otherObj.value
+            }
+        }
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hashCode(value)
+    }
 
     companion object Factory {
 
         @JvmStatic
-        fun <T> of(t: T): Opt2<T> = when (t) {
+        fun <T : Any> of(t: T?): Opt2<T> = when (t) {
             null -> empty()
             else -> Opt2(t)
         }
 
         @JvmStatic
-        fun <T> of(t: Opt2<T>): Opt2<T> = when {
-            t.isPresent() -> Opt2(t.value)
+        fun <T : Any> of(t: Opt2<T>): Opt2<T> = when {
+            t.isPresent() -> Opt2(t.lazyT)
             else -> empty()
         }
 
         @JvmStatic
-        fun <T> empty(): Opt2<T> = Opt2()
+        fun <T : Any> empty(): Opt2<T> = Opt2()
     }
 }
