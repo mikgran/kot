@@ -2,8 +2,10 @@ package mg.util.db
 
 import mg.util.functional.Opt
 import mg.util.functional.Opt2
+import org.apache.commons.lang3.math.NumberUtils.toInt
 import java.lang.IllegalArgumentException
 import java.sql.Connection
+import java.sql.ResultSet
 
 // Very crude object persistence solution
 class DB(connection: Connection) {
@@ -15,26 +17,30 @@ class DB(connection: Connection) {
         return 0 // default signal for zero changed objects/rows
     }
 
-    inline fun <reified T : Any> find(any: T): T {
+    fun <T : Any> find(any: T): T {
 
         if (connection.isClosed) {
             throw IllegalArgumentException("Find: Connection was closed.")
         }
 
-        val select1 = Opt.of(connection.createStatement())
-                .map { it?.executeQuery("select 1") }
-                .filter { it?.next() ?: false }
-                .map { it?.getString(1) }
-                .getOrElse("no results")
+//        val select1 = Opt.of(connection.createStatement())
+//                .map { it?.executeQuery("select 1") }
+//                .filter { it?.next() ?: false }
+//                .map { it?.getString(1) }
+//                .getOrElse("no results")
 
         val select2 = Opt2.of(connection.createStatement())
                 .map { it.executeQuery("select 2") }
-                .filter { it.next() }
+                .filter(ResultSet::next)
                 .map { it.getString(1) }
-                .getOrElse("no results2")
+                .match("", { it == "2" }, ::toInt)
+                .result()
+                .match(0, {it == 2 }, { it.toString() } )
+                .result()
+                .getOrElse("default")
 
 
-        println(select1)
+//        println(select1)
         println(select2)
 
 //        val statement = connection.createStatement()
@@ -44,7 +50,7 @@ class DB(connection: Connection) {
 //            println(string)
 //        }
 
-        return T::class.java.getConstructor().newInstance()
+        return Any() as T
 
         // ugly as fuck, but hey, reified½!
         // return T::class.java.getDeclaredConstructor().newInstance()

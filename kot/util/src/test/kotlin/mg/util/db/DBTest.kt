@@ -19,7 +19,7 @@ internal class DBTest {
             val connection = dbConfig.connection
             val db = DB(connection)
 
-            val person: Person = db.find(Person("name1", "name2"))
+            db.find(Person("name1", "name2"))
 
             //db.save(Person("firstName", "lastName"))
 
