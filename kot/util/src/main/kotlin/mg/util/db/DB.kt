@@ -1,11 +1,9 @@
 package mg.util.db
 
-import mg.util.functional.Opt
 import mg.util.functional.Opt2
-import org.apache.commons.lang3.math.NumberUtils.toInt
-import java.lang.IllegalArgumentException
 import java.sql.Connection
 import java.sql.ResultSet
+import kotlin.text.toInt
 
 // Very crude object persistence solution
 class DB(connection: Connection) {
@@ -33,9 +31,9 @@ class DB(connection: Connection) {
                 .map { it.executeQuery("select 2") }
                 .filter(ResultSet::next)
                 .map { it.getString(1) }
-                .match("", { it == "2" }, ::toInt)
+                .match("", { it == "2" }, String::toInt)
                 .result()
-                .match(0, {it == 2 }, { it.toString() } )
+                .match(0, { it == 2 }, { it.toString() })
                 .result()
                 .getOrElse("default")
 

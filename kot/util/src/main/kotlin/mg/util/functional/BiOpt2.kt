@@ -31,9 +31,7 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
     fun case(predicate: (T) -> Boolean,
              mapper: (T) -> V): BiOpt2<T, V> {
 
-        return filter { !right.isPresent() }
-                .filter { left.isPresent() }
-                .filter { predicate(left.get() as T) }
+        return this.filter { !right.isPresent() && left.isPresent() && predicate(left.get() as T) }
                 .left()
                 .map(mapper)
                 .map { newRight -> BiOpt2(left, Opt2(newRight)) }
