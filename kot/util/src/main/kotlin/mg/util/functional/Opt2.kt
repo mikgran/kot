@@ -44,25 +44,23 @@ class Opt2<T : Any> {
 
         // maps and filters only non null values of the same class.
         // returns BiOpt.of(oldValue, newValue/null)
-        return filter { isPresent() }
-                .filter { isValueClassSameAsRefClass(ref) }
+        return this.filter { isPresent() && isValueClassSameAsRefClass(ref) }
                 .map { it as R }
                 .filter(predicate)
                 .map(mapper)
                 .map { v -> BiOpt2.of(lazyT, v) }
-                .getOrElse(BiOpt2.of(of(value), empty()))
+                .getOrElse(getBiOpt2OfValueAndEmpty())
     }
+
+    private fun <V : Any> getBiOpt2OfValueAndEmpty(): BiOpt2<T, V> = BiOpt2.of(of(value), empty())
 
     fun <V : Any> case(predicate: (T) -> Boolean,
                        mapper: (T) -> V): BiOpt2<T, V> {
 
-        if (isPresent() && predicate(lazyT)) {
-
-            val newRight = mapper(lazyT)
-            return BiOpt2.of(lazyT, newRight)
-        }
-
-        return BiOpt2.of(Opt2.of(value), Opt2.empty())
+        return this.filter { isPresent() && predicate(lazyT) }
+                .map(mapper)
+                .map { newRight -> BiOpt2.of(lazyT, newRight) }
+                .getOrElse(getBiOpt2OfValueAndEmpty())
     }
 
     private fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
