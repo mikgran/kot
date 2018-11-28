@@ -45,18 +45,14 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
         else -> BiOpt2.empty()
     }
 
-    fun getLeftOrElseThrow(exceptionProducer: () -> Throwable): T? {
-        return when {
-            left.isPresent() -> left.get()
-            else -> throw exceptionProducer()
-        }
+    fun getLeftOrElseThrow(exceptionProducer: () -> Throwable): T? = when {
+        left.isPresent() -> left.get()
+        else -> throw exceptionProducer()
     }
 
-    fun getRightOrElseThrow(exceptionProducer: () -> Throwable): V? {
-        return when {
-            right.isPresent() -> right.get()
-            else -> throw exceptionProducer()
-        }
+    fun getRightOrElseThrow(exceptionProducer: () -> Throwable): V? = when {
+        right.isPresent() -> right.get()
+        else -> throw exceptionProducer()
     }
 
     companion object Factory {

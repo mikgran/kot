@@ -72,18 +72,14 @@ class Opt2<T : Any> {
         } ?: false
     }
 
-    fun getOrElse(default: T): T {
-        return when {
-            isPresent() -> lazyT
-            else -> default
-        }
+    fun getOrElse(default: T): T = when {
+        isPresent() -> lazyT
+        else -> default
     }
 
-    fun <R : Any> getAndMap(mapper: (T) -> R): R? {
-        return when {
-            isPresent() -> mapper(lazyT)
-            else -> null
-        }
+    fun <R : Any> getAndMap(mapper: (T) -> R): R? = when {
+        isPresent() -> mapper(lazyT)
+        else -> null
     }
 
     fun getOrElseThrow(exceptionProducer: () -> Throwable): T? = when {
