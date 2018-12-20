@@ -1,4 +1,4 @@
-package mg.util
+package mg.util.common
 
 import java.util.*
 
@@ -8,7 +8,6 @@ object Common {
         candidate != null && candidate.isNotEmpty() -> true
         else -> false
     }
-
 
 }
 
