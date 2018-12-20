@@ -12,7 +12,7 @@ internal class RgenServiceTest {
         // map into db viable
 
         val rgenService = RgenService()
-        // rgenService.service()
+        rgenService.service()
     }
 
 

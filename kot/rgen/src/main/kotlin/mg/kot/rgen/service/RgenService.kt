@@ -1,5 +1,6 @@
 package mg.kot.rgen.service
 
+import mg.util.Common
 import mg.util.db.Config
 import mg.util.db.TestConfig
 import mg.util.db.DBConfig
@@ -33,6 +34,7 @@ class RgenService {
 
         println("persons: ${persons.size}")
         println("persons: $persons")
+
     }
 }
 

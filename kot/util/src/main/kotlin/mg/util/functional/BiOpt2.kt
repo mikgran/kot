@@ -40,7 +40,6 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
 
     @Suppress("UNCHECKED_CAST")
     fun filter(filter: (T) -> Boolean): BiOpt2<T, V> = when {
-
         left.isPresent() && filter(left.get() as T) -> this
         else -> BiOpt2.empty()
     }
