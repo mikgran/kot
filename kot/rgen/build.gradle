@@ -11,8 +11,8 @@ dependencies {
     compile 'org.eclipse.jetty:jetty-servlet:9.4.13.v20181111'
     compile 'org.eclipse.jetty:jetty-server:9.4.13.v20181111'
     compile 'javax.xml.bind:jaxb-api:2.1'
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+//    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+//    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
 
 group = 'mg.kot'
