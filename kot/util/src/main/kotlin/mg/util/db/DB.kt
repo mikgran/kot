@@ -12,6 +12,25 @@ class DB(connection: Connection) {
 
     fun <T> save(any: T): Int {
 
+        /*
+            - don't use java/mg.util.persist.DB code at all
+            - obtain metadata from the T
+            - process metadata
+                - build object to relational sql mapping
+                - create a unique meta signature ?
+                    - persons.firstName-persons.lastName
+            - create table and relations tables if necessary
+            - persist all parent object and related objects
+         */
+
+        // process metadata
+        // - get table structure, cache?
+
+
+
+
+
+
         return 0 // default signal for zero changed objects/rows
     }
 
@@ -27,19 +46,19 @@ class DB(connection: Connection) {
 //                .map { it?.getString(1) }
 //                .getOrElse("no results")
 
-        val select2 = Opt2.of(connection.createStatement())
-                .map { it.executeQuery("select 2") }
-                .filter(ResultSet::next)
-                .map { it.getString(1) }
-                .match("", { it == "2" }, String::toInt)
-                .result()
-                .match(0, { it == 2 }, { it.toString() })
-                .result()
-                .getOrElse("default")
+//        val select2 = Opt2.of(connection.createStatement())
+//                .map { it.executeQuery("select 2") }
+//                .filter(ResultSet::next)
+//                .map { it.getString(1) }
+//                .match("", { it == "2" }, String::toInt)
+//                .result()
+//                .match(0, { it == 2 }, { it.toString() })
+//                .result()
+//                .getOrElse("default")
 
 
 //        println(select1)
-        println(select2)
+//        println(select2)
 
 //        val statement = connection.createStatement()
 //        val result = statement.executeQuery("select 1")

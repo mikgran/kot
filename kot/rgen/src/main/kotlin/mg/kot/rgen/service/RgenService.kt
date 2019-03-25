@@ -26,7 +26,7 @@ class RgenService {
         person2.lastName = "last name"
         person2.firstName = "first name"
 
-        db.save(person2)
+        // db.save(person2)
 
         val persons = db.findAllBy(person2)
 
