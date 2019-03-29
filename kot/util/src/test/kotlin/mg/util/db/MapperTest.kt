@@ -17,7 +17,7 @@ internal class MapperTest {
         val metadata = mapper.buildMetadata(person)
 
         assertNotNull(metadata)
-        assertEquals(2, metadata.fieldCount, "fieldCount should be 2")
+        assertEquals(4, metadata.fieldCount, "fieldCount should be 2")
 
     }
 

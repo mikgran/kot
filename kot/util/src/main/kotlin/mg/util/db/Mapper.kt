@@ -1,5 +1,7 @@
 package mg.util.db
 
+import kotlin.reflect.KProperty
+
 class Mapper {
 
 
@@ -17,19 +19,21 @@ class Mapper {
     // - build a deterministic unique name
     // - build definition of fields
 
-    fun <T: Any> buildMetadata(t: T) : Metadata {
+    fun <T : Any> buildMetadata(t: T): Metadata {
 
-        val ormMetadata = Metadata(0)
+        val metadata = Metadata(0)
 
-        print(t::class.members.size)
+        // print(t::class.members.size)
 
-        t::class.members.forEach{ m -> print(m) }
+        val membersOfT = t::class.members
 
+        val listOfMembers = membersOfT.filter { member -> member is KProperty<*> }
+                .toCollection(ArrayList())
 
+        listOfMembers.forEach { m -> println(m) }
 
-        return ormMetadata
+        return metadata
     }
-
 
 
 }
