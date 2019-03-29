@@ -30,7 +30,7 @@ internal class DBTest {
             val lName = "lastName"
             val queryString = "SELECT persons.firstname, persons.lastname FROM persons"
 
-            // creates tables and sets metadata
+            // creates tables and sets buildMetadata
             db.save(Person(fName, lName))
 
             val candidate = Opt2.of(connection)

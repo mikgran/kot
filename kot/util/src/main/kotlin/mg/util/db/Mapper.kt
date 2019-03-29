@@ -17,13 +17,13 @@ class Mapper {
     // - build a deterministic unique name
     // - build definition of fields
 
-    fun <T: Any> buildOrmMetadata(t: T) : OrmMetadata {
+    fun <T: Any> buildMetadata(t: T) : Metadata {
 
-        val ormMetadata = OrmMetadata(0)
+        val ormMetadata = Metadata(0)
 
         print(t::class.members.size)
 
-
+        t::class.members.forEach{ m -> print(m) }
 
 
 

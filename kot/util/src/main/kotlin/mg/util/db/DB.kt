@@ -14,8 +14,8 @@ class DB(connection: Connection) {
 
         /*
             - don't use java/mg.util.persist.DB code at all
-            - obtain metadata from the T
-            - process metadata
+            - obtain buildMetadata from the T
+            - process buildMetadata
                 - build object to relational sql mapping
                 - create a unique meta signature ?
                     - persons.firstName-persons.lastName
@@ -23,7 +23,7 @@ class DB(connection: Connection) {
             - persist all parent object and related objects
          */
 
-        // process metadata
+        // process buildMetadata
         // - get table structure, cache?
 
 
