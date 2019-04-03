@@ -5,23 +5,35 @@ import org.junit.jupiter.api.Test
 
 internal class MapperTest {
 
-    data class Person(val firstName: String = "", val lastName: String = "") : DBO()
+    data class Person(val firstName: String = "", val lastName: String = "")
 
     @Test
-    fun testMapping() {
+    fun testBuildingMetadata() {
 
-        val person = Person("firstName", "lastName")
+        val person =  Person("firstName", "lastName")
 
         val mapper = Mapper()
 
         val metadata = mapper.buildMetadata(person)
 
         assertNotNull(metadata)
-        assertEquals(4, metadata.fieldCount, "fieldCount should be 2")
-
+        assertEquals("Person", metadata.name)
+        assertTrue(metadata.uid.isNotEmpty())
     }
 
+    @Test
+    fun testBuildingUid() {
 
+        val firstName = "firstName"
+        val lastname = "lastName"
+
+        val mapper = Mapper()
+
+        val uidCandidate = mapper.buildUniqueId(Person(firstName, lastname))
+
+        assertNotNull(uidCandidate)
+        assertEquals("Person${(firstName + lastname).hashCode()}", uidCandidate)
+    }
 
 }
 

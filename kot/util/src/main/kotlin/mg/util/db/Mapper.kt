@@ -1,5 +1,8 @@
 package mg.util.db
 
+import mg.util.functional.Opt2
+import java.util.*
+import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty
 
 class Mapper {
@@ -21,19 +24,32 @@ class Mapper {
 
     fun <T : Any> buildMetadata(t: T): Metadata {
 
-        val metadata = Metadata(0)
+        val propertiesOfT = propertiesOfT(t)
 
-        // print(t::class.members.size)
+        val uid = buildUniqueId(t)
+
+        val name = t::class.simpleName ?: ""
+
+        return Metadata(propertiesOfT.size, name, uid)
+    }
+
+    private fun <T : Any> propertiesOfT(t: T): ArrayList<KCallable<*>> {
 
         val membersOfT = t::class.members
 
-        val listOfMembers = membersOfT.filter { member -> member is KProperty<*> }
+        return membersOfT.filter { member -> member is KProperty<*> }
                 .toCollection(ArrayList())
-
-        listOfMembers.forEach { m -> println(m) }
-
-        return metadata
     }
 
+    fun <T : Any> buildUniqueId(t: T): String {
+
+        val uid = Opt2.of(t)
+                .map(::propertiesOfT)
+                .filter { propertiesOfT -> propertiesOfT.size > 0 }
+                .map { propertiesOfT -> propertiesOfT.fold("") { n, p -> n + p.name } }
+                .map { foldedNames -> t::class.simpleName + foldedNames.hashCode() }
+
+        return uid.getOrElse("")
+    }
 
 }
