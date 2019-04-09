@@ -5,7 +5,7 @@ import java.util.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty
 
-class Mapper {
+class DBO {
 
 
     // ORM describe
@@ -21,6 +21,10 @@ class Mapper {
     // Methods:
     // - build a deterministic unique name
     // - build definition of fields
+    // - build access methods for each property
+
+    // Considerations:
+    // - cache all Metadata objects?
 
     fun <T : Any> buildMetadata(t: T): Metadata {
 

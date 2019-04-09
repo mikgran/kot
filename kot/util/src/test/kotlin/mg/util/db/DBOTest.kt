@@ -3,16 +3,21 @@ package mg.util.db
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-internal class MapperTest {
+internal class DBOTest {
 
     data class Person(val firstName: String = "", val lastName: String = "")
+
+    private val firstName = "firstName"
+    private val lastName = "lastName"
+
+    private fun testPerson() = Person(firstName, lastName)
 
     @Test
     fun testBuildingMetadata() {
 
-        val person =  Person("firstName", "lastName")
+        val person = testPerson()
 
-        val mapper = Mapper()
+        val mapper = DBO()
 
         val metadata = mapper.buildMetadata(person)
 
@@ -21,13 +26,27 @@ internal class MapperTest {
         assertTrue(metadata.uid.isNotEmpty())
     }
 
+//    @Test
+//    fun testBuildingMetadataToSql() {
+//
+//        val person = testPerson()
+//
+//        val mapper = DBO()
+//
+//        val metadata = mapper.buildMetadata(person)
+//
+//        assertNotNull(metadata)
+//        assertEquals("", "")
+//
+//    }
+
     @Test
     fun testBuildingUid() {
 
         val firstName = "firstName"
         val lastname = "lastName"
 
-        val mapper = Mapper()
+        val mapper = DBO()
 
         val uidCandidate = mapper.buildUniqueId(Person(firstName, lastname))
 

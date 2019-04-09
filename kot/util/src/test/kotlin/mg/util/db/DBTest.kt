@@ -12,7 +12,7 @@ internal class DBTest {
 
     private var dbConfig: DBConfig = DBConfig(TestConfig())
 
-    data class Person(val firstName: String = "", val lastName: String = "") : DBO()
+    data class Person(val firstName: String = "", val lastName: String = "") //  : DBO()
 
     // @Test
     fun test_saving() {
