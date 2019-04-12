@@ -10,35 +10,19 @@ internal class DBOTest {
     private val firstName = "firstName"
     private val lastName = "lastName"
 
-    private fun testPerson() = Person(firstName, lastName)
+    private val testPerson = Person(firstName, lastName)
 
     @Test
     fun testBuildingMetadata() {
 
-        val person = testPerson()
+        val dbo = DBO()
 
-        val mapper = DBO()
-
-        val metadata = mapper.buildMetadata(person)
+        val metadata = dbo.buildMetadata(testPerson)
 
         assertNotNull(metadata)
         assertEquals("Person", metadata.name)
         assertTrue(metadata.uid.isNotEmpty())
     }
-
-//    @Test
-//    fun testBuildingMetadataToSql() {
-//
-//        val person = testPerson()
-//
-//        val mapper = DBO()
-//
-//        val metadata = mapper.buildMetadata(person)
-//
-//        assertNotNull(metadata)
-//        assertEquals("", "")
-//
-//    }
 
     @Test
     fun testBuildingUid() {
@@ -46,12 +30,26 @@ internal class DBOTest {
         val firstName = "firstName"
         val lastname = "lastName"
 
-        val mapper = DBO()
+        val dbo = DBO()
 
-        val uidCandidate = mapper.buildUniqueId(Person(firstName, lastname))
+        val uidCandidate = dbo.buildUniqueId(Person(firstName, lastname))
 
         assertNotNull(uidCandidate)
         assertEquals("Person${(firstName + lastname).hashCode()}", uidCandidate)
+    }
+
+    @Test
+    fun testBuildingMetadataToSql() {
+
+        val dbo = DBO()
+
+        val metadata = dbo.buildMetadata(testPerson)
+
+//        val personSqlCandidate = MySQLMapper.createTable(metadata)
+//
+//        assertNotNull(personSqlCandidate)
+//        assertEquals("CREATE TABLE PERSONS(id MEDIUMINT NOT NULL AUTO_INCREMENT, firstname VARCHAR(64) NOT NULL, lastname VARCHAR(64) NOT NULL)", personSqlCandidate)
+
     }
 
 }

@@ -16,6 +16,8 @@ class DBConfig(config: Config) {
     private var dbPassword: String? = null
 
     init {
+        // TOIMPROVE: CLEANUP: use kotlin requireNotNull / require ?
+        // require(config, "config $STR_CAN_NOT_BE_NULL")
         requireNonNull(config, "config $STR_CAN_NOT_BE_NULL")
         properties = config.loadProperties()
 
