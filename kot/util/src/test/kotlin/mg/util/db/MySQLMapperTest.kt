@@ -25,7 +25,21 @@ internal class MySQLMapperTest {
         val createTableSqlCandidate = MySQLMapper.buildCreateTable(personMeta)
 
         assertNotNull(createTableSqlCandidate)
-        assertEquals("CREATE TABLE PERSONS(id MEDIUMINT NOT NULL AUTO_INCREMENT, firstname VARCHAR(64) NOT NULL, lastname VARCHAR(64) NOT NULL)", createTableSqlCandidate)
+        assertEquals("CREATE TABLE PERSONS(id MEDIUMINT NOT NULL AUTO_INCREMENT, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
 
+        // TOIMPROVE: test coverage for exceptions
+    }
+
+    @Test
+    fun testBuildTypeDefsForMetadata() {
+
+        val metadata = dbo.buildMetadata(person)
+
+        val typeDefsCandidate = MySQLMapper.buildTypeDefinitions(metadata)
+
+        val expectedTypeDefs = listOf("firstName VARCHAR(64) NOT NULL", "lastName VARCHAR(64) NOT NULL")
+
+        assertNotNull(typeDefsCandidate)
+        assertTrue(typeDefsCandidate.containsAll(expectedTypeDefs))
     }
 }

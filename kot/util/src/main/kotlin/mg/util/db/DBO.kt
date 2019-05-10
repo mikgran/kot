@@ -2,8 +2,11 @@ package mg.util.db
 
 import mg.util.functional.Opt2
 import java.util.*
+import java.util.function.Consumer
 import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.declaredMembers
+import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
 class DBO {
@@ -33,19 +36,21 @@ class DBO {
 
     fun <T : Any> buildMetadata(type: T): Metadata<T> {
 
-        val propertiesOfT = propertiesOfT(type)
-
+        val propertiesOfT: ArrayList<KCallable<*>> = propertiesOfT(type)
         val uid = buildUniqueId(type)
-
         val name = type::class.simpleName ?: ""
 
-        return Metadata(propertiesOfT.size, name, uid, type)
+        return Metadata(
+                propertiesOfT.size,
+                name,
+                uid,
+                type,
+                propertiesOfT
+        )
     }
 
     private fun <T : Any> propertiesOfT(t: T): ArrayList<KCallable<*>> {
-
-        return t::class.members
-                .filter { member -> member is KProperty<*> }
+        return t::class.memberProperties
                 .toCollection(ArrayList())
     }
 
@@ -60,6 +65,7 @@ class DBO {
         return uid.getOrElse("")
     }
 
+    // TODO: create object? some other func name?
     fun <T : Any> create(t : T) {
 
     }

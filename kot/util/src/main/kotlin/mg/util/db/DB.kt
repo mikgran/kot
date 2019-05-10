@@ -36,6 +36,7 @@ class DB(connection: Connection) {
         return 0 // default signal for zero changed objects and-or rows
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun <T : Any> find(any: T): T {
 
         if (connection.isClosed) {
