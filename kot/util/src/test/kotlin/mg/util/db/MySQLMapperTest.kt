@@ -25,7 +25,7 @@ internal class MySQLMapperTest {
         val createTableSqlCandidate = MySQLMapper.buildCreateTable(personMeta)
 
         assertNotNull(createTableSqlCandidate)
-        assertEquals("CREATE TABLE PERSONS(id MEDIUMINT NOT NULL AUTO_INCREMENT, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
+        assertEquals("CREATE TABLE ${personMeta.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
 
         // TOIMPROVE: test coverage for exceptions
     }

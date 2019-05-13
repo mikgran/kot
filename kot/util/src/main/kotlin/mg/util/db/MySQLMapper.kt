@@ -21,28 +21,19 @@ object MySQLMapper : SqlMapper {
         val typeDefinitionsCommaSeparated = Opt2.of(metadata)
                 .map { metadata -> buildTypeDefinitions(metadata) }
                 .map { listOfTypeDefinitions -> listOfTypeDefinitions.joinToString(", ") }
-                .getOrElseThrow { Exception("Unable to build create") }
+                .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
 
-        var createStringPreFix = "CREATE TABLE ${buildTableName(metadata)}(id MEDIUMINT NOT NULL AUTO_INCREMENT, "
+        var createStringPreFix = "CREATE TABLE ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT, "
         var createStringPostFix = ")"
 
         return "$createStringPreFix$typeDefinitionsCommaSeparated$createStringPostFix"
-    }
-
-    private fun <T: Any> buildTableName(metadata: Metadata<T>): String {
-
-        return Opt2.of(metadata)
-                .map { m -> m.name }
-                .map { m -> m.toUpperCase() }
-                .map { m -> if (m.endsWith("s", true)) m else m + "S"  }
-                .getOrElse("")
     }
 
     fun <T : Any> buildTypeDefinitions(metadata: Metadata<T>): List<String> {
 
         return Opt2.of(metadata)
                 .map { m -> m.type::class.declaredMemberProperties }
-                .map { p -> p.map { property -> getMySQLTypeString(property) } }
+                .map { mp -> mp.map { property -> getMySQLTypeString(property) } }
                 .getOrElse(emptyList())
     }
 
