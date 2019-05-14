@@ -31,7 +31,7 @@ internal class MySQLMapperTest {
     }
 
     @Test
-    fun testBuildTypeDefsForMetadata() {
+    fun testBuildSqlFieldDefinitionsForMetadata() {
 
         val metadata = dbo.buildMetadata(person)
 
@@ -42,4 +42,5 @@ internal class MySQLMapperTest {
         assertNotNull(typeDefsCandidate)
         assertTrue(typeDefsCandidate.containsAll(expectedTypeDefs))
     }
+
 }
