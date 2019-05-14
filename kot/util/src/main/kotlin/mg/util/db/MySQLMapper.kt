@@ -19,7 +19,7 @@ object MySQLMapper : SqlMapper {
     override fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
 
         val typeDefinitionsCommaSeparated = Opt2.of(metadata)
-                .map { metadata -> buildTypeDefinitions(metadata) }
+                .map { metadata -> buildSqlFieldDefs(metadata) }
                 .map { listOfTypeDefinitions -> listOfTypeDefinitions.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
 
@@ -29,7 +29,7 @@ object MySQLMapper : SqlMapper {
         return "$createStringPreFix$typeDefinitionsCommaSeparated$createStringPostFix"
     }
 
-    fun <T : Any> buildTypeDefinitions(metadata: Metadata<T>): List<String> {
+    fun <T : Any> buildSqlFieldDefs(metadata: Metadata<T>): List<String> {
 
         return Opt2.of(metadata)
                 .map { m -> m.type::class.declaredMemberProperties }
