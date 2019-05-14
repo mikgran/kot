@@ -19,8 +19,8 @@ object MySQLMapper : SqlMapper {
     override fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
 
         val typeDefinitionsCommaSeparated = Opt2.of(metadata)
-                .map { metadata -> buildSqlFieldDefs(metadata) }
-                .map { listOfTypeDefinitions -> listOfTypeDefinitions.joinToString(", ") }
+                .map { metadata -> buildSqlFieldDefinitions(metadata) }
+                .map { listOfFieldDefinitions -> listOfFieldDefinitions.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
 
         var createStringPreFix = "CREATE TABLE ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT, "
@@ -29,7 +29,7 @@ object MySQLMapper : SqlMapper {
         return "$createStringPreFix$typeDefinitionsCommaSeparated$createStringPostFix"
     }
 
-    fun <T : Any> buildSqlFieldDefs(metadata: Metadata<T>): List<String> {
+    fun <T : Any> buildSqlFieldDefinitions(metadata: Metadata<T>): List<String> {
 
         return Opt2.of(metadata)
                 .map { m -> m.type::class.declaredMemberProperties }

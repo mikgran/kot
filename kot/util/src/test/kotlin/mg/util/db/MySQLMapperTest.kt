@@ -35,7 +35,7 @@ internal class MySQLMapperTest {
 
         val metadata = dbo.buildMetadata(person)
 
-        val typeDefsCandidate = MySQLMapper.buildSqlFieldDefs(metadata)
+        val typeDefsCandidate = MySQLMapper.buildSqlFieldDefinitions(metadata)
 
         val expectedTypeDefs = listOf("firstName VARCHAR(64) NOT NULL", "lastName VARCHAR(64) NOT NULL")
 
