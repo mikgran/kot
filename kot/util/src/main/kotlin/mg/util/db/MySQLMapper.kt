@@ -13,12 +13,31 @@ object MySQLMapper : SqlMapper {
     }
 
     override fun <T : Any> buildInsert(metadata: Metadata<T>): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+        Opt2.of(metadata)
+                .map { m -> buildSqlInsert(m) }
+                .getOrElseThrow { Exception("Unable to build insert for ${metadata.type::class}") }
+
+        return ""
+    }
+
+    private fun <T> buildSqlInsert(metadata: Metadata<T>): String {
+
+        // fields
+        // fields values
+        // padding
+
+        val fieldsCommaSeparated = Opt2.of(metadata)
+                .map { m -> m.properties }
+                .map { p -> p }
+
+
+        return ""
     }
 
     override fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
 
-        val typeDefinitionsCommaSeparated = Opt2.of(metadata)
+        val sqlFieldDefinitionsCommaSeparated = Opt2.of(metadata)
                 .map { metadata -> buildSqlFieldDefinitions(metadata) }
                 .map { listOfFieldDefinitions -> listOfFieldDefinitions.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
@@ -26,7 +45,7 @@ object MySQLMapper : SqlMapper {
         var createStringPreFix = "CREATE TABLE ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT, "
         var createStringPostFix = ")"
 
-        return "$createStringPreFix$typeDefinitionsCommaSeparated$createStringPostFix"
+        return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
     }
 
     fun <T : Any> buildSqlFieldDefinitions(metadata: Metadata<T>): List<String> {
