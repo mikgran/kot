@@ -1,6 +1,8 @@
 package mg.util.db
 
+import mg.util.common.Common
 import mg.util.functional.Opt2
+import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
@@ -14,26 +16,37 @@ object MySQLMapper : SqlMapper {
 
     override fun <T : Any> buildInsert(metadata: Metadata<T>): String {
 
-        Opt2.of(metadata)
+        val sqlInsert = Opt2.of(metadata)
                 .map { m -> buildSqlInsert(m) }
                 .getOrElseThrow { Exception("Unable to build insert for ${metadata.type::class}") }
 
-        return ""
+        return sqlInsert ?: ""
     }
 
-    private fun <T> buildSqlInsert(metadata: Metadata<T>): String {
+    private fun <T : Any> buildSqlInsert(metadata: Metadata<T>): String {
 
-        // fields
-        // fields values
-        // padding
+        val padding1 = "INSERT INTO ${metadata.uid} ("
+        val padding2 = ") VALUES ("
+        val padding3 = ")"
 
-        val fieldsCommaSeparated = Opt2.of(metadata)
+        val properties = Opt2.of(metadata)
                 .map { m -> m.properties }
-                .map { p -> p }
+                .getOrElseThrow { Exception("No properties found in metadata") }
 
+        val fieldsCommaSeparated = Opt2.of(properties)
+                .map { p -> p.map { p -> p.name }.joinToString(", ") }
+                .filter(Common::hasContent)
+                .getOrElseThrow { Exception("Unable to create insert fields string (field1, field2)") }
 
-        return ""
+        val fieldsValuesCommaSeparated = Opt2.of(properties)
+                .map { p -> p.map { p -> "'${getFieldValueAsString(p, metadata.type)}'" }.joinToString(", ") }
+                .filter(Common::hasContent)
+                .getOrElseThrow { Exception("Unable to fetch field values for insert ('val1', 'val2')") }
+
+        return "$padding1$fieldsCommaSeparated$padding2$fieldsValuesCommaSeparated$padding3"
     }
+
+    private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
 
     override fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
 
