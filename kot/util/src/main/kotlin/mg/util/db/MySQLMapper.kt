@@ -17,7 +17,7 @@ object MySQLMapper : SqlMapper {
     override fun <T : Any> buildInsert(metadata: Metadata<T>): String {
 
         val sqlInsert = Opt2.of(metadata)
-                .map { m -> buildSqlInsert(m) }
+                .map(::buildSqlInsert)
                 .getOrElseThrow { Exception("Unable to build insert for ${metadata.type::class}") }
 
         return sqlInsert ?: ""
@@ -30,16 +30,16 @@ object MySQLMapper : SqlMapper {
         val padding3 = ")"
 
         val properties = Opt2.of(metadata)
-                .map { m -> m.properties }
+                .map { it.properties }
                 .getOrElseThrow { Exception("No properties found in metadata") }
 
         val fieldsCommaSeparated = Opt2.of(properties)
-                .map { p -> p.map { p -> p.name }.joinToString(", ") }
+                .map { it.joinToString(", ") { p -> p.name } }
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("Unable to create insert fields string (field1, field2)") }
 
         val fieldsValuesCommaSeparated = Opt2.of(properties)
-                .map { p -> p.map { p -> "'${getFieldValueAsString(p, metadata.type)}'" }.joinToString(", ") }
+                .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, metadata.type)}'" } }
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("Unable to fetch field values for insert ('val1', 'val2')") }
 
@@ -51,12 +51,12 @@ object MySQLMapper : SqlMapper {
     override fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
 
         val sqlFieldDefinitionsCommaSeparated = Opt2.of(metadata)
-                .map { metadata -> buildSqlFieldDefinitions(metadata) }
-                .map { listOfFieldDefinitions -> listOfFieldDefinitions.joinToString(", ") }
+                .map(::buildSqlFieldDefinitions)
+                .map { it.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
 
-        var createStringPreFix = "CREATE TABLE ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT, "
-        var createStringPostFix = ")"
+        val createStringPreFix = "CREATE TABLE ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT, "
+        val createStringPostFix = ")"
 
         return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
     }
@@ -64,8 +64,8 @@ object MySQLMapper : SqlMapper {
     fun <T : Any> buildSqlFieldDefinitions(metadata: Metadata<T>): List<String> {
 
         return Opt2.of(metadata)
-                .map { m -> m.type::class.declaredMemberProperties }
-                .map { mp -> mp.map { property -> getMySQLTypeString(property) } }
+                .map { it.type::class.declaredMemberProperties }
+                .map { it.map(::getMySQLTypeString) }
                 .getOrElse(emptyList())
     }
 
