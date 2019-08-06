@@ -11,7 +11,12 @@ import kotlin.reflect.full.declaredMemberProperties
 object MySQLMapper : SqlMapper {
 
     override fun <T : Any> buildFind(metadata: Metadata<T>): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+        val sqlFind = Opt2.of(metadata)
+                .map(::buildSqlFind)
+                .get()
+
+        return sqlFind ?: ""
     }
 
     override fun <T : Any> buildInsert(metadata: Metadata<T>): String {
@@ -85,8 +90,17 @@ object MySQLMapper : SqlMapper {
         return t.toString()
     }
 
-    fun <T : Any> find(t: T): String {
+    fun <T : Any> buildSqlFind(metadata: Metadata<T>): String {
 
-        return t.toString()
+        val columnNames = Opt2.of(metadata)
+                .map { it.type::class.declaredMemberProperties }
+                .map { d -> d.map { o -> o.name } }
+                .map { it.joinToString(", ") }
+                .getOrElseThrow { Exception("Unable to build find for ${metadata.type::class}") }
+
+        val padding1 = "SELECT "
+        val padding2 = " FROM "
+
+        return padding1 + columnNames + padding2 + metadata.uid
     }
 }

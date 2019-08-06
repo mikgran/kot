@@ -58,5 +58,19 @@ internal class MySQLMapperTest {
         assertEquals(expectedInsert, insertCandidate)
     }
 
+    @Test
+    fun testFinding() {
+
+        val personMetadata = dbo.buildMetadata(person)
+
+        val findCandidate = MySQLMapper.buildFind(personMetadata)
+
+        val expectedFind = "SELECT firstName, lastName FROM ${personMetadata.uid}"
+
+        assertNotNull(findCandidate)
+        assertEquals(expectedFind, findCandidate)
+    }
+
+
 
 }
