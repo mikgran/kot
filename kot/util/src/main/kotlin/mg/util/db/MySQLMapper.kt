@@ -70,18 +70,8 @@ object MySQLMapper : SqlMapper {
 
         return Opt2.of(metadata)
                 .map { it.type::class.declaredMemberProperties }
-                .map { it.map(::getMySQLTypeString) }
+                .map { it.map(TypeMapper::getTypeString) }
                 .getOrElse(emptyList())
-    }
-
-    private fun getMySQLTypeString(type: KProperty1<out Any, Any?>): String {
-
-        // TOIMPROVE: move to it's own class?
-        val kClass = type.returnType.classifier as KClass<*>
-        return when (kClass.simpleName) {
-            "String" -> "${type.name} VARCHAR(64) NOT NULL"
-            else -> ""
-        }
     }
 
     // TOIMPROVE: create direct sql mappers too?
