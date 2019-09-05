@@ -45,7 +45,6 @@ internal class MySQLMapperTest {
     }
 
     @Test
-    // @Disabled
     fun testBuildInsert() {
 
         val personMetadata = dbo.buildMetadata(person)
