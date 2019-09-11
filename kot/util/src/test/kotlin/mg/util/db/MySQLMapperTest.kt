@@ -1,14 +1,12 @@
 package mg.util.db
 
-import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 internal class MySQLMapperTest {
 
-    val person = DBOTest.Person("testname1", "testname2")
-    val dbo = DBO()
+    private val person = DBOTest.Person("testname1", "testname2")
+    private val dbo = DBO(SqlMapperFactory.getDefault())
 
     @Test
     fun find() {

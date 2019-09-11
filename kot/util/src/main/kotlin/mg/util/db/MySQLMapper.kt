@@ -3,8 +3,6 @@ package mg.util.db
 import mg.util.common.Common
 import mg.util.functional.Opt2
 import kotlin.reflect.KCallable
-import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
 // mysql dialect object to sql mapper
@@ -80,7 +78,7 @@ object MySQLMapper : SqlMapper {
         return t.toString()
     }
 
-    fun <T : Any> buildSqlFind(metadata: Metadata<T>): String {
+    private fun <T : Any> buildSqlFind(metadata: Metadata<T>): String {
 
         val columnNames = Opt2.of(metadata)
                 .map { it.type::class.declaredMemberProperties }

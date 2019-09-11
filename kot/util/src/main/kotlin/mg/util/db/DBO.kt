@@ -1,15 +1,14 @@
 package mg.util.db
 
 import mg.util.functional.Opt2
+import java.sql.Connection
 import java.util.*
-import java.util.function.Consumer
 import kotlin.reflect.KCallable
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
-class DBO {
+class DBO(mapperType: SqlMapper) {
+
 
     // ORM describe
     // Metadata:
@@ -66,7 +65,20 @@ class DBO {
     }
 
     // TODO: create object? some other func name?
-    fun <T : Any> create(t : T) {
+    fun <T : Any> save(t: T, connection: Connection) {
+
+        val insertSql = Opt2.of(t)
+                .map(::buildMetadata)
+                .map(MySQLMapper::buildInsert)
+                .getOrElseThrow { Exception("") }
+
+        val changed = Opt2.of(connection)
+                .filter { !connection.isClosed }
+                .ifMissing { throw Exception("Connection closed") }
+                .map(Connection::createStatement)
+                .ifMissing { throw Exception("Unable to create statement") }
+                .map { s -> s.executeUpdate(insertSql) }
+                .getOrElseThrow { Exception("Unable to save an object $t") }
 
     }
 

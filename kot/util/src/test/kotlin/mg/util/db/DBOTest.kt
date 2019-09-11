@@ -2,9 +2,10 @@ package mg.util.db
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import kotlin.reflect.jvm.isAccessible
 
 internal class DBOTest {
+
+    private var dbConfig: DBConfig = DBConfig(TestConfig())
 
     data class Person(val firstName: String = "", val lastName: String = "")
 
@@ -13,10 +14,11 @@ internal class DBOTest {
 
     private val testPerson = Person(firstName, lastName)
 
+    private val dbo = DBO(SqlMapperFactory.getDefault())
+
     @Test
     fun testBuildingMetadata() {
 
-        val dbo = DBO()
 
         val metadataCandidate: Metadata<Person> = dbo.buildMetadata(testPerson)
 
@@ -35,13 +37,20 @@ internal class DBOTest {
         val firstName = "firstName"
         val lastname = "lastName"
 
-        val dbo = DBO()
-
         val uidCandidate = dbo.buildUniqueId(Person(firstName, lastname))
 
         assertNotNull(uidCandidate)
         assertEquals("Person${(firstName + lastname).hashCode()}", uidCandidate)
     }
+
+    @Test
+    fun testCreate() {
+
+        val person = Person("first1", "last2")
+
+        dbo.save(person, dbConfig.connection)
+    }
+
 
 }
 

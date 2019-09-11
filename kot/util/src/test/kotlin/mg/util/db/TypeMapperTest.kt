@@ -8,7 +8,7 @@ import kotlin.reflect.full.declaredMemberProperties
 internal class TypeMapperTest {
 
     private val person = DBOTest.Person("testname1", "testname2")
-    private val dbo = DBO()
+    private val dbo = DBO(SqlMapperFactory.getDefault())
 
     @Test
     fun testMapping() {

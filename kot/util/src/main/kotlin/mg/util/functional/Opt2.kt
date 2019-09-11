@@ -32,6 +32,19 @@ class Opt2<T : Any> {
         else -> this
     }
 
+    fun ifMissing(block: () -> Unit): Opt2<T> {
+        if (!isPresent()) {
+            block()
+        }
+        return this
+    }
+
+    fun ifMissingThrow(exceptionSupplier: () -> Throwable) {
+        if (!isPresent()) {
+            throw exceptionSupplier()
+        }
+    }
+
     fun filter(predicate: (T) -> Boolean): Opt2<T> = when {
         isPresent() && predicate(lazyT) -> this
         else -> empty()

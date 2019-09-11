@@ -15,7 +15,7 @@ internal class DBTest {
     data class Person(val firstName: String = "", val lastName: String = "") //  : DBO()
 
     // @Test
-    fun test_saving() {
+    fun testSaving() {
 
         assertDoesNotThrow {
 

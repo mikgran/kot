@@ -8,7 +8,8 @@ import kotlin.text.toInt
 // Very crude type T persistence solution
 class DB(connection: Connection) {
 
-    val connection = connection
+    private val connection = connection
+
 
     fun <T> save(any: T): Int {
 
@@ -27,10 +28,6 @@ class DB(connection: Connection) {
         // - use DBO to obtain type T metadata
         // - use metadata to access the fields of the object
         // - use DBO to access fields of the type T via metadata
-
-
-
-
 
 
         return 0 // default signal for zero changed objects and-or rows

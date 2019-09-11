@@ -63,7 +63,7 @@ internal class Opt2Test {
     }
 
     @Test
-    fun test_ifEmpty() {
+    fun test_ifEmptyWithSupplier() {
 
         val opt = Opt2.of(VALUE)
 
@@ -91,6 +91,51 @@ internal class Opt2Test {
 
         assertNotNull(str2)
         assertEquals(ANOTHER_STRING, str2)
+    }
+
+    @Test
+    fun test_ifMissingWithSideEffects() {
+
+        var str = ""
+        val nullValue: String? = null
+
+        assertNotNull(str)
+        assertEquals("", str)
+
+        Opt2.of(nullValue)
+                .ifMissing { str = "text" }
+
+        assertNotNull(str)
+        assertEquals("text", str)
+
+        var str2 = "text2"
+
+        assertNotNull(str2)
+        assertEquals("text2", str2)
+
+        Opt2.of(str2)
+                .ifMissing { str2 = "" }
+
+        assertNotNull(str2)
+        assertEquals("text2", str2)
+    }
+
+    @Test
+    fun test_isMissingThrow() {
+
+        val nullValue: String? = null
+
+        assertThrows(Exception::class.java) {
+
+            Opt2.of(nullValue)
+                    .ifMissingThrow { Exception() }
+        }
+
+        assertDoesNotThrow {
+
+            Opt2.of(VALUE)
+                    .ifMissingThrow { Exception() }
+        }
     }
 
     @Test
