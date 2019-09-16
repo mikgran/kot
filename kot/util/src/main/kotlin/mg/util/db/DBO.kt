@@ -74,9 +74,9 @@ class DBO(mapperType: SqlMapper) {
 
         val changed = Opt2.of(connection)
                 .filter { !connection.isClosed }
-                .ifMissing { throw Exception("Connection closed") }
+                .ifMissingThrow { Exception("Connection closed") }
                 .map(Connection::createStatement)
-                .ifMissing { throw Exception("Unable to create statement") }
+                .ifMissingThrow { Exception("Unable to create statement") }
                 .map { s -> s.executeUpdate(insertSql) }
                 .getOrElseThrow { Exception("Unable to save an object $t") }
 
