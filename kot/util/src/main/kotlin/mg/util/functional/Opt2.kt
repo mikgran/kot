@@ -39,10 +39,13 @@ class Opt2<T : Any> {
         return this
     }
 
-    fun ifMissingThrow(exceptionSupplier: () -> Throwable) {
+
+
+    fun ifMissingThrow(exceptionSupplier: () -> Throwable): Opt2<T> {
         if (!isPresent()) {
             throw exceptionSupplier()
         }
+        return this
     }
 
     fun filter(predicate: (T) -> Boolean): Opt2<T> = when {
