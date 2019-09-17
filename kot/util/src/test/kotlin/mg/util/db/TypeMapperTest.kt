@@ -1,8 +1,8 @@
 package mg.util.db
 
 import mg.util.functional.Opt2
-import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import kotlin.reflect.full.declaredMemberProperties
 
 internal class TypeMapperTest {
