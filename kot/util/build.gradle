@@ -3,8 +3,6 @@ description = 'mg-kot-util'
 
 dependencies {
 
-    compile files('libs/util.jar')
-
     compile 'mg.util:util:1.0-SNAPSHOT'
 
     // https://mvnrepository.com/artifact/commons-dbcp/commons-dbcp
