@@ -43,7 +43,7 @@ subprojects {
 
     repositories {
         flatDir { dir rootProject.file( 'libs' ) }
-        mavenLocal()
+        // mavenLocal()
         maven { url "http://repo.maven.apache.org/maven2" }
     }
 
