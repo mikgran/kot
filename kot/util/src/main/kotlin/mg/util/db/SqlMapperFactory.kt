@@ -1,6 +1,10 @@
 package mg.util.db
 
 object SqlMapperFactory {
-    fun getDefault(): SqlMapper = MySQLMapper
-    fun getMySQLMapper() :SqlMapper = MySQLMapper
+
+    fun get(type : String?) : SqlMapper = when (type) {
+        "mysql" -> MySQLMapper
+        else -> MySQLMapper
+    }
+
 }

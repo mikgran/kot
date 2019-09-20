@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 internal class MySQLMapperTest {
 
     private val person = DBOTest.Person("testname1", "testname2")
-    private val dbo = DBO(SqlMapperFactory.getDefault())
+    private val dbo = DBO(SqlMapperFactory.get("mysql"))
 
     @Test
     fun find() {
@@ -24,7 +24,7 @@ internal class MySQLMapperTest {
         val createTableSqlCandidate = MySQLMapper.buildCreateTable(personMetadata)
 
         assertNotNull(createTableSqlCandidate)
-        assertEquals("CREATE TABLE ${personMetadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
+        assertEquals("CREATE TABLE IF NOT EXISTS ${personMetadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
 
         // TOIMPROVE: test coverage for exceptions
     }

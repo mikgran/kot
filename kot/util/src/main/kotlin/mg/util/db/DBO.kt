@@ -2,12 +2,13 @@ package mg.util.db
 
 import mg.util.functional.Opt2
 import java.sql.Connection
+import java.sql.Statement
 import java.util.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
-class DBO(mapperType: SqlMapper) {
+class DBO(val mapper: SqlMapper) {
 
 
     // ORM describe
@@ -69,17 +70,41 @@ class DBO(mapperType: SqlMapper) {
 
         val insertSql = Opt2.of(t)
                 .map(::buildMetadata)
-                .map(MySQLMapper::buildInsert)
-                .getOrElseThrow { Exception("") }
+                .map(mapper::buildInsert)
+                .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
-        val changed = Opt2.of(connection)
-                .filter { !connection.isClosed }
-                .ifMissingThrow { Exception("Connection closed") }
-                .map(Connection::createStatement)
-                .ifMissingThrow { Exception("Unable to create statement") }
+        Opt2.of(getStatement(connection))
                 .map { s -> s.executeUpdate(insertSql) }
-                .getOrElseThrow { Exception("Unable to save an object $t") }
+                .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
+    }
 
+    private fun getStatement(connection: Connection): Statement? {
+        return Opt2.of(connection)
+                .filter { !it.isClosed }
+                .ifMissingThrow { Exception(CONNECTION_WAS_CLOSED) }
+                .map(Connection::createStatement)
+                .getOrElseThrow { Exception(UNABLE_TO_CREATE_STATEMENT) }
+    }
+
+    fun <T : Any> ensureTable(t: T, connection: Connection) {
+
+        val createTableSql = Opt2.of(t)
+                .map(::buildMetadata)
+                .map(mapper::buildCreateTable)
+                .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
+
+        Opt2.of(getStatement(connection))
+                .map { s -> s.executeUpdate(createTableSql) }
+                .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
+    }
+
+    companion object {
+        const val CONNECTION_WAS_CLOSED = "Connection was closed while attempting to read from it"
+        const val UNABLE_TO_BUILD_INSERT = "Unable to build insert from: "
+        const val UNABLE_TO_DO_INSERT = "Unable to save an object: "
+        const val UNABLE_TO_CREATE_STATEMENT = "Unable to build create statement"
+        const val UNABLE_TO_BUILD_CREATE_TABLE = "Unable to build create table"
+        const val UNABLE_TO_CREATE_TABLE = "Unable to create a new table"
     }
 
 }

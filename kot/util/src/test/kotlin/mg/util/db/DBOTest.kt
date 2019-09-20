@@ -14,7 +14,7 @@ internal class DBOTest {
 
     private val testPerson = Person(firstName, lastName)
 
-    private val dbo = DBO(SqlMapperFactory.getDefault())
+    private val dbo = DBO(SqlMapperFactory.get("mysql"))
 
     @Test
     fun testBuildingMetadata() {
@@ -47,6 +47,8 @@ internal class DBOTest {
     fun testCreate() {
 
         val person = Person("first1", "last2")
+
+        dbo.ensureTable(person, dbConfig.connection)
 
         dbo.save(person, dbConfig.connection)
     }

@@ -58,7 +58,7 @@ object MySQLMapper : SqlMapper {
                 .map { it.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
 
-        val createStringPreFix = "CREATE TABLE ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT, "
+        val createStringPreFix = "CREATE TABLE IF NOT EXISTS ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
         val createStringPostFix = ")"
 
         return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
