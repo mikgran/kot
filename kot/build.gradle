@@ -14,8 +14,6 @@ buildscript {
 
 allprojects {
 
-    apply plugin: 'maven'
-
     group = 'mg.kot'
     version = '1.0-SNAPSHOT'
 }
