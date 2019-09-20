@@ -1,7 +1,12 @@
 package mg.util.db
 
+import mg.util.functional.Opt2
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.Statement
 
 internal class DBOTest {
 
@@ -13,6 +18,7 @@ internal class DBOTest {
     private val lastName = "lastName"
 
     private val testPerson = Person(firstName, lastName)
+    private val testPerson2 = Person("first1", "last2")
 
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
 
@@ -43,16 +49,50 @@ internal class DBOTest {
         assertEquals("Person${(firstName + lastname).hashCode()}", uidCandidate)
     }
 
+    // TOIMPROVE: test coverage
     @Test
-    fun testCreate() {
+    fun testSavePersonData() {
 
-        val person = Person("first1", "last2")
+        dbo.ensureTable(testPerson2, dbConfig.connection)
 
-        dbo.ensureTable(person, dbConfig.connection)
+        dbo.save(testPerson2, dbConfig.connection)
 
-        dbo.save(person, dbConfig.connection)
+        val candidate = Opt2.of(dbConfig.connection)
+                .map(Connection::createStatement)
+                .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildMetadata(testPerson2).uid}") }
+                .filter(ResultSet::next)
+                .map { rs -> "${rs.getString(2)} ${rs.getString(3)}" }
+                .getOrElseThrow { Exception("Test failed: no test data found") }
+
+        assertNotNull(candidate)
+        assertEquals("first1 last2", candidate)
     }
 
+
+    companion object {
+
+        @AfterAll
+        @JvmStatic
+        internal fun afterAll() {
+
+            val person = Person("first1", "last2")
+            val dbConfig = DBConfig(TestConfig())
+            val dbo = DBO(SqlMapperFactory.get("mysql"))
+            val uidTableName = dbo.buildMetadata(person).uid
+
+            getStatementFromConfig(dbConfig)
+                    .map { s -> s.executeUpdate("DELETE FROM $uidTableName") }
+
+            getStatementFromConfig(dbConfig)
+                    .map { s -> s.executeUpdate("DROP TABLE $uidTableName") }
+        }
+
+        private fun getStatementFromConfig(dbConfig: DBConfig): Opt2<Statement> {
+            return Opt2.of(dbConfig.connection)
+                    .map(Connection::createStatement)
+        }
+
+    }
 
 }
 
