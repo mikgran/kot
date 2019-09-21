@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
-import java.sql.Statement
 
 internal class DBOTest {
 
@@ -80,16 +79,12 @@ internal class DBOTest {
             val dbo = DBO(SqlMapperFactory.get("mysql"))
             val uidTableName = dbo.buildMetadata(person).uid
 
-            getStatementFromConfig(dbConfig)
-                    .map { s -> s.executeUpdate("DELETE FROM $uidTableName") }
-
-            getStatementFromConfig(dbConfig)
-                    .map { s -> s.executeUpdate("DROP TABLE $uidTableName") }
-        }
-
-        private fun getStatementFromConfig(dbConfig: DBConfig): Opt2<Statement> {
-            return Opt2.of(dbConfig.connection)
+            val statement = Opt2.of(dbConfig.connection)
                     .map(Connection::createStatement)
+
+            statement.map { s -> s.executeUpdate("DELETE FROM $uidTableName") }
+
+            statement.map { s -> s.executeUpdate("DROP TABLE $uidTableName") }
         }
 
     }
