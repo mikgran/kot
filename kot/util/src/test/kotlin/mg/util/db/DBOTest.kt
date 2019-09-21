@@ -82,9 +82,9 @@ internal class DBOTest {
             val statement = Opt2.of(dbConfig.connection)
                     .map(Connection::createStatement)
 
-            statement.map { s -> s.executeUpdate("DELETE FROM $uidTableName") }
+            statement.map { it.executeUpdate("DELETE FROM $uidTableName") }
 
-            statement.map { s -> s.executeUpdate("DROP TABLE $uidTableName") }
+            statement.map { it.executeUpdate("DROP TABLE $uidTableName") }
         }
 
     }
