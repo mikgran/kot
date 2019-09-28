@@ -22,6 +22,8 @@ internal class TypeMapperTest {
 
         val expectedFieldDefinitions = listOf("firstName VARCHAR(64) NOT NULL", "lastName VARCHAR(64) NOT NULL")
 
+        println(candidates)
+
         assertNotNull(candidates)
         assertEquals(2, candidates.size)
         assertTrue(expectedFieldDefinitions.containsAll(candidates))

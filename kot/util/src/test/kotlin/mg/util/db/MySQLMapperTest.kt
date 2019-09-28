@@ -1,20 +1,13 @@
 package mg.util.db
 
+import mg.util.db.DBOTest.Person
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class MySQLMapperTest {
 
-    private val person = DBOTest.Person("testname1", "testname2")
+    private val person = Person("testname1", "testname2")
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
-
-    @Test
-    fun find() {
-    }
-
-    @Test
-    fun insert() {
-    }
 
     @Test
     fun testCreateTable() {
@@ -67,7 +60,4 @@ internal class MySQLMapperTest {
         assertNotNull(findCandidate)
         assertEquals(expectedFind, findCandidate)
     }
-
-
-
 }
