@@ -47,7 +47,7 @@ internal class DBOTest {
 
     // TOIMPROVE: test coverage
     @Test
-    fun testSaveAndFindAndMap() {
+    fun testSaveMapAndFind() {
 
         testSave()
 
@@ -59,22 +59,30 @@ internal class DBOTest {
 
     private fun testMap() {
 
-        // pass a constructor of the object
-
         val persons: ResultSet? = Opt2.of(dbConfig.connection)
                 .map(Connection::createStatement)
                 .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildMetadata(testPerson2).uid}") }
                 .filter(ResultSet::next)
                 .getOrElseThrow { Exception("Test failed: no test data found") }
-        
+
         val candidateMapped = dbo.map(Person(), persons)
 
         assertNotNull(candidateMapped)
-        assertEquals("first1", candidateMapped.firstName)
-        assertEquals("last2", candidateMapped.lastName)
+        assertTrue(candidateMapped.isNotEmpty())
+        assertTrue(contains("first1", "last2", candidateMapped))
     }
 
-    private fun testFind(): List<Person> {
+    private fun contains(firstName: String, lastName: String, candidateMapped: List<Person>): Boolean {
+        var found = false
+        candidateMapped.forEach {
+            if (firstName == it.firstName && lastName == it.lastName) {
+                found = true
+            }
+        }
+        return found
+    }
+
+    private fun testFind() {
         val test1 = "test1"
         val test2 = "test2"
 
@@ -87,10 +95,8 @@ internal class DBOTest {
         val candidateList = dbo.find(personTest2, dbConfig.connection)
 
         assertNotNull(candidateList)
-        assertEquals(test1, candidateList[0].firstName)
-        assertEquals(test2, candidateList[0].lastName)
-
-        return candidateList
+        assertTrue(candidateList.isNotEmpty())
+        assertTrue(contains(test1, test2, candidateList))
     }
 
     private fun testSave() {

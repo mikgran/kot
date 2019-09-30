@@ -3,7 +3,6 @@ package mg.util.db
 import mg.util.functional.Opt2
 import java.sql.Connection
 import java.sql.ResultSet
-import java.sql.ResultSetMetaData
 import java.sql.Statement
 import java.util.*
 import kotlin.reflect.KCallable
@@ -11,7 +10,6 @@ import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
 class DBO(val mapper: SqlMapper) {
-
 
     // ORM describe
     // Metadata:
@@ -112,52 +110,54 @@ class DBO(val mapper: SqlMapper) {
         val mappedT = Opt2.of(getStatement(connection))
                 .map { s -> s.executeQuery(findSql) }
                 .filter(ResultSet::next)
-                .map { rs -> map(t, rs) } // mapping function here
+                .map { rs -> map(t, rs) }
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
 
-        return Opt2.of(mappedT)
-                .map { listOf(it) }
-                .ifPresent (::println)
-                .getOrElse(emptyList())
+        return mappedT ?: emptyList()
     }
 
-    fun <T : Any> map(t: T, results: ResultSet?): T {
+    fun <T : Any> map(t: T, results: ResultSet?): List<T> {
 
         // Person(firstName = "", lastName = "") -> find out which columns correspond to which object fields.
-        val resultSet = Opt2.of(results)
-                .ifPresent(ResultSet::beforeFirst)
-                .filter(ResultSet::next)
-                .getOrElseThrow { Exception("No data in ResultSet to map") }
+        val containsIdColumn = Opt2.of(results)
+                .map(ResultSet::getMetaData)
+                .filter { (1..it.columnCount).none { nr -> it.getColumnName(nr) == "id" } }
+                .map { false } // ifPresent none contained
+                .getOrElse(true) // !ifPresent at least one contained
 
         // TODO when doing query manually, id included, when doing query based on object no id included so no minus 1
         val columnCountWithoutId = Opt2.of(results)
                 .map(ResultSet::getMetaData)
-                .map(ResultSetMetaData::getColumnCount)
-                .map { it - 1 }
-                .filter { it > 0 }
+                .case({ containsIdColumn }, { it.columnCount - 1 })
+                .case({ !containsIdColumn }, { it.columnCount })
+                .right()
                 .getOrElse(1)
 
         val constructor = Opt2.of(t::class.java.constructors)
                 .map { c -> c.filter { it.parameterCount == columnCountWithoutId } }
                 .filter { it.isNotEmpty() }
-                .map { it[0] }
+                .map { it[0] } // TOIMPROVE: add constructor parameter type checks
                 .getOrElseThrow { Exception("No constructors in object ${t::class} to instantiate with") }
 
-        val parameters = mutableListOf<Any>()
-        (1..(resultSet?.metaData?.columnCount ?: 1)).forEach { i ->
+        val listT = mutableListOf<T>()
+        do {
+            val parameters = mutableListOf<Any>()
+            (1..(results?.metaData?.columnCount ?: 1)).forEach { i ->
 
-            if (resultSet?.metaData?.getColumnName(i) != "id") {
-                parameters.add(resultSet?.getString(i) as Any)
+                if (results?.metaData?.getColumnName(i) != "id") {
+                    parameters.add(results?.getString(i) as Any)
+                }
             }
-        }
 
-        val arrayAny = parameters.toTypedArray()
+            val arrayAny = parameters.toTypedArray()
+            Opt2.of(constructor)
+                    .map { it.newInstance(*arrayAny) } // spread operator
+                    .ifPresent { listT.add(it as T) }
+                    .ifMissingThrow { Exception("Unable to instantiate ${t::class}") }
 
-        val newInstance = Opt2.of(constructor)
-                .map { it.newInstance(*arrayAny) }
-                .getOrElseThrow { Exception("Unable to instantiate ${t::class}") }
+        } while (true == results?.next())
 
-        return newInstance as T // t as T
+        return listT
     }
 
     companion object {
