@@ -78,17 +78,5 @@ object MySQLMapper : SqlMapper {
         return t.toString()
     }
 
-    private fun <T : Any> buildSqlFind(metadata: Metadata<T>): String {
-
-        val columnNames = Opt2.of(metadata)
-                .map { it.type::class.declaredMemberProperties }
-                .map { d -> d.map { o -> o.name } }
-                .map { it.joinToString(", ") }
-                .getOrElseThrow { Exception("Unable to build find for ${metadata.type::class}") }
-
-        val padding1 = "SELECT "
-        val padding2 = " FROM "
-
-        return padding1 + columnNames + padding2 + metadata.uid
-    }
+    private fun <T : Any> buildSqlFind(metadata: Metadata<T>): String = "SELECT * FROM " + metadata.uid
 }

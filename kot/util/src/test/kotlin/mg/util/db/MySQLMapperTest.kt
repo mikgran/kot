@@ -55,7 +55,7 @@ internal class MySQLMapperTest {
 
         val findCandidate = MySQLMapper.buildFind(personMetadata)
 
-        val expectedFind = "SELECT firstName, lastName FROM ${personMetadata.uid}"
+        val expectedFind = "SELECT * FROM ${personMetadata.uid}"
 
         assertNotNull(findCandidate)
         assertEquals(expectedFind, findCandidate)
