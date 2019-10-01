@@ -10,7 +10,7 @@ import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
 class DBO(val mapper: SqlMapper) {
-    
+
     // ORM describe
     // Metadata:
     // - name of the object
@@ -57,9 +57,9 @@ class DBO(val mapper: SqlMapper) {
 
         val uid = Opt2.of(t)
                 .map(::propertiesOfT)
-                .filter { propertiesOfT -> propertiesOfT.size > 0 }
-                .map { propertiesOfT -> propertiesOfT.filter { p -> p.name != "id" } }
-                .map { propertiesOfT -> propertiesOfT.fold("") { n, p -> n + p.name } }
+                .filter { it.size > 0 }
+                .map { it.filter { p -> p.name != "id" } }
+                .map { it.fold("") { n, p -> n + p.name } }
                 .map { foldedNames -> t::class.simpleName + foldedNames.hashCode() }
 
         return uid.getOrElse("")
@@ -94,20 +94,19 @@ class DBO(val mapper: SqlMapper) {
                 .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
 
         Opt2.of(getStatement(connection))
-                .map { s -> s.executeUpdate(createTableSql) }
+                .map { it.executeUpdate(createTableSql) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
     }
 
     fun <T : Any> find(t: T, connection: Connection): List<T> {
 
-        // TODO
         val findSql = Opt2.of(t)
                 .map(::buildMetadata)
                 .map(mapper::buildFind)
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
 
         val mappedT = Opt2.of(getStatement(connection))
-                .map { s -> s.executeQuery(findSql) }
+                .map { it.executeQuery(findSql) }
                 .filter(ResultSet::next)
                 .map { rs -> map(t, rs) }
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
