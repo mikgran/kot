@@ -1,6 +1,7 @@
 package mg.util.db
 
 import mg.util.functional.Opt2
+import java.lang.reflect.Constructor
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -114,8 +115,16 @@ class DBO(val mapper: SqlMapper) {
         return mappedT ?: emptyList()
     }
 
-    fun <T : Any> map(t: T, results: ResultSet?): List<T> {
+    fun <T : Any> map(type: T, results: ResultSet?): List<T> {
 
+        val columnCountWithoutId = getColumnCountWithoutId(results)
+
+        val constructor = getConstructor(type, columnCountWithoutId)
+
+        return buildListOfT(results, constructor, type)
+    }
+
+    private fun getColumnCountWithoutId(results: ResultSet?): Int {
         // Person(firstName = "", lastName = "") -> find out which columns correspond to which object fields.
         val containsIdColumn = Opt2.of(results)
                 .map(ResultSet::getMetaData)
@@ -123,20 +132,24 @@ class DBO(val mapper: SqlMapper) {
                 .map { false } // ifPresent none contained
                 .getOrElse(true) // !ifPresent at least one contained
 
-        // TODO when doing query manually, id included, when doing query based on object no id included so no minus 1
-        val columnCountWithoutId = Opt2.of(results)
+        return Opt2.of(results)
                 .map(ResultSet::getMetaData)
                 .case({ containsIdColumn }, { it.columnCount - 1 })
                 .case({ !containsIdColumn }, { it.columnCount })
                 .right()
                 .getOrElse(1)
+    }
 
-        val constructor = Opt2.of(t::class.java.constructors)
+    private fun <T : Any> getConstructor(type: T, columnCountWithoutId: Int): Constructor<*>? {
+        return Opt2.of(type::class.java.constructors)
                 .map { c -> c.filter { it.parameterCount == columnCountWithoutId } }
                 .filter { it.isNotEmpty() }
-                .map { it[0] } // TOIMPROVE: add constructor parameter type checks
-                .getOrElseThrow { Exception("No constructors in object ${t::class} to instantiate with") }
+                .map { it[0] } // TOIMPROVE: add constructor parameter type checks, this just takes first with equal number of parameters
+                .getOrElseThrow { Exception("No constructors in object ${type::class} to instantiate with") }
+    }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> buildListOfT(results: ResultSet?, constructor: Constructor<*>?, t: T): MutableList<T> {
         val listT = mutableListOf<T>()
         do {
             val parameters = mutableListOf<Any>()
@@ -150,11 +163,10 @@ class DBO(val mapper: SqlMapper) {
             val arrayAny = parameters.toTypedArray()
             Opt2.of(constructor)
                     .map { it.newInstance(*arrayAny) } // spread operator
-                    .ifPresent { listT.add(it as T) }
+                    .ifPresent { listT += it as T }
                     .ifMissingThrow { Exception("Unable to instantiate ${t::class}") }
 
         } while (true == results?.next())
-
         return listT
     }
 
