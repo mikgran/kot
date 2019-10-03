@@ -12,25 +12,6 @@ import kotlin.reflect.full.memberProperties
 // a simple Object-Relational-Mapping class
 class DBO(val mapper: SqlMapper) {
 
-    // ORM describe
-    // Metadata:
-    // - name of the object
-    // - fields
-    // - uid
-
-    // Data:
-    // - object name
-    // - object fields
-    // - object field data
-
-    // Methods:
-    // - build a deterministic unique name
-    // - build definition of fields
-    // - build access methods for each property
-    // Requirements:
-    // - don't use java: mg.util.db for any of the functions
-    // - rewrite using kotlin reflection classes
-
     // Considerations:
     // - cache all Metadata objects?
 
