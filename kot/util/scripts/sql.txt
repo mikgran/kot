@@ -1,0 +1,6 @@
+CREATE SCHEMA dbo2;
+CREATE SCHEMA dbo2test;
+
+CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'testpass';
+GRANT ALL PRIVILEGES ON *.* TO 'testuser'@'localhost';
+
