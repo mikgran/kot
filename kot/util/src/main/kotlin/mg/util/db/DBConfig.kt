@@ -14,6 +14,7 @@ class DBConfig(config: Config) {
     private var dbUrl: String? = null
     private var dbUserName: String? = null
     private var dbPassword: String? = null
+    var mapper: String? = null
 
     init {
         // TOIMPROVE: CLEANUP: use kotlin requireNotNull / require ?
@@ -25,6 +26,7 @@ class DBConfig(config: Config) {
         dbUrl = requireNonNull(properties.getProperty(DB_URL), DB_URL + NOT_DEFINED_IN_PROPERTIES)
         dbUserName = requireNonNull(properties.getProperty(DB_USER_NAME), DB_USER_NAME + NOT_DEFINED_IN_PROPERTIES)
         dbPassword = requireNonNull(properties.getProperty(DB_PASSWORD), DB_PASSWORD + NOT_DEFINED_IN_PROPERTIES)
+        mapper = requireNonNull(properties.getProperty(MAPPER), MAPPER + NOT_DEFINED_IN_PROPERTIES)
     }
 
     @get:Synchronized
@@ -58,5 +60,6 @@ class DBConfig(config: Config) {
         const val DB_PASSWORD = "password"
         const val DB_URL = "dbUrl"
         const val DB_DRIVER = "dbDriver"
+        const val MAPPER = "mapper"
     }
 }
