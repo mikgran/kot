@@ -7,5 +7,14 @@ object Common {
         else -> false
     }
 
+    fun nonThrowingBlock(block: () -> Unit)  {
+        try {
+            block()
+        } catch (e: Exception) {
+            // no operation
+        }
+    }
+
+
 }
 
