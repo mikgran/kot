@@ -1,5 +1,7 @@
 package mg.util.db
 
+import mg.util.common.Common
+import mg.util.common.Common.nonThrowingBlock
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
@@ -130,9 +132,13 @@ internal class DBOTest {
             val statement = Opt2.of(dbConfig.connection)
                     .map(Connection::createStatement)
 
-            statement.map { it.executeUpdate("DELETE FROM $uidTableName") }
+            nonThrowingBlock {
+                statement.map { it.executeUpdate("DELETE FROM $uidTableName") }
+            }
 
-            statement.map { it.executeUpdate("DROP TABLE $uidTableName") }
+            nonThrowingBlock {
+                statement.map { it.executeUpdate("DROP TABLE $uidTableName") }
+            }
         }
 
     }

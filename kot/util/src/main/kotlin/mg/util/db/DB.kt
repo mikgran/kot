@@ -7,24 +7,34 @@ import kotlin.text.toInt
 
 // TOCONSIDER: remove wrapper?
 // Very crude type T persistence solution
-class DB() {
+class DB {
 
     private var dbConfig: DBConfig = DBConfig(Config())
 
-    fun <T> save(any: T): Int {
+    fun <T : Any> save(type: T) {
 
+        val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
+        val connection = getConnection()
+        dbo.ensureTable(type, connection)
+        dbo.save(type, connection)
+    }
 
-
-        return 0 // default signal for zero changed objects and-or rows
+    private fun getConnection(): Connection {
+        return Opt2.of(dbConfig)
+                .map(DBConfig::connection)
+                .filter { !it.isClosed }
+                .getOrElseThrow { Exception("Connection closed.") }!!
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any> find(any: T): T {
-
-        require(!connection.isClosed) { "Find: Connection was closed." }
+    fun <T : Any> find(type: T): List<T> {
 
 
-        return Any() as T
+        return listOf(Any() as T)
+    }
+
+    fun <T : Any> buildUniqueId(t: T): String {
+        return DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql")).buildUniqueId(t)
     }
 
 }

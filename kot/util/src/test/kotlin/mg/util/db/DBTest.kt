@@ -1,55 +1,75 @@
 package mg.util.db
 
+import mg.util.common.Common.hasContent
+import mg.util.common.Common.nonThrowingBlock
 import mg.util.functional.Opt2
-// import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.sql.Connection
 import java.sql.ResultSet
 
 internal class DBTest {
 
-    private var dbConfig: DBConfig = DBConfig(TestConfig())
+    data class PersonB(val firstName: String = "", val lastName: String = "")
 
-    data class Person(val firstName: String = "", val lastName: String = "") //  : DBO()
+    private var dbConfig: DBConfig = DBConfig(Config())
+    private val fName = "firstName"
+    private val lName = "lastName"
 
-    // @Test
+    @Test
     fun testSaving() {
-
         assertDoesNotThrow {
 
             val connection = dbConfig.connection
 
-            print(":: ${dbConfig.properties}")
+            val db = DB()
+            val testPerson = PersonB(fName, lName)
+            val uniqueId = db.buildUniqueId(PersonB("", ""))
 
-            val db = DB(connection)
-
-            // db.find(Person("name1", "name2"))
-
-            val fName = "firstName"
-            val lName = "lastName"
-            val queryString = "SELECT persons.firstname, persons.lastname FROM persons"
-
-            // creates tables and sets buildMetadata
-            db.save(Person(fName, lName))
+            db.save(testPerson)
 
             val candidate = Opt2.of(connection)
-                    .map { connection.createStatement() }
-                    .map { statement -> statement.executeQuery(queryString) }
+                    .map(Connection::createStatement)
+                    .map { statement -> statement.executeQuery("SELECT * FROM $uniqueId") }
                     .filter(ResultSet::next)
-                    .map { resultSet -> resultSet.getString(1) + " " + resultSet.getString(2) }
+                    .map { resultSet -> resultSet.getString("firstName") + " " + resultSet.getString("lastName") }
                     .getOrElse("")
 
             assertEquals("$fName $lName", candidate)
-
-            // assert person table exists
-            // assert person table has firstName and lastName columns
-
-            // test coverage: assert object relations and their table structure
-            //  exists.
         }
-
-
     }
 
+    @Test
+    internal fun testDBODelegate() {
+
+        val db = DB()
+        val uid = db.buildUniqueId(PersonB("", ""))
+        assertNotNull(uid)
+        assertTrue(hasContent(uid))
+    }
+
+    companion object {
+
+        @AfterAll
+        @JvmStatic
+        internal fun afterTest() {
+
+            val person = PersonB("first1", "last2")
+            val dbConfig = DBConfig(Config())
+            val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
+            val uidTableName = dbo.buildMetadata(person).uid
+
+            val statement = Opt2.of(dbConfig.connection)
+                    .map(Connection::createStatement)
+
+            nonThrowingBlock {
+                statement.map { it.executeUpdate("DELETE FROM $uidTableName") }
+            }
+
+            nonThrowingBlock {
+                statement.map { it.executeUpdate("DROP TABLE $uidTableName") }
+            }
+        }
+    }
 }
