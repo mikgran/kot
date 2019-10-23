@@ -33,7 +33,7 @@ internal class DBTest {
                     .map(Connection::createStatement)
                     .map { statement -> statement.executeQuery("SELECT * FROM $uniqueId") }
                     .filter(ResultSet::next)
-                    .map { resultSet -> resultSet.getString("firstName") + " " + resultSet.getString("lastName") }
+                    .map { resultSet -> resultSet.getString(fName) + " " + resultSet.getString(lName) }
                     .getOrElse("")
 
             assertEquals("$fName $lName", candidate)
