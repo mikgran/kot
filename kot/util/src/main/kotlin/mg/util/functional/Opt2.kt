@@ -39,8 +39,6 @@ class Opt2<T : Any> {
         return this
     }
 
-
-
     fun ifMissingThrow(exceptionSupplier: () -> Throwable): Opt2<T> {
         if (!isPresent()) {
             throw exceptionSupplier()
