@@ -2,8 +2,8 @@ package mg.util.functional
 
 class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
 
-    private val left: Opt2<T> = l
-    private val right: Opt2<V> = r
+    private val left: Opt2<T> = l // original value
+    private val right: Opt2<V> = r // transformed result
 
     fun left() = left
     fun right() = right
