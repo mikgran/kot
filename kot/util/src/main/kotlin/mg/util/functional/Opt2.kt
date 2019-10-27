@@ -57,7 +57,7 @@ class Opt2<T : Any> {
                                  mapper: (R) -> V): BiOpt2<T, V> {
 
         // maps and filters only non null values of the same class.
-        // returns BiOpt.of(oldValue, newValue/null)
+        // returns BiOpt2.of(oldValue, newValue/null)
         return this.filter { isPresent() && isValueClassSameAsRefClass(ref) }
                 .map { it as R }
                 .filter(predicate)
@@ -123,6 +123,14 @@ class Opt2<T : Any> {
 
     override fun hashCode(): Int {
         return Objects.hashCode(value)
+    }
+
+    fun <R: Any, V: Any> mapWith(r: R?, mapper: (T, R) -> V) : Opt2<V> {
+        val ropt = of(r)
+        return when {
+            isPresent() && ropt.isPresent() -> of(mapper(lazyT, ropt.get()!!))
+            else -> empty()
+        }
     }
 
     companion object Factory {

@@ -2,12 +2,15 @@ package mg.util.db
 
 import mg.util.common.Common.hasContent
 import mg.util.common.Common.nonThrowingBlock
+import mg.util.functional.BiOpt
+import mg.util.functional.BiOpt2
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.Statement
 
 internal class DBTest {
 
@@ -61,7 +64,7 @@ internal class DBTest {
             val uidTableName = dbo.buildMetadata(person).uid
             val sqlCommands = listOf("DELETE FROM $uidTableName", "DROP TABLE $uidTableName")
 
-            Opt2.of(dbConfig.connection)
+            val bi2  = Opt2.of(dbConfig.connection)
                     .map(Connection::createStatement)
                     .map { statement ->
 

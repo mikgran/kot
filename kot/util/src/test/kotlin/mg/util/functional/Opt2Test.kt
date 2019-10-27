@@ -342,6 +342,42 @@ internal class Opt2Test {
         }
     }
 
+    @Test
+    fun testMapWith() {
+
+        var str: String? = "1"
+
+        val candidate = Opt2.of("2")
+                .mapWith(str) { a, b -> "$a $b" }
+                .getOrElse("4")
+
+        assertEquals("2 1", candidate)
+
+        str = null
+
+        @Suppress("UNREACHABLE_CODE")
+        val candidate2 = Opt2.of("3")
+                .mapWith(str) { a, b -> "$a $b" }
+                .getOrElse("4")
+
+        assertEquals("4", candidate2)
+
+        val str2 : String? = str
+        val candidate3 = Opt2.of(str2)
+                .mapWith("5") { a, b -> "$a $b" }
+                .getOrElse("6")
+
+        assertEquals("6", candidate3)
+
+        val ropt7 = Opt2.of("7")
+
+        val candidate4 = Opt2.of("8")
+                .mapWith(ropt7) { a, b -> "$a $b"}
+                .getOrElse("9")
+
+        assertEquals("8 7", candidate4)
+        assertNotEquals("9", candidate4)
+    }
 
     class TempValue(var a: String?)
 
