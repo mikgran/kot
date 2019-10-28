@@ -62,11 +62,11 @@ internal class DBTest {
             val dbConfig = DBConfig(Config())
             val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
             val uidTableName = dbo.buildMetadata(person).uid
-            val sqlCommands = listOf("DELETE FROM $uidTableName", "DROP TABLE $uidTableName")
+            val sqlCommandsList = listOf("DELETE FROM $uidTableName", "DROP TABLE $uidTableName")
 
             val bi2  = Opt2.of(dbConfig.connection)
                     .map(Connection::createStatement)
-                    .map { statement ->
+                    .mapWith(sqlCommandsList) { statement, sqlCommands ->
 
                         sqlCommands.forEach { sqlCommand ->
                             nonThrowingBlock { statement.executeUpdate(sqlCommand) }
