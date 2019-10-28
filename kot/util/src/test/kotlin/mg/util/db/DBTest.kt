@@ -2,15 +2,12 @@ package mg.util.db
 
 import mg.util.common.Common.hasContent
 import mg.util.common.Common.nonThrowingBlock
-import mg.util.functional.BiOpt
-import mg.util.functional.BiOpt2
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
-import java.sql.Statement
 
 internal class DBTest {
 
@@ -44,12 +41,26 @@ internal class DBTest {
     }
 
     @Test
-    internal fun testDBODelegate() {
+    fun testDBODelegate() {
 
         val db = DB()
         val uid = db.buildUniqueId(PersonB("", ""))
         assertNotNull(uid)
         assertTrue(hasContent(uid))
+    }
+
+    @Test
+    fun testFind() {
+
+        val db = DB()
+        val testPerson = PersonB("aa", "bb")
+
+        db.save(testPerson)
+
+        val personListCandidate = db.find(PersonB())
+
+        assertTrue(personListCandidate.isNotEmpty())
+        assertTrue(personListCandidate.any { person -> person.firstName == "aa" && person.lastName == "bb" })
     }
 
     companion object {

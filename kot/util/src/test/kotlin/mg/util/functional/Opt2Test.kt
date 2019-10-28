@@ -387,6 +387,13 @@ internal class Opt2Test {
                 .getOrElse("9")
 
         assertEquals("123", candidate)
+
+        val str: String? = null
+        val candidate2 = Opt2.of("1")
+                .mapWith("2", str) { a, b, c -> "$a$b$c" }
+                .getOrElse("9")
+
+        assertEquals("9", candidate2)
     }
 
     class TempValue(var a: String?)

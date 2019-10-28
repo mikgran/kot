@@ -26,11 +26,11 @@ class DB {
                 .getOrElseThrow { Exception("Connection closed.") }!!
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun <T : Any> find(type: T): List<T> {
 
-
-        return listOf(Any() as T)
+        val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
+        val connection = getConnection()
+        return dbo.find(type, connection)
     }
 
     fun <T : Any> buildUniqueId(t: T): String {
