@@ -64,7 +64,7 @@ internal class DBTest {
             val uidTableName = dbo.buildMetadata(person).uid
             val sqlCommandsList = listOf("DELETE FROM $uidTableName", "DROP TABLE $uidTableName")
 
-            val bi2  = Opt2.of(dbConfig.connection)
+            Opt2.of(dbConfig.connection)
                     .map(Connection::createStatement)
                     .mapWith(sqlCommandsList) { statement, sqlCommands ->
 

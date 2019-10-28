@@ -125,10 +125,20 @@ class Opt2<T : Any> {
         return Objects.hashCode(value)
     }
 
-    fun <R: Any, V: Any> mapWith(r: R?, mapper: (T, R) -> V) : Opt2<V> {
+    fun <R : Any, V : Any> mapWith(r: R?, mapper: (T, R) -> V): Opt2<V> {
         val ropt = of(r)
         return when {
-            isPresent() && ropt.isPresent() -> of(mapper(lazyT, ropt.get()!!))
+            isPresent() && ropt.isPresent() -> of(mapper(lazyT, ropt.lazyT))
+            else -> empty()
+        }
+    }
+
+    // TOIMPROVE: find a better way for arity of type N objects
+    fun <R : Any, S : Any, V : Any> mapWith(r: R?, s: S?, mapper: (T, R, S) -> V) : Opt2<V> {
+        val ropt = of(r)
+        val sopt = of(s)
+        return when {
+            isPresent() && ropt.isPresent() && sopt.isPresent() -> of(mapper(lazyT, ropt.lazyT, sopt.lazyT))
             else -> empty()
         }
     }

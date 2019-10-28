@@ -362,7 +362,7 @@ internal class Opt2Test {
 
         assertEquals("4", candidate2)
 
-        val str2 : String? = str
+        val str2: String? = str
         val candidate3 = Opt2.of(str2)
                 .mapWith("5") { a, b -> "$a $b" }
                 .getOrElse("6")
@@ -372,11 +372,21 @@ internal class Opt2Test {
         val ropt7 = Opt2.of("7")
 
         val candidate4 = Opt2.of("8")
-                .mapWith(ropt7) { a, b -> "$a $b"}
+                .mapWith(ropt7) { a, b -> "$a $b" }
                 .getOrElse("9")
 
         assertEquals("8 7", candidate4)
         assertNotEquals("9", candidate4)
+    }
+
+    @Test
+    fun testMapWith2() {
+
+        val candidate = Opt2.of("1")
+                .mapWith("2", "3") { a, b, c -> "$a$b$c" }
+                .getOrElse("9")
+
+        assertEquals("123", candidate)
     }
 
     class TempValue(var a: String?)
