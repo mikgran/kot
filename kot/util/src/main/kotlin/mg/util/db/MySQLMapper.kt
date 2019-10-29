@@ -6,7 +6,7 @@ import kotlin.reflect.KCallable
 import kotlin.reflect.full.declaredMemberProperties
 
 // mysql dialect object to sql mapper
-object MySQLMapper : SqlMapper {
+object MySqlMapper : SqlMapper {
 
     override fun <T : Any> buildFind(metadata: Metadata<T>): String {
 

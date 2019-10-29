@@ -3,8 +3,8 @@ package mg.util.db
 object SqlMapperFactory {
 
     fun get(type : String?) : SqlMapper = when (type) {
-        "mysql" -> MySQLMapper
-        else -> MySQLMapper
+        "mysql" -> MySqlMapper
+        else -> MySqlMapper
     }
 
 }

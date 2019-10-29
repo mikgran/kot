@@ -10,11 +10,11 @@ internal class SqlMapperFactoryTest {
 
         val sqlMapperCandidate = SqlMapperFactory.get("mysql")
 
-        assertTrue(MySQLMapper::class == sqlMapperCandidate::class)
+        assertTrue(MySqlMapper::class == sqlMapperCandidate::class)
 
         val sqlMapperCandidate2 = SqlMapperFactory.get("xxx") // case defaults
 
-        assertTrue(MySQLMapper::class == sqlMapperCandidate2::class)
+        assertTrue(MySqlMapper::class == sqlMapperCandidate2::class)
     }
 
 

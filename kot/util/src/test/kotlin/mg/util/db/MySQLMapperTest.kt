@@ -14,7 +14,7 @@ internal class MySQLMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val createTableSqlCandidate = MySQLMapper.buildCreateTable(personMetadata)
+        val createTableSqlCandidate = MySqlMapper.buildCreateTable(personMetadata)
 
         assertNotNull(createTableSqlCandidate)
         assertEquals("CREATE TABLE IF NOT EXISTS ${personMetadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
@@ -27,7 +27,7 @@ internal class MySQLMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val fieldDefinitionsCandidate = MySQLMapper.buildSqlFieldDefinitions(personMetadata)
+        val fieldDefinitionsCandidate = MySqlMapper.buildSqlFieldDefinitions(personMetadata)
 
         val expectedFieldDefinitions = listOf("firstName VARCHAR(64) NOT NULL", "lastName VARCHAR(64) NOT NULL")
 
@@ -40,7 +40,7 @@ internal class MySQLMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val insertCandidate = MySQLMapper.buildInsert(personMetadata)
+        val insertCandidate = MySqlMapper.buildInsert(personMetadata)
 
         val expectedInsert = "INSERT INTO ${personMetadata.uid} (firstName, lastName) VALUES ('testname1', 'testname2')"
 
@@ -53,7 +53,7 @@ internal class MySQLMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val findCandidate = MySQLMapper.buildFind(personMetadata)
+        val findCandidate = MySqlMapper.buildFind(personMetadata)
 
         val expectedFind = "SELECT * FROM ${personMetadata.uid}"
 
