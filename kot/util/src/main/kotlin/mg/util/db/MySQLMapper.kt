@@ -68,7 +68,7 @@ object MySQLMapper : SqlMapper {
 
         return Opt2.of(metadata)
                 .map { it.type::class.declaredMemberProperties }
-                .map { it.map(TypeMapper::getTypeString) }
+                .map { it.map(MySqlTypeMapper::getTypeString) }
                 .getOrElse(emptyList())
     }
 

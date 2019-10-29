@@ -17,7 +17,7 @@ internal class TypeMapperTest {
 
         val candidates = Opt2.of(metadata)
                 .map { it.type::class.declaredMemberProperties }
-                .map { it.map(TypeMapper::getTypeString) }
+                .map { it.map(MySqlTypeMapper::getTypeString) }
                 .getOrElse(emptyList())
 
         val expectedFieldDefinitions = listOf("firstName VARCHAR(64) NOT NULL", "lastName VARCHAR(64) NOT NULL")

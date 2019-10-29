@@ -7,7 +7,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
-import java.sql.ResultSet
 
 internal class DBTest {
 
@@ -29,14 +28,19 @@ internal class DBTest {
 
             db.save(testPerson)
 
-            val candidate = Opt2.of(connection)
+            val candidates = Opt2.of(connection)
                     .map(Connection::createStatement)
                     .map { statement -> statement.executeQuery("SELECT * FROM $uniqueId") }
-                    .filter(ResultSet::next)
-                    .map { resultSet -> resultSet.getString(fName) + " " + resultSet.getString(lName) }
-                    .getOrElse("")
+                    .mapWith(ArrayList<PersonB>()) { rs, persons ->
+                        while (rs.next()) {
+                            persons.add(PersonB(rs.getString(fName), rs.getString(lName)))
+                        }
+                        persons
+                    }
+                    .getOrElse(ArrayList())
 
-            assertEquals("$fName $lName", candidate)
+            assertTrue(candidates.isNotEmpty())
+            assertTrue(candidates.any { p -> p.firstName == "aa" && p.lastName == "bb" })
         }
     }
 

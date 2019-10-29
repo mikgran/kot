@@ -3,7 +3,7 @@ package mg.util.db
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 
-object TypeMapper {
+object MySqlTypeMapper {
 
     fun getTypeString(type: KProperty1<out Any, Any?>): String {
 
