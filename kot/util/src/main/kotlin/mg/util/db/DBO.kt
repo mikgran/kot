@@ -102,7 +102,7 @@ class DBO(val mapper: SqlMapper) {
 
         val constructor = getConstructor(type, columnCountWithoutId)
 
-        return buildListOfT(results, constructor, type)
+        return ObjectBuilder().buildListOfT(results, constructor, type)
     }
 
     private fun getColumnCountWithoutId(results: ResultSet?): Int {
