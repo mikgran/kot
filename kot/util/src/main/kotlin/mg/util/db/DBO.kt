@@ -1,7 +1,6 @@
 package mg.util.db
 
 import mg.util.functional.Opt2
-import java.lang.reflect.Constructor
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -10,7 +9,7 @@ import kotlin.reflect.KCallable
 import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
-class DBO(val mapper: SqlMapper) {
+class DBO(private val mapper: SqlMapper) {
 
     // Considerations:
     // - cache all Metadata objects?
@@ -90,43 +89,10 @@ class DBO(val mapper: SqlMapper) {
         val mappedT = Opt2.of(getStatement(connection))
                 .map { it.executeQuery(findSql) }
                 .filter(ResultSet::next)
-                .map { rs -> map(t, rs) }
+                .map { rs -> ObjectBuilder().buildListOfT(rs, t) }
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
 
         return mappedT ?: emptyList()
-    }
-
-    fun <T : Any> map(type: T, results: ResultSet?): List<T> {
-
-        val columnCountWithoutId = getColumnCountWithoutId(results)
-
-        val constructor = getConstructor(type, columnCountWithoutId)
-
-        return ObjectBuilder().buildListOfT(results, type)
-    }
-
-    private fun getColumnCountWithoutId(results: ResultSet?): Int {
-        // Person(firstName = "", lastName = "") -> find out which columns correspond to which object fields.
-        val containsIdColumn = Opt2.of(results)
-                .map(ResultSet::getMetaData)
-                .filter { (1..it.columnCount).none { nr -> it.getColumnName(nr) == "id" } }
-                .map { false } // ifPresent none contained
-                .getOrElse(true) // !ifPresent at least one contained
-
-        return Opt2.of(results)
-                .map(ResultSet::getMetaData)
-                .case({ containsIdColumn }, { it.columnCount - 1 })
-                .case({ !containsIdColumn }, { it.columnCount })
-                .right()
-                .getOrElse(1)
-    }
-
-    private fun <T : Any> getConstructor(type: T, columnCountWithoutId: Int): Constructor<*>? {
-        return Opt2.of(type::class.java.constructors)
-                .map { c -> c.filter { it.parameterCount == columnCountWithoutId } }
-                .filter { it.isNotEmpty() }
-                .map { it[0] } // TOIMPROVE: add constructor parameter type checks, this just takes first with equal number of parameters
-                .getOrElseThrow { Exception("No constructors in object ${type::class} to instantiate with") }
     }
 
     companion object {

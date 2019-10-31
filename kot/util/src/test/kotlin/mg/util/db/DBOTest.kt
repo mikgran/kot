@@ -1,6 +1,5 @@
 package mg.util.db
 
-import mg.util.common.Common
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
@@ -67,7 +66,7 @@ internal class DBOTest {
                 .filter(ResultSet::next)
                 .getOrElseThrow { Exception("Test failed: no test data found") }
 
-        val candidateMapped = dbo.map(Person(), persons)
+        val candidateMapped = ObjectBuilder().buildListOfT(persons, Person())
 
         assertNotNull(candidateMapped)
         assertTrue(candidateMapped.isNotEmpty())
