@@ -102,7 +102,7 @@ class DBO(val mapper: SqlMapper) {
 
         val constructor = getConstructor(type, columnCountWithoutId)
 
-        return ObjectBuilder().buildListOfT(results, constructor, type)
+        return ObjectBuilder().buildListOfT(results, type)
     }
 
     private fun getColumnCountWithoutId(results: ResultSet?): Int {
@@ -127,28 +127,6 @@ class DBO(val mapper: SqlMapper) {
                 .filter { it.isNotEmpty() }
                 .map { it[0] } // TOIMPROVE: add constructor parameter type checks, this just takes first with equal number of parameters
                 .getOrElseThrow { Exception("No constructors in object ${type::class} to instantiate with") }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> buildListOfT(results: ResultSet?, constructor: Constructor<*>?, t: T): MutableList<T> {
-        val listT = mutableListOf<T>()
-        do {
-            val parameters = mutableListOf<Any>()
-            (1..(results?.metaData?.columnCount ?: 1)).forEach { i ->
-
-                if (results?.metaData?.getColumnName(i) != "id") {
-                    parameters.add(results?.getString(i) as Any)
-                }
-            }
-
-            val arrayAny = parameters.toTypedArray()
-            Opt2.of(constructor)
-                    .map { it.newInstance(*arrayAny) } // spread operator
-                    .ifPresent { listT += it as T }
-                    .ifMissingThrow { Exception("Unable to instantiate ${t::class}") }
-
-        } while (true == results?.next())
-        return listT
     }
 
     companion object {
