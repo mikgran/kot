@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.common.Wrap
 import mg.util.functional.Opt2
 import java.lang.reflect.Constructor
 import java.sql.ResultSet
@@ -15,32 +16,31 @@ class ObjectBuilder {
 
     fun <T : Any> buildListOfT(results: ResultSet?, t: T): MutableList<T> {
 
-        val resultSetConstructorData = Opt2.of(results)
+        val constructor = Opt2.of(results)
                 .map(ResultSet::getMetaData)
                 .map(::getConstructorData)
-                .getOrElse(mutableListOf())
-
-        val ktConstructor: KFunction<T> = getKtConstructor(t::class.constructors, resultSetConstructorData)
-            ?: throw Exception("Unable to narrow down a constructor for object T")
+                .mapWith(t) { data, type -> getConstructor(type::class.constructors, data) }
+                .filter { it.t != null }
+                .getOrElseThrow { Exception("Unable to narrow down a constructor for object T") }!!
 
         val listT = mutableListOf<T>()
         do {
             val parameters = getParameters(results)
 
-            buildAndAddTypeToList(ktConstructor.javaConstructor, parameters, listT, t)
+            buildAndAddTypeToList(constructor.t, parameters, listT, t)
 
         } while (true == results?.next())
 
         return listT
     }
 
-    private fun <T : Any> getKtConstructor(constr: Collection<KFunction<T>>,
-                                           rscd: MutableList<ConstructorData>): KFunction<T>? {
-        var result: KFunction<T>? = null
+    private fun <T : Any> getConstructor(constr: Collection<KFunction<T>>,
+                                         rscd: MutableList<ConstructorData>): Wrap<Constructor<T>?> {
+        val result = Wrap<Constructor<T>?>(null)
         constr.map { c ->
             val constructorDatas = getConstructorDatas(c)
-            if (constructorDatas.containsAll(rscd)) {
-                result = c
+            if (constructorDatas.containsAll(rscd)) { // TOIMPROVE: test coverage
+                result.t = c.javaConstructor
             }
         }
         return result
@@ -57,7 +57,7 @@ class ObjectBuilder {
     private fun getConstructorData(resultSetMetadata: ResultSetMetaData): MutableList<ConstructorData> {
         val list = mutableListOf<ConstructorData>()
         (1..resultSetMetadata.columnCount).forEach { i ->
-            if (resultSetMetadata.getColumnName(i) != "id") {
+            if (resultSetMetadata.getColumnName(i) != DB_ID_FIELD) {
                 list.add(ConstructorData(resultSetMetadata.getColumnClassName(i), resultSetMetadata.getColumnName(i)))
             }
         }
@@ -80,5 +80,9 @@ class ObjectBuilder {
             }
         }
         return parameters.toTypedArray()
+    }
+
+    companion object {
+        const val DB_ID_FIELD = "id"
     }
 }
