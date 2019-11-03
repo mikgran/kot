@@ -2,8 +2,6 @@ package mg.util.db
 
 import mg.util.functional.Opt2
 import java.sql.Connection
-import java.sql.ResultSet
-import kotlin.text.toInt
 
 // TOCONSIDER: remove wrapper?
 // Very crude type T persistence solution
