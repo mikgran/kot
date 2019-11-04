@@ -18,12 +18,12 @@ internal class ObjectBuilderTest {
         dbo.save(PersonB(firstName, lastName), connection)
         val uid = dbo.buildUniqueId(PersonB())
 
-        val results = Opt2.of(connection)
-                .map { it.createStatement() }
+        val results = Opt2.of(connection.createStatement())
                 .map { it.executeQuery("SELECT * FROM $uid") }
                 .filter { it.next() }
+                .getOrElseThrow { Exception("no results in table $uid.") }
 
-        val listT = ObjectBuilder().buildListOfT(results.get(), PersonB())
+        val listT = ObjectBuilder().buildListOfT(results, PersonB())
 
         assertTrue(listT.isNotEmpty())
         assertTrue(containsFirstNameLastName(listT))
