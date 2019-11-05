@@ -67,6 +67,17 @@ internal class DBTest {
         assertTrue(personListCandidate.any { person -> person.firstName == "aa" && person.lastName == "bb" })
     }
 
+    @Test
+    fun testFindById() {
+
+        val db = DB()
+        val testPerson = PersonB("11", "22")
+        db.save(testPerson)
+
+        // db.findBySql { select PersonB() where it::firstName eq "name" }
+        // SELECT * FROM person12345 as p WHERE p.firstName = 'name'
+    }
+
     companion object {
 
         @AfterAll

@@ -2,8 +2,8 @@ package mg.util.db
 
 import mg.util.functional.Opt2
 import java.sql.Connection
+import kotlin.reflect.KProperty1
 
-// TOCONSIDER: remove wrapper?
 // Very crude type T persistence solution
 class DB {
 
@@ -33,6 +33,11 @@ class DB {
 
     fun <T : Any> buildUniqueId(t: T): String {
         return DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql")).buildUniqueId(t)
+    }
+
+    fun <T : Any> findBySql(freeSql: () -> String) {
+
+
     }
 
 }
