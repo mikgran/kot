@@ -24,7 +24,7 @@ data class SelectBlock<T>(val bc: MutableList<BuildingBlock>, val t: T) : Buildi
     }
 
     override fun toString(): String {
-        return "$t"
+        return "SelectBlock(t=$t)"
     }
 }
 
@@ -36,7 +36,7 @@ data class WhereBlock<T : KProperty1<*, *>>(val bc: MutableList<BuildingBlock>, 
     }
 
     override fun toString(): String {
-        return "$t"
+        return "WhereBlock(t=$t)"
     }
 }
 
@@ -44,6 +44,6 @@ data class OperationBlock<T>(val bc: MutableList<BuildingBlock>, val t: T) : Bui
     fun getList() = bc
 
     override fun toString(): String {
-        return "$t"
+        return "OperationBlock(t=$t)"
     }
 }
