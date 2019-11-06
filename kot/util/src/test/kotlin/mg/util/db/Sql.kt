@@ -1,25 +1,49 @@
 package mg.util.db
 
-class Sql(val b: BuildingBlock) {
+import kotlin.reflect.KProperty1
 
-    val buildChain = mutableListOf<BuildingBlock>()
-
-    init {
-        buildChain.add(b)
-    }
-
-    infix fun where(s: String) : Sql {
-        buildChain.add(WhereBlock(s))
-        return this
-    }
+class Sql {
 
     companion object {
-        infix fun <T> select(t: T): Sql = Sql(SelectBlock(t))
-        infix fun <T, V> select(p: Pair<T, V>) = Sql(SelectBlock())
+        infix fun <T> select(t: T): SelectBlock<T> {
+            val buildingBlocks = mutableListOf<BuildingBlock>()
+            val selectBlock = SelectBlock(buildingBlocks, t)
+            buildingBlocks.add(selectBlock)
+            return selectBlock
+        }
     }
 }
 
-sealed class BuildingBlock
-data class SelectBlock<T>(val type: T) : BuildingBlock()
-data class WhereBlock(val where: String) : BuildingBlock()
-data class CompareBlock(val eq: String) : BuildingBlock()
+abstract class BuildingBlock {
+}
+data class SelectBlock<T>(val bc: MutableList<BuildingBlock>, val t: T) : BuildingBlock() {
+    infix fun <T : KProperty1<*, *>> where(t: T): WhereBlock<T> {
+        val whereBlock = WhereBlock(bc, t)
+        bc.add(WhereBlock(bc, t))
+        return whereBlock
+    }
+
+    override fun toString(): String {
+        return "$t"
+    }
+}
+
+data class WhereBlock<T : KProperty1<*, *>>(val bc: MutableList<BuildingBlock>, val t: T) : BuildingBlock() {
+    infix fun <T> eq(t: T): OperationBlock<T> {
+        val operationBlock = OperationBlock(bc, t)
+        bc.add(operationBlock)
+        return operationBlock
+    }
+
+    override fun toString(): String {
+        return "$t"
+    }
+}
+
+data class OperationBlock<T>(val bc: MutableList<BuildingBlock>, val t: T) : BuildingBlock() {
+    fun getList() = bc
+
+    override fun toString(): String {
+        return "$t"
+    }
+}

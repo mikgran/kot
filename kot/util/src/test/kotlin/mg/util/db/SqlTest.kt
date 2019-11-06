@@ -13,12 +13,17 @@ internal class SqlTest {
     @Test
     fun testSqlBuilder() {
 
+        // Sql select PersonB() where PersonB::firstName eq "name"
+        // Sql.select(PersonB()).where(PersonB::firstName).eq("name")
 
+        // val op = Sql select PersonB() where PersonB::firstName isNot "name"
 
-        Sql select PersonB()
+        val op = Sql select PersonB() where PersonB::firstName eq "name"
 
+        val list: MutableList<BuildingBlock> = op.getList()
+
+        list.forEach(::println)
 
     }
-
 
 }
