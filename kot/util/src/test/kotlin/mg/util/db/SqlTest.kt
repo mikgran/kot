@@ -20,7 +20,7 @@ internal class SqlTest {
 
         val op = Sql select PersonB() where PersonB::firstName eq "name"
 
-        val list: MutableList<BuildingBlock> = op.getList()
+        val list: MutableList<BuildingBlock> = op.list()
 
         list.forEach(::println)
 
