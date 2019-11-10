@@ -16,6 +16,8 @@ class Sql {
 abstract class BuildingBlock {
     abstract val blocks: MutableList<BuildingBlock>
     fun list() = blocks
+    protected fun simpleName() = this::class.simpleName
+    fun build(): String = SqlDslMapper.map(blocks)
 }
 
 data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
@@ -27,7 +29,7 @@ data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val t
     }
 
     override fun toString(): String {
-        return "${this::class.simpleName}(t=$type)"
+        return "${simpleName()}(t=$type)"
     }
 }
 
@@ -40,13 +42,13 @@ data class WhereBlock<T : KProperty1<*, *>>(override val blocks: MutableList<Bui
     }
 
     override fun toString(): String {
-        return "${this::class.simpleName}(t=$type)"
+        return "${simpleName()}(t=$type)"
     }
 }
 
 data class OperationBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
 
     override fun toString(): String {
-        return "${this::class.simpleName}(t=$type)"
+        return "${simpleName()}(t=$type)"
     }
 }
