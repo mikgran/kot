@@ -29,7 +29,7 @@ data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val t
     }
 
     override fun toString(): String {
-        return "${simpleName()}(t=$type)"
+        return "${simpleName()}(type=$type)"
     }
 }
 
@@ -42,13 +42,21 @@ data class WhereBlock<T : KProperty1<*, *>>(override val blocks: MutableList<Bui
     }
 
     override fun toString(): String {
-        return "${simpleName()}(t=$type)"
+        return "${simpleName()}(type=$type)"
     }
 }
 
 data class OperationBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
 
     override fun toString(): String {
-        return "${simpleName()}(t=$type)"
+        return "${simpleName()}(type=$type)"
     }
+}
+
+data class UpdateBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
+
+    override fun toString(): String {
+        return "${simpleName()}(type=$type)"
+    }
+
 }
