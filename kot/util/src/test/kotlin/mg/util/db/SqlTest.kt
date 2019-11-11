@@ -28,7 +28,6 @@ internal class SqlTest {
         assertEquals(PersonB(), (list[0] as SelectBlock<*>).type)
         assertEquals(PersonB::firstName, (list[1] as WhereBlock<*>).type)
         assertEquals("name", (list[2] as OperationBlock<*>).type)
-        assertEquals("SELECT * FROM person12345 as p WHERE p.firstName = 'name'", op.build())
     }
 
 }
