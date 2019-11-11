@@ -1,6 +1,6 @@
 package mg.util.db
 
-import mg.util.common.Common
+import mg.util.common.Common.hasContent
 import mg.util.db.SqlDslMapper.Companion.map
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -15,7 +15,7 @@ internal class SqlDslMapperTest {
 
         val candidate = map(op.list())
 
-        assertTrue(Common.hasContent(candidate))
+        assertTrue(hasContent(candidate))
         assertEquals("SELECT * FROM person12345 as p WHERE p.firstName = 'name'", candidate)
     }
 
