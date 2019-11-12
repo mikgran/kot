@@ -78,6 +78,7 @@ internal class DBTest {
         // SELECT * FROM person12345 as p WHERE p.firstName = 'name'
     }
 
+    @Suppress("unused")
     companion object {
 
         @AfterAll
