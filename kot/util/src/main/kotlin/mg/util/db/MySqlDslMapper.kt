@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.functional.Opt2.Factory.of
+import kotlin.reflect.full.memberProperties
 
 object MySqlDslMapper : DslMapper {
 
@@ -51,18 +52,22 @@ object MySqlDslMapper : DslMapper {
            // SELECT * FROM person12345 as p WHERE p.firstName = "name"
         */
 
-        val fields = ""
-
-        val metadata = dbo.buildMetadata(typeT)
-
-
+        val uid = dbo.buildUniqueId(typeT)
         val uidAlias = ""
+
+
+
+        val fields = typeT::class.memberProperties
+                .map { p -> "$uidAlias.${p.name}" }
+                .joinToString { ", " }
+
         val operations = ""
 
-        val selectStr = "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
+        val selectStr = "SELECT $fields FROM $uid $uidAlias WHERE $operations"
 
 
         return ""
     }
 
 }
+
