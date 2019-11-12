@@ -53,6 +53,7 @@ data class OperationBlock<T>(override val blocks: MutableList<BuildingBlock>, va
     }
 }
 
+// TODO: handle updates
 data class UpdateBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
 
     override fun toString(): String {
