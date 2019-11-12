@@ -3,7 +3,7 @@ package mg.util.db
 import mg.util.common.Common
 import mg.util.functional.Opt2.Factory.of
 
-class SqlDslMapper {
+class MySqlDslMapper {
 
     private val dbConfig = DBConfig(Config())
     private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
@@ -22,7 +22,7 @@ class SqlDslMapper {
                     .filter { it.isNotEmpty() }
                     .ifMissingThrow { Exception("List of blocks was empty") }
 
-            return of(SqlDslMapper())
+            return of(MySqlDslMapper())
                     .mapWith(blockList) { dsl, list -> dsl.build(list) }
                     .getOrElseThrow { Exception("Unable to build sql for list $blockList") } ?: ""
         }
