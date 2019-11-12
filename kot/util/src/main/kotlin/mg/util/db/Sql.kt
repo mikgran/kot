@@ -2,6 +2,8 @@ package mg.util.db
 
 import kotlin.reflect.KProperty1
 
+// Class chains intended just to collect information and provide
+// clear options when sql syntax is applicable
 class Sql {
     companion object {
         infix fun <T> select(t: T): SelectBlock<T> {
@@ -17,7 +19,6 @@ abstract class BuildingBlock {
     abstract val blocks: MutableList<BuildingBlock>
     fun list() = blocks
     protected fun simpleName() = this::class.simpleName
-    fun build(): String = SqlDslMapper.map(blocks)
 }
 
 data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
@@ -59,5 +60,4 @@ data class UpdateBlock<T>(override val blocks: MutableList<BuildingBlock>, val t
     override fun toString(): String {
         return "${simpleName()}(type=$type)"
     }
-
 }
