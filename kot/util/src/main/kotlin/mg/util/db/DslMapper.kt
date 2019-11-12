@@ -7,5 +7,5 @@ interface DslMapper {
     // MySqlDslMapper.map(op.list()) ->
     // SELECT * FROM person12345 as p WHERE p.firstName = "name"
 
-    fun <T : Any> map(blockList: MutableList<BuildingBlock>): T
+    fun map(blockList: MutableList<BuildingBlock>): String
 }
