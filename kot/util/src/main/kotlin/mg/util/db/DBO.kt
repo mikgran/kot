@@ -79,6 +79,13 @@ class DBO(private val mapper: SqlMapper) {
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
     }
 
+    fun findBy(block: BuildingBlock) : List<Any> {
+
+
+
+        return listOf<String>()
+    }
+
     fun <T : Any> find(t: T, connection: Connection): List<T> {
 
         val findSql = Opt2.of(t)
@@ -94,6 +101,8 @@ class DBO(private val mapper: SqlMapper) {
 
         return mappedT ?: emptyList()
     }
+
+
 
     companion object {
         const val CONNECTION_WAS_CLOSED = "Connection was closed while attempting to read from it"

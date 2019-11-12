@@ -1,6 +1,7 @@
 package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
+import mg.util.db.DBTest.*
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
@@ -115,6 +116,16 @@ internal class DBOTest {
 
         assertNotNull(candidate)
         assertEquals("$first1 $last2", candidate)
+    }
+
+    @Test
+    fun testDslSelect() {
+
+        val sql = Sql select PersonB() where PersonB::firstName eq "name"
+
+        val find: List<Any> = dbo.findBy(sql)
+
+        // TODO
     }
 
     @Suppress("unused")

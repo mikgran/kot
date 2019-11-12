@@ -35,9 +35,11 @@ class DB {
         return DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql")).buildUniqueId(t)
     }
 
-    fun <T : Any> findBySql(freeSql: () -> String) {
+    fun findByDsl(dsl: MutableList<BuildingBlock>) : Any {
 
-
+        val sqlString = DslMapperFactory.get(dbConfig.mapper).map(dsl)
+        return null as Any
+        // return DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql")).find(sqlString))
     }
 
 }

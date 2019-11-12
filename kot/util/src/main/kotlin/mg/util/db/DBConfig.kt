@@ -8,7 +8,7 @@ import javax.sql.DataSource
 
 class DBConfig(config: Config) {
 
-    var properties = Properties()
+    private var properties = Properties()
         // get() = field
     private var dbDriver: String? = null
     private var dbUrl: String? = null
