@@ -6,6 +6,7 @@ import mg.util.functional.Opt2.Factory.of
 class SqlDslMapper {
 
     private val dbConfig = DBConfig(Config())
+    private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
     private val columns = HashMap<String, String>()
     private val tables = HashMap<String, String>()
     private val wheres = HashMap<String, String>()
@@ -37,30 +38,35 @@ class SqlDslMapper {
 
     private fun buildSelect(blocks: MutableList<BuildingBlock>): String {
 
-        /*
-            private val columns = HashMap<String, String>()
-            private val tables = HashMap<String, String>()
-            private val wheres = HashMap<String, String>()
-
-            val op = Sql select PersonB() where PersonB::firstName is "name"
-
-            // SELECT * FROM person12345 as p WHERE p.firstName = "name"
-         */
-
         val select = blocks[0] as SelectBlock<*>
         val where = blocks[1] as WhereBlock<*>
         val operation = blocks[2] as OperationBlock<*>
 
-        val typeT = of(select.type).getOrElseThrow { Exception("buildSelect: Missing type") }!!
+        val typeT = of(select.type)
+                .getOrElseThrow { Exception("buildSelect: Missing type") }!!
 
         // SELECT * FROM person12345 as p WHERE p.firstName = "name"
 
-        val uniqueId = of(DBO(SqlMapperFactory.get(dbConfig.mapper)))
+        val uniqueId = of(dbo)
                 .map { it.buildUniqueId(typeT) }
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("Cannot build uid for ${select.type}") }
 
+        /*
+           private val columns = HashMap<String, String>()
+           private val tables = HashMap<String, String>()
+           private val wheres = HashMap<String, String>()
+
+           val op = Sql select PersonB() where PersonB::firstName is "name"
+           // SELECT * FROM person12345 as p WHERE p.firstName = "name"
+        */
+
         val fields = ""
+
+        val metadata = dbo.buildMetadata(typeT)
+
+
+
         val uidAlias = ""
         val operations = ""
 
@@ -71,6 +77,6 @@ class SqlDslMapper {
     }
 
     fun buildFields(dbo: DBO): Any {
-
+        return ""
     }
 }
