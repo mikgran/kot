@@ -117,6 +117,7 @@ internal class DBOTest {
         assertEquals("$first1 $last2", candidate)
     }
 
+    @Suppress("unused")
     companion object {
 
         @AfterAll
