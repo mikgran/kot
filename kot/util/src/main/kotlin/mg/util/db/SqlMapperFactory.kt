@@ -6,5 +6,4 @@ object SqlMapperFactory {
         "mysql" -> MySqlMapper
         else -> MySqlMapper
     }
-
 }
