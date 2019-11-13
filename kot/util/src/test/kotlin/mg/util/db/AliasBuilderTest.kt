@@ -10,26 +10,25 @@ internal class AliasBuilderTest {
     private fun `add three items`() {
 
         val candidate = AliasBuilder.alias("Zuto")
-        assertEquals("Z", candidate)
+        assertEquals("z", candidate)
 
         val candidate2 = AliasBuilder.alias("ZutoB")
-        assertEquals("Z2", candidate2)
+        assertEquals("z2", candidate2)
 
         val candidate3 = AliasBuilder.alias("Yarn")
-        assertEquals("Y", candidate3)
+        assertEquals("y", candidate3)
 
-        println(AliasBuilder.toString())
         // assert for storage
-        assertEquals("{Y={Yarn=Y}, Z={ZutoB=Z2, Zuto=Z}}", AliasBuilder.toString())
+        assertEquals("{y={Yarn=y}, z={ZutoB=z2, Zuto=z}}", AliasBuilder.toString())
     }
 
     private fun `deterministic, add an item twice`() {
 
         val candidate1 = AliasBuilder.alias("ZutoB")
-        assertEquals("Z2", candidate1)
+        assertEquals("z2", candidate1)
 
         val candidate2 = AliasBuilder.alias("ZutoB")
-        assertEquals("Z2", candidate2)
+        assertEquals("z2", candidate2)
     }
 
     @Test

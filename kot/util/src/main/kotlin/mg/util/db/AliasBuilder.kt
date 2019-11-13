@@ -26,7 +26,7 @@ object AliasBuilder {
         val firstLetter = of(s)
                 .filter(String::isNotEmpty)
                 .ifMissingThrow { Exception("Not possible to alias empty strings") }
-                .map { "${s[0]}" }
+                .map { "${s[0]}".toLowerCase() }
                 .getOrElse("")
 
         val alias = of(aliases)
@@ -34,7 +34,7 @@ object AliasBuilder {
                 .map { it[firstLetter] as HashMap<String, Alias> }
                 .ifEmpty { newLetterMap(firstLetter) }
                 .case({ it.containsKey(s) }, { it[s] as Alias })
-                .case({ !it.containsKey(s) }, { newAlias(firstLetter, s) })
+                .case({ !it.containsKey(s) }, { newCachedAlias(firstLetter, s) })
                 .result()
 
         return alias.toString()
@@ -46,7 +46,7 @@ object AliasBuilder {
         return newLetterMap
     }
 
-    private fun newAlias(firstLetter: String, s: String): Alias {
+    private fun newCachedAlias(firstLetter: String, s: String): Alias {
         val newAlias = Alias(firstLetter, aliases[firstLetter]!!.size + 1)
         aliases[firstLetter]!![s] = newAlias
         return newAlias
