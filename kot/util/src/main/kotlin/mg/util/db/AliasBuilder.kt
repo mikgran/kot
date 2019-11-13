@@ -2,6 +2,17 @@ package mg.util.db
 
 import mg.util.functional.Opt2.Factory.of
 
+/*
+    map {
+        l = map {
+          lastName = Alias("l")
+          lastDate = Alias("l2")
+        }
+        f = map {
+          firstName = Alias("f")
+        }
+    }
+*/
 object AliasBuilder {
 
     private data class Alias(var c: String, var i: Int = 1) {
@@ -9,18 +20,6 @@ object AliasBuilder {
     }
 
     private val aliases = HashMap<String, HashMap<String, Alias>>()
-
-    /*
-        map {
-            l = map {
-                lastName = Alias("l")
-                lastDate = Alias("l2")
-            }
-            f = map {
-                firstName = Alias("f")
-            }
-        }
-     */
 
     fun alias(s: String): String {
 
@@ -36,7 +35,7 @@ object AliasBuilder {
                 .ifEmpty { newLetterMap(firstLetter) }
                 .case({ it.containsKey(s) }, { it[s] as Alias })
                 .case({ !it.containsKey(s) }, { newAlias(firstLetter, s) })
-                .right()
+                .result()
 
         return alias.toString()
     }
