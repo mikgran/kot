@@ -2,6 +2,8 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.functional.Opt2.Factory.of
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
 
 object MySqlDslMapper : DslMapper {
 
@@ -9,22 +11,18 @@ object MySqlDslMapper : DslMapper {
     private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
 
     override fun map(blockList: MutableList<BuildingBlock>): String {
-
-        // SELECT * FROM person12345 as p WHERE p.firstName = 'name'
-        // SELECT person12345.firstName, person12345.lastName WHERE person12345.firstName = 'name'
-
         return of(blockList)
                 .filter { it.isNotEmpty() }
-                .ifMissingThrow { Exception("List of blocks was empty") }
+                .ifMissingThrow { Exception("map: List of blocks was empty") }
                 .map(::buildSql)
-                .getOrElseThrow { Exception("Unable to build sql for list $blockList") } ?: ""
+                .getOrElseThrow { Exception("map: Unable to build sql for list $blockList") } ?: ""
     }
 
     private fun buildSql(blocks: MutableList<BuildingBlock>): String {
         return when (blocks[0]) {
             is SelectBlock<*> -> buildSelect(blocks)
             // is UpdateBlock<*> -> throw Exception("<UpdateBlock not yet implemented>")
-            else -> throw Exception("Class ${blocks[0]::class} not yet implemented")
+            else -> throw Exception("buildSql: Class ${blocks[0]::class} not yet implemented")
         }
     }
 
@@ -40,8 +38,7 @@ object MySqlDslMapper : DslMapper {
         val uniqueId = of(dbo)
                 .map { it.buildUniqueId(typeT) }
                 .filter(Common::hasContent)
-                .getOrElseThrow { Exception("Cannot build uid for ${select.type}") }!!
-
+                .getOrElseThrow { Exception("buildSelect: Cannot build uid for ${select.type}") }!!
         /*
            private val columns = HashMap<String, String>()
            private val tables = HashMap<String, String>()
@@ -50,14 +47,15 @@ object MySqlDslMapper : DslMapper {
            val op = Sql select PersonB() where PersonB::firstName eq "name"
            // SELECT * FROM person12345 as p WHERE p.firstName = "name"
         */
-
-        val fields = ""
-
-        val metadata = dbo.buildMetadata(typeT)
-
         val uidAlias = AliasBuilder.alias(uniqueId)
 
-        val operations = ""
+        val fields = typeT::class.memberProperties.joinToString(", ") { p -> "$uidAlias.${p.name.toString()}" }
+
+        val operations = "$uidAlias.${where.type.name}"
+
+        println("operations: $operations")
+
+        val compares =
 
         // SELECT p.firstName, p.lastName, p2.firstName, p2.lastName, p2.age FROM person12345 p, person1234567 p2 WHERE p.firstName = "name"
         return "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
