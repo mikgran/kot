@@ -53,6 +53,6 @@ object AliasBuilder {
     }
 
     override fun toString(): String {
-        return aliases.toString()
+        return aliases.toSortedMap().toString()
     }
 }

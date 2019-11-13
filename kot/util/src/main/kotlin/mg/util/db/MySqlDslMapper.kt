@@ -40,7 +40,7 @@ object MySqlDslMapper : DslMapper {
         val uniqueId = of(dbo)
                 .map { it.buildUniqueId(typeT) }
                 .filter(Common::hasContent)
-                .getOrElseThrow { Exception("Cannot build uid for ${select.type}") }
+                .getOrElseThrow { Exception("Cannot build uid for ${select.type}") }!!
 
         /*
            private val columns = HashMap<String, String>()
@@ -55,14 +55,12 @@ object MySqlDslMapper : DslMapper {
 
         val metadata = dbo.buildMetadata(typeT)
 
+        val uidAlias = AliasBuilder.alias(uniqueId)
 
-        val uidAlias = ""
         val operations = ""
 
-        val selectStr = "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
-
-
-        return ""
+        // SELECT p.firstName, p.lastName, p2.firstName, p2.lastName, p2.age FROM person12345 p, person1234567 p2 WHERE p.firstName = "name"
+        return "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
     }
 
 }
