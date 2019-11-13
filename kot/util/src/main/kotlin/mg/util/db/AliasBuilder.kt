@@ -5,7 +5,7 @@ import mg.util.functional.Opt2.Factory.of
 object AliasBuilder {
 
     private data class Alias(var c: String, var i: Int = 1) {
-        override fun toString(): String = if (i == 1) c else "$c$i"
+        override fun toString(): String = if (i <= 1) c else "$c$i"
     }
 
     private val aliases = HashMap<String, HashMap<String, Alias>>()
@@ -15,6 +15,9 @@ object AliasBuilder {
             l = map {
                 lastName = Alias("l")
                 lastDate = Alias("l2")
+            }
+            f = map {
+                firstName = Alias("f")
             }
         }
      */
@@ -27,33 +30,30 @@ object AliasBuilder {
                 .map { "${s[0]}" }
                 .getOrElse("")
 
-        var alias = ""
-
-        of(aliases)
+        val alias = of(aliases)
                 .filter { it.containsKey(firstLetter) }
                 .map { it[firstLetter] as HashMap<String, Alias> }
-                .map { xxx }
+                .ifEmpty { newLetterMap(firstLetter) }
+                .case({ it.containsKey(s) }, { it[s] as Alias })
+                .case({ !it.containsKey(s) }, { newAlias(firstLetter, s) })
+                .right()
 
-
-        if (aliases.containsKey(firstLetter)) {
-
-            val hashMap = aliases[firstLetter]
-            if (true == hashMap?.containsKey(s)) {
-                alias = hashMap[s].toString()
-            } else {
-
-
-            }
-
-
-        } else {
-            val hashMap = HashMap<String, Alias>()
-            hashMap[s] = Alias(firstLetter)
-            aliases[firstLetter] = hashMap
-        }
-
-
-        return ""
+        return alias.toString()
     }
 
+    private fun newLetterMap(firstLetter: String): HashMap<String, Alias> {
+        val newLetterMap = HashMap<String, Alias>()
+        aliases[firstLetter] = newLetterMap
+        return newLetterMap
+    }
+
+    private fun newAlias(firstLetter: String, s: String): Alias {
+        val newAlias = Alias(firstLetter, aliases[firstLetter]!!.size + 1)
+        aliases[firstLetter]!![s] = newAlias
+        return newAlias
+    }
+
+    override fun toString(): String {
+        return aliases.toString()
+    }
 }

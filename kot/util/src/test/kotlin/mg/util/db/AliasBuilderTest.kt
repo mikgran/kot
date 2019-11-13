@@ -8,16 +8,16 @@ internal class AliasBuilderTest {
     @Test
     fun testAlias1() {
 
-        val lastName = "lastName"
-        val lastDate = "lastDate"
-
-        val candidate = AliasBuilder.alias(lastName)
-
+        val candidate = AliasBuilder.alias("lastName")
         assertEquals("l", candidate)
 
-        val candidate2 = AliasBuilder.alias(lastDate)
-
+        val candidate2 = AliasBuilder.alias("lastDate")
         assertEquals("l2", candidate2)
 
+        val candidate3 = AliasBuilder.alias("firstName")
+        assertEquals("f", candidate3)
+
+        // assert for storage
+        assertEquals("{f={firstName=f}, l={lastName=l, lastDate=l2}}", AliasBuilder.toString())
     }
 }
