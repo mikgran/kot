@@ -2,7 +2,6 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.functional.Opt2.Factory.of
-import kotlin.reflect.full.memberProperties
 
 object MySqlDslMapper : DslMapper {
 
@@ -17,11 +16,11 @@ object MySqlDslMapper : DslMapper {
         return of(blockList)
                 .filter { it.isNotEmpty() }
                 .ifMissingThrow { Exception("List of blocks was empty") }
-                .map(::build)
+                .map(::buildSql)
                 .getOrElseThrow { Exception("Unable to build sql for list $blockList") } ?: ""
     }
 
-    private fun build(blocks: MutableList<BuildingBlock>): String {
+    private fun buildSql(blocks: MutableList<BuildingBlock>): String {
         return when (blocks[0]) {
             is SelectBlock<*> -> buildSelect(blocks)
             // is UpdateBlock<*> -> throw Exception("<UpdateBlock not yet implemented>")
@@ -52,22 +51,18 @@ object MySqlDslMapper : DslMapper {
            // SELECT * FROM person12345 as p WHERE p.firstName = "name"
         */
 
-        val uid = dbo.buildUniqueId(typeT)
+        val fields = ""
+
+        val metadata = dbo.buildMetadata(typeT)
+
+
         val uidAlias = ""
-
-
-
-        val fields = typeT::class.memberProperties
-                .map { p -> "$uidAlias.${p.name}" }
-                .joinToString { ", " }
-
         val operations = ""
 
-        val selectStr = "SELECT $fields FROM $uid $uidAlias WHERE $operations"
+        val selectStr = "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
 
 
         return ""
     }
 
 }
-
