@@ -9,9 +9,15 @@ internal class SqlTest {
 
     @Test
     fun testSqlBuilder() {
-        val op = Sql select PersonB() where PersonB::firstName eq "name"
 
-        val list: MutableList<BuildingBlock> = op.list()
+        val sql = Sql select PersonB() where PersonB::firstName eq "name"
+
+        val sql2 = Sql update PersonB() where PersonB::lastName eq "name2"
+
+        // sql.list().forEach(::println)
+        sql2.list().forEach(::println)
+
+        val list: MutableList<BuildingBlock> = sql.list()
 
         assertTrue(list.isNotEmpty())
         assertEquals(PersonB(), (list[0] as SelectBlock<*>).type)

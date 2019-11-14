@@ -25,7 +25,7 @@ object AliasBuilder {
 
         val firstLetter = of(s)
                 .filter(String::isNotEmpty)
-                .ifMissingThrow { Exception("Not possible to alias empty strings") }
+                .ifMissingThrow { Exception("alias: Not possible to alias empty strings") }
                 .map { "${s[0]}".toLowerCase() }
                 .getOrElse("")
 

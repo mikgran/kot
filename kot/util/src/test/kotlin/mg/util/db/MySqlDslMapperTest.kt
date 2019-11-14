@@ -11,9 +11,11 @@ internal class MySqlDslMapperTest {
     @Test
     fun testBuilding1() {
 
-        val op = Sql select PersonB() where PersonB::firstName eq "name"
+        val sql = Sql select PersonB() where PersonB::firstName eq "name"
 
-        val candidate = MySqlDslMapper.map(op.list())
+        val candidate = MySqlDslMapper.map(sql.list())
+
+        println("candidate: $candidate")
 
         assertTrue(hasContent(candidate), "no mapped content")
         assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'", candidate)

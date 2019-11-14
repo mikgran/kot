@@ -1,6 +1,7 @@
 package mg.util.db
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 // NOTE: use only internal data class - so the static
@@ -19,7 +20,7 @@ internal class AliasBuilderTest {
         assertEquals("y", candidate3)
 
         // assert for storage
-        assertEquals("{y={Yarn=y}, z={ZutoB=z2, Zuto=z}}", AliasBuilder.toString())
+        assertTrue(AliasBuilder.toString().contains("{y={Yarn=y}, z={ZutoB=z2, Zuto=z}}"), "should contain: {y={Yarn=y}, z={ZutoB=z2, Zuto=z}}")
     }
 
     private fun `deterministic, add an item twice`() {
