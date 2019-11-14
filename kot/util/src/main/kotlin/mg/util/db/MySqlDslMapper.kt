@@ -45,7 +45,7 @@ object MySqlDslMapper : DslMapper {
         val uniqueId = of(dbo)
                 .map { it.buildUniqueId(typeT) }
                 .filter(Common::hasContent)
-                .getOrElseThrow { Exception("Cannot build uid for ${select.type}") }!!
+                .getOrElseThrow { Exception("buildSelect: Cannot build uid for ${select.type}") }!!
 
         val uidAlias = AliasBuilder.alias(uniqueId)
 
