@@ -51,11 +51,13 @@ object MySqlDslMapper : DslMapper {
 
         val fields = typeT::class.memberProperties.joinToString(", ") { p -> "$uidAlias.${p.name}" }
 
-        val operations = ""
+        val operations = "$uidAlias.${where.type.name} = '${operation.type.toString()}'"
 
-
-
-        // SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = "name"
+        // SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'
+        // SELECT p.firstName, p.lastName, p2.name, p2.level FROM PersonB608543900 p WHERE p.firstName = 'name'
+        // JOIN Permission12345 p2 ON p.id = p2.name
+        // Sql select PersonB where PersonB::firstName eq "name" join
+        // Permission on Person::id eq Persmission::name
         return "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
     }
 
