@@ -22,7 +22,7 @@ internal class SqlTest {
         assertTrue(list.isNotEmpty())
         assertEquals(PersonB(), (list[0] as SelectBlock<*>).type)
         assertEquals(PersonB::firstName, (list[1] as WhereBlock<*>).type)
-        assertEquals("name", (list[2] as OperationBlock<*>).type)
+        assertEquals("name", (list[2] as ValueBlock<*>).type)
     }
 
 }

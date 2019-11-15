@@ -38,8 +38,8 @@ data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val t
 
 data class WhereBlock<T : KProperty1<*, *>>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
 
-    infix fun <T> eq(type: T): OperationBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> OperationBlock(b, t) }
+    infix fun <T> eq(type: T): ValueBlock<T> {
+        return getAndCacheBlock(type, blocks) { t, b -> ValueBlock(b, t) }
     }
 
     override fun toString(): String {
@@ -47,7 +47,7 @@ data class WhereBlock<T : KProperty1<*, *>>(override val blocks: MutableList<Bui
     }
 }
 
-data class OperationBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
+data class ValueBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
 
     override fun toString(): String {
         return "${simpleName()}(type=$type)"

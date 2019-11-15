@@ -37,7 +37,7 @@ object MySqlDslMapper : DslMapper {
 
         val select = blocks[0] as SelectBlock<*>
         val where = blocks[1] as WhereBlock<*>
-        val operation = blocks[2] as OperationBlock<*>
+        val operation = blocks[2] as ValueBlock<*>
 
         val typeT = of(select.type)
                 .getOrElseThrow { Exception("buildSelect: Missing type") }!!
