@@ -23,6 +23,12 @@ abstract class BuildingBlock {
     abstract val blocks: MutableList<BuildingBlock>
     fun list() = blocks
     protected fun simpleName() = this::class.simpleName
+
+    fun <T, R : BuildingBlock> getAndCacheBlock(type: T, list: MutableList<BuildingBlock>, f: (type: T, list: MutableList<BuildingBlock>) -> R): R {
+        val block = f(type, list)
+        list.add(block)
+        return block
+    }
 }
 
 data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
@@ -33,6 +39,10 @@ data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val t
 
     override fun toString(): String {
         return "${simpleName()}(type=$type)"
+    }
+
+    infix fun <T> join(type: T): InnerJoinBlock<T> {
+        return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
     }
 }
 
@@ -52,6 +62,10 @@ data class ValueBlock<T>(override val blocks: MutableList<BuildingBlock>, val ty
     override fun toString(): String {
         return "${simpleName()}(type=$type)"
     }
+
+    infix fun <T> join(type: T): InnerJoinBlock<T> {
+        return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
+    }
 }
 
 // TODO: handle updates
@@ -66,8 +80,9 @@ data class UpdateBlock<T>(override val blocks: MutableList<BuildingBlock>, val t
     }
 }
 
-private fun <T, R: BuildingBlock> getAndCacheBlock(type: T, list: MutableList<BuildingBlock>, f: (type: T, list: MutableList<BuildingBlock>) -> R): R {
-    val block = f(type, list)
-    list.add(block)
-    return block
+data class InnerJoinBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
+
+    override fun toString(): String {
+        return "${simpleName()}(type=$type)"
+    }
 }
