@@ -1,7 +1,6 @@
 package mg.util.db
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 // NOTE: use only internal data class - so the static
@@ -10,25 +9,28 @@ internal class AliasBuilderTest {
 
     private fun `add three items`() {
 
-        val candidate = AliasBuilder.alias("Zuto")
+        val candidate = AliasBuilder.alias(Z1)
         assertEquals("z", candidate)
 
-        val candidate2 = AliasBuilder.alias("ZutoB")
+        val candidate2 = AliasBuilder.alias(Z2)
         assertEquals("z2", candidate2)
 
-        val candidate3 = AliasBuilder.alias("Yarn")
+        val candidate3 = AliasBuilder.alias(Y)
         assertEquals("y", candidate3)
 
         // assert for storage
-        assertTrue(AliasBuilder.toString().contains("{y={Yarn=y}, z={ZutoB=z2, Zuto=z}}"), "should contain: {y={Yarn=y}, z={ZutoB=z2, Zuto=z}}")
+        val aliases = AliasBuilder.aliases()
+        assertEquals("z", aliases.getValue("z").getValue(Z1).toString())
+        assertEquals("z2", aliases.getValue("z").getValue(Z2).toString())
+        assertEquals("y", aliases.getValue("y").getValue(Y).toString())
     }
 
     private fun `deterministic, add an item twice`() {
 
-        val candidate1 = AliasBuilder.alias("ZutoB")
+        val candidate1 = AliasBuilder.alias(Z2)
         assertEquals("z2", candidate1)
 
-        val candidate2 = AliasBuilder.alias("ZutoB")
+        val candidate2 = AliasBuilder.alias(Z2)
         assertEquals("z2", candidate2)
     }
 
@@ -40,4 +42,10 @@ internal class AliasBuilderTest {
         `deterministic, add an item twice`()
     }
 
+
+    companion object {
+        const val Z1 = "Zuto"
+        const val Z2 = "ZutoB"
+        const val Y = "Yarn"
+    }
 }

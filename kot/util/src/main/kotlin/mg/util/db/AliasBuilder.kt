@@ -15,7 +15,7 @@ import mg.util.functional.Opt2.Factory.of
 */
 object AliasBuilder {
 
-    private data class Alias(var c: String, var i: Int = 1) {
+    internal data class Alias(var c: String, var i: Int = 1) {
         override fun toString(): String = if (i <= 1) c else "$c$i"
     }
 
@@ -54,5 +54,9 @@ object AliasBuilder {
 
     override fun toString(): String {
         return aliases.toSortedMap().toString()
+    }
+
+    internal fun aliases(): Map<String, HashMap<String, Alias>> {
+        return aliases.toMap()
     }
 }
