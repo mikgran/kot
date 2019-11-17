@@ -18,13 +18,11 @@ internal class MySqlDslMapperTest {
 
         val candidate = MySqlDslMapper.map(sql.list())
 
-        println("candidate: $candidate")
-
         assertHasContent(candidate)
         assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'", candidate)
     }
 
-    // @Test
+    @Test
     fun testBuildingSqlFromDsl2() {
 
         val sql = Sql select Place() join Address()
@@ -34,9 +32,6 @@ internal class MySqlDslMapperTest {
         val dbo = DBO(SqlMapperFactory.get("mysql"))
         val p = AliasBuilder.alias(dbo.buildUniqueId(Place()))
         val a = AliasBuilder.alias(dbo.buildUniqueId(Address()))
-
-        println("p:: $p")
-        println("a:: $a")
 
         assertHasContent(candidate)
         assertEquals("SELECT $p.address, $a.fullAddress, $a.streetName," +

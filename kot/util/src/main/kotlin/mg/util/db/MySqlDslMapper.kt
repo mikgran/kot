@@ -12,10 +12,7 @@ object MySqlDslMapper : DslMapper {
     private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
 
     override fun map(blockList: MutableList<BuildingBlock>): String {
-
-        // SELECT * FROM person12345 as p WHERE p.firstName = 'name'
-        // SELECT person12345.firstName, person12345.lastName WHERE person12345.firstName = 'name'
-
+        
         return of(blockList)
                 .filter { it.isNotEmpty() }
                 .ifMissingThrow { Exception("map: List of blocks was empty") }
@@ -50,9 +47,10 @@ object MySqlDslMapper : DslMapper {
 
         val p = getParameters(blocks)
 
-        getTypeTUidAndAlias(p)
-        getFields(p)
-        getOperations(p)
+        buildTypeTUidAndAlias(p)
+        buildFields(p)
+        buildOperations(p)
+        buildJoins(p)
 
         // Sql select PersonB where PersonB::firstName eq "name" join
         // Permission on Person::id eq Permission::person_id
@@ -72,18 +70,23 @@ object MySqlDslMapper : DslMapper {
                 .rcv { append(" JOIN ") }
                 .rcv { append("") }
 
-        return builder.toString()
+        return builder.get().toString()
     }
 
-    private fun getOperations(p: SelectParameters) {
+    private fun buildJoins(p: MySqlDslMapper.SelectParameters) {
+
+
+    }
+
+    private fun buildOperations(p: SelectParameters) {
         p.operations = "${p.uniqueIdAlias}.${p.whereBlock?.type?.name} = '${p.valueBlock?.type?.toString()}'"
     }
 
-    private fun getFields(p: SelectParameters) {
+    private fun buildFields(p: SelectParameters) {
         p.fields = p.typeT!!::class.memberProperties.joinToString(", ") { "${p.uniqueIdAlias}.${it.name}" }
     }
 
-    private fun getTypeTUidAndAlias(p: SelectParameters) {
+    private fun buildTypeTUidAndAlias(p: SelectParameters) {
         p.typeT = of(p.selectBlock?.type)
                 .getOrElseThrow { Exception("buildSelect: Missing type") }!!
 
