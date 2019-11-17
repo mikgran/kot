@@ -34,38 +34,58 @@ object MySqlDslMapper : DslMapper {
         // SELECT * FROM person12345 as p WHERE p.firstName = "name"
     */
     private data class SelectParameters(var selectBlock: SelectBlock<*>? = null,
-                                var valueBlock: ValueBlock<*>? = null,
-                                var whereBlock: WhereBlock<*>? = null,
-                                var innerJoinBlock: InnerJoinBlock<*>? = null,
-                                var typeT: Any? = null,
-                                var uniqueId: String? = null,
-                                var uniqueIdAlias: String? = null
+                                        var valueBlock: ValueBlock<*>? = null,
+                                        var whereBlock: WhereBlock<*>? = null,
+                                        var innerJoinBlock: InnerJoinBlock<*>? = null,
+                                        var typeT: Any? = null,
+                                        var uniqueId: String? = null,
+                                        var uniqueIdAlias: String? = null,
+                                        var fields: String? = null,
+                                        var operations: String? = null
     )
 
     private fun buildSelect(blocks: MutableList<BuildingBlock>): String {
 
         val p = getParameters(blocks)
 
-        val typeT = of(p.selectBlock?.type)
+        getTypeTUidAndAlias(p)
+        getFields(p)
+        getOperations(p)
+
+        // Sql select PersonB where PersonB::firstName eq "name" join
+        // Permission on Person::id eq Permission::person_id
+        return StringBuilder()
+                .append("SELECT ")
+                .append(p.fields)
+                .append(" FROM ")
+                .append(p.uniqueId)
+                .append(" ")
+                .append(p.uniqueIdAlias)
+                .append(" WHERE ")
+                .append(p.operations)
+                .toString()
+
+        // return "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
+    }
+
+    private fun getOperations(p: SelectParameters) {
+        p.operations = "${p.uniqueIdAlias}.${p.whereBlock?.type?.name} = '${p.valueBlock?.type?.toString()}'"
+    }
+
+    private fun getFields(p: SelectParameters) {
+        p.fields = p.typeT!!::class.memberProperties.joinToString(", ") { "${p.uniqueIdAlias}.${it.name}" }
+    }
+
+    private fun getTypeTUidAndAlias(p: SelectParameters) {
+        p.typeT = of(p.selectBlock?.type)
                 .getOrElseThrow { Exception("buildSelect: Missing type") }!!
 
-        val uniqueId = of(dbo)
-                .map { it.buildUniqueId(typeT) }
+        p.uniqueId = of(dbo)
+                .map { it.buildUniqueId(p.typeT!!) }
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("buildSelect: Cannot build uid for ${p.selectBlock?.type}") }!!
 
-        val uidAlias = AliasBuilder.alias(uniqueId)
-
-        val fields = typeT::class.memberProperties.joinToString(", ") { prop -> "$uidAlias.${prop.name}" }
-
-        val operations = "$uidAlias.${p.whereBlock?.type?.name} = '${p.valueBlock?.type?.toString()}'"
-
-        // SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'
-        // SELECT p.firstName, p.lastName, p2.name, p2.level FROM PersonB608543900 p WHERE p.firstName = 'name'
-        // JOIN Permission12345 p2 ON p.id = p2.name
-        // Sql select PersonB where PersonB::firstName eq "name" join
-        // Permission on Person::id eq Permission::name
-        return "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
+        p.uniqueIdAlias = AliasBuilder.alias(p.uniqueId!!)
     }
 
     private fun getParameters(blocks: MutableList<BuildingBlock>): SelectParameters {
