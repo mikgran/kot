@@ -7,7 +7,12 @@ object Common {
         else -> false
     }
 
-    fun nonThrowingBlock(block: () -> Unit)  {
+    fun hasContent(candidate: Any?): Boolean = when (candidate) {
+        null -> false
+        else -> true
+    }
+
+    fun nonThrowingBlock(block: () -> Unit) {
         try {
             block()
         } catch (e: Exception) {

@@ -54,16 +54,20 @@ object MySqlDslMapper : DslMapper {
 
         // Sql select PersonB where PersonB::firstName eq "name" join
         // Permission on Person::id eq Permission::person_id
-        return StringBuilder()
+        val builder = StringBuilder()
                 .append("SELECT ")
                 .append(p.fields)
                 .append(" FROM ")
                 .append(p.uniqueId)
                 .append(" ")
                 .append(p.uniqueIdAlias)
-                .append(" WHERE ")
-                .append(p.operations)
-                .toString()
+
+        of(builder)
+                .filter { Common.hasContent(p.whereBlock) }
+                .map { it.append(" WHERE ") }
+                .map { it.append(p.operations) }
+
+        return builder.toString()
 
         // return "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
     }

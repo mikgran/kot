@@ -20,6 +20,19 @@ internal class CommonTest {
         assertFalse(hasContent3)
     }
 
+    @Test
+    fun `test hasContent with Any`() {
+
+        val nullObj: Any? = null
+        val someObj: Int? = Int.MIN_VALUE
+
+        val candidate = hasContent(nullObj)
+        assertFalse(candidate, "null should yield false")
+
+        val candidate2 = hasContent(someObj)
+        assertTrue(hasContent(candidate2), "a non null should yield true")
+    }
+
 
 
 }

@@ -24,7 +24,7 @@ internal class MySqlDslMapperTest {
         assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'", candidate)
     }
 
-    // @Test
+    @Test
     fun testBuildingSqlFromDsl2() {
 
         val sql = Sql select Place() join Address()
