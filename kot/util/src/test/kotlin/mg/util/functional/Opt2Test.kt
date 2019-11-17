@@ -407,8 +407,8 @@ internal class Opt2Test {
 
         val tempValue = getTempValue()
         Opt2.of(tempValue)
-                .filter { false } // emptied here
-                .rcv { set(XXX) } // never called
+                .filter { false }
+                .rcv { set(XXX) }
 
         assertEquals(YYY, tempValue.a)
     }
