@@ -159,5 +159,13 @@ class Opt2<T : Any> {
 
         @JvmStatic
         fun <T : Any> empty(): Opt2<T> = Opt2()
+
     }
+}
+
+fun <T: Any> Opt2<T>.rcv(block: T.() -> Unit): Opt2<T> {
+    when {
+        isPresent() -> block(get()!!)
+    }
+    return this
 }

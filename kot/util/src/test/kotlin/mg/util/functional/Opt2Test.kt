@@ -396,7 +396,30 @@ internal class Opt2Test {
         assertEquals("9", candidate2)
     }
 
-    class TempValue(var a: String?)
+    @Test
+    fun testTReceiver() {
+
+        val candidate = Opt2.of(getTempValue())
+                .rcv { set(XXX) }
+                .get()
+
+        assertEquals(XXX, candidate?.a)
+
+        val tempValue = getTempValue()
+        Opt2.of(tempValue)
+                .filter { false } // emptied here
+                .rcv { set(XXX) } // never called
+
+        assertEquals(YYY, tempValue.a)
+    }
+
+    private fun getTempValue() = TempValue(YYY)
+
+    class TempValue(var a: String?) {
+        fun set(s: String) {
+            a = s
+        }
+    }
 
     companion object {
         const val ANOTHER_STRING = "anotherString"
@@ -405,6 +428,8 @@ internal class Opt2Test {
         const val VALUE1 = "value1"
         const val VALUE2 = "value2"
         const val VALUE3 = "value2"
+        const val XXX = "XXX"
+        const val YYY = "YYY"
     }
 
 
