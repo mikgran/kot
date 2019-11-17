@@ -1,7 +1,9 @@
 package mg.util.db
 
 import mg.util.common.Common
+import mg.util.common.Common.hasContent
 import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.rcv
 import kotlin.reflect.full.memberProperties
 
 object MySqlDslMapper : DslMapper {
@@ -54,22 +56,23 @@ object MySqlDslMapper : DslMapper {
 
         // Sql select PersonB where PersonB::firstName eq "name" join
         // Permission on Person::id eq Permission::person_id
-        val builder = StringBuilder()
-                .append("SELECT ")
-                .append(p.fields)
-                .append(" FROM ")
-                .append(p.uniqueId)
-                .append(" ")
-                .append(p.uniqueIdAlias)
+        val builder = of(StringBuilder())
+                .rcv { append("SELECT ") }
+                .rcv { append(p.fields) }
+                .rcv { append(" FROM ") }
+                .rcv { append(p.uniqueId) }
+                .rcv { append(" ") }
+                .rcv { append(p.uniqueIdAlias) }
 
-        of(builder)
-                .filter { Common.hasContent(p.whereBlock) }
-                .map { it.append(" WHERE ") }
-                .map { it.append(p.operations) }
+        builder.filter { hasContent(p.whereBlock) }
+                .rcv { append(" WHERE ") }
+                .rcv { append(p.operations) }
+
+        builder.filter { hasContent(p.innerJoinBlock) }
+                .rcv { append(" JOIN ") }
+                .rcv { append("") }
 
         return builder.toString()
-
-        // return "SELECT $fields FROM $uniqueId $uidAlias WHERE $operations"
     }
 
     private fun getOperations(p: SelectParameters) {
