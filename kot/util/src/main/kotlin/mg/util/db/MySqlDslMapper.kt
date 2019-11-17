@@ -12,7 +12,7 @@ object MySqlDslMapper : DslMapper {
     private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
 
     override fun map(blockList: MutableList<BuildingBlock>): String {
-        
+
         return of(blockList)
                 .filter { it.isNotEmpty() }
                 .ifMissingThrow { Exception("map: List of blocks was empty") }
@@ -40,7 +40,8 @@ object MySqlDslMapper : DslMapper {
                                         var uniqueId: String? = null,
                                         var uniqueIdAlias: String? = null,
                                         var fields: String? = null,
-                                        var operations: String? = null
+                                        var operations: String? = null,
+                                        var joins: String? = null
     )
 
     private fun buildSelect(blocks: MutableList<BuildingBlock>): String {
@@ -73,9 +74,21 @@ object MySqlDslMapper : DslMapper {
         return builder.get().toString()
     }
 
-    private fun buildJoins(p: MySqlDslMapper.SelectParameters) {
+    private fun buildJoins(p: MySqlDslMapper.SelectParameters): String {
+
+        // process a list of typeV joins
+//        p.typeT = of(p.innerJoinBlock?.type)
+//                .getOrElseThrow { Exception("buildSelect: Missing join type") }!!
+//
+//        p.uniqueId = of(dbo)
+//                .map { it.buildUniqueId(p.typeT!!) }
+//                .filter(Common::hasContent)
+//                .getOrElseThrow { Exception("buildSelect: Cannot build uid for ${p.selectBlock?.type}") }!!
+//
+//        p.uniqueIdAlias = AliasBuilder.alias(p.uniqueId!!)
 
 
+        return p.innerJoinBlock?.type!!::class.simpleName ?: ""
     }
 
     private fun buildOperations(p: SelectParameters) {
@@ -88,7 +101,7 @@ object MySqlDslMapper : DslMapper {
 
     private fun buildTypeTUidAndAlias(p: SelectParameters) {
         p.typeT = of(p.selectBlock?.type)
-                .getOrElseThrow { Exception("buildSelect: Missing type") }!!
+                .getOrElseThrow { Exception("buildSelect: Missing select type") }!!
 
         p.uniqueId = of(dbo)
                 .map { it.buildUniqueId(p.typeT!!) }
