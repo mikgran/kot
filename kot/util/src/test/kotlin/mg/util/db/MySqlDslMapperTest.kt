@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common.hasContent
 import mg.util.db.DBTest.PersonB
+import mg.util.db.dsl.Sql
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -22,7 +23,7 @@ internal class MySqlDslMapperTest {
         assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'", candidate)
     }
 
-    @Test
+    // @Test
     fun testBuildingSqlFromDsl2() {
 
         val sql = Sql select Place() join Address()

@@ -1,6 +1,7 @@
 package mg.util.db
 
 import mg.util.db.DBTest.PersonB
+import mg.util.db.dsl.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

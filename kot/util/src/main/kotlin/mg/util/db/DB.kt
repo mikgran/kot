@@ -1,8 +1,8 @@
 package mg.util.db
 
+import mg.util.db.dsl.BuildingBlock
 import mg.util.functional.Opt2
 import java.sql.Connection
-import kotlin.reflect.KProperty1
 
 // Very crude type T persistence solution
 class DB {

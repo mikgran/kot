@@ -1,5 +1,7 @@
 package mg.util.db
 
+import mg.util.db.dsl.BuildingBlock
+
 interface DslMapper {
 
     // Free hand DSL

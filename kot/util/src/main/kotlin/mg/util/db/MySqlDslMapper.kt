@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.common.Common.hasContent
+import mg.util.db.dsl.*
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.full.memberProperties
@@ -51,10 +52,9 @@ object MySqlDslMapper : DslMapper {
         buildTypeTUidAndAlias(p)
         buildFields(p)
         buildOperations(p)
-        buildJoins(p)
+        // buildJoins(p)
 
-        // Sql select PersonB where PersonB::firstName eq "name" join
-        // Permission on Person::id eq Permission::person_id
+        // Sql select PersonB where PersonB::firstName eq "name" join Permission on Person::id eq Permission::person_id
         val builder = of(StringBuilder())
                 .rcv { append("SELECT ") }
                 .rcv { append(p.fields) }

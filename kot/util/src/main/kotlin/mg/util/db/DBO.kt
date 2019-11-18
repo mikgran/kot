@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.db.dsl.BuildingBlock
 import mg.util.functional.Opt2
 import java.sql.Connection
 import java.sql.ResultSet
