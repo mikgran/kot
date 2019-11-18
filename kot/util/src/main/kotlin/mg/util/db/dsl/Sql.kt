@@ -1,7 +1,5 @@
 package mg.util.db.dsl
 
-// Class chains intended just to collect information and provide
-// clear options when sql syntax is applicable
 class Sql {
     companion object {
 
