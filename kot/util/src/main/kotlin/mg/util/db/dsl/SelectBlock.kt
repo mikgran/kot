@@ -1,7 +1,12 @@
 package mg.util.db.dsl
 
-data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
+import mg.util.common.Common
+import mg.util.db.AliasBuilder
+import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.rcv
+import kotlin.reflect.full.memberProperties
 
+data class SelectBlock<T: Any>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
     infix fun <T : Any> where(type: T): WhereBlock<T> {
         return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
     }
@@ -14,9 +19,32 @@ data class SelectBlock<T>(override val blocks: MutableList<BuildingBlock>, val t
         return "${simpleName()}(type=$type)"
     }
 
-    override fun build(): String {
+    override fun build(dp: DslParameters): String {
 
+        val builder = of(StringBuilder())
+                .rcv { append("SELECT ") }
+                .rcv { append(dp.fields) } // SELECT p.firstName, p.lastName FROM Persons p
+                .rcv { append(" FROM ") }
+                .rcv { append(dp.uniqueId) }
+                .rcv { append(" ") }
+                .rcv { append(dp.uniqueIdAlias) }
 
-        return ""
+        return builder.get().toString()
+    }
+
+    override fun buildFields(dp: DslParameters): String {
+        dp.typeT = of(type)
+                .getOrElseThrow { Exception("build: Missing select type") }!!
+
+        dp.uniqueId = of(dbo)
+                .map { it.buildUniqueId(dp.typeT!!) }
+                .filter(Common::hasContent)
+                .getOrElseThrow { Exception("build: Cannot build uid for $type") }!!
+
+        dp.uniqueIdAlias = AliasBuilder.alias(dp.uniqueId!!)
+
+        // "SELECT p.firstName, p.lastName FROM Person p"
+        return dp.typeT!!::class.memberProperties.joinToString(", ") { "${dp.uniqueIdAlias}.${it.name}" }
     }
 }
+

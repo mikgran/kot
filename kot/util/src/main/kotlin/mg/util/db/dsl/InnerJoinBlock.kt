@@ -9,8 +9,10 @@ data class InnerJoinBlock<T : Any>(override val blocks: MutableList<BuildingBloc
         return "${simpleName()}(type=$type)"
     }
 
-    override fun build(): String {
+    override fun build(dp: DslParameters): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun buildFields(dp: DslParameters): String = ""
 }
 

@@ -9,7 +9,8 @@ data class ValueBlock<T>(override val blocks: MutableList<BuildingBlock>, val ty
         return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
     }
 
-    override fun build(): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun build(d: DslParameters): String {
+        return " '${type.toString()}'"
     }
+    override fun buildFields(dp: DslParameters): String = ""
 }

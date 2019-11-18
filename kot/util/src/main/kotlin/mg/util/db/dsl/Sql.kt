@@ -3,8 +3,8 @@ package mg.util.db.dsl
 class Sql {
     companion object {
 
-        infix fun <T> select(t: T): SelectBlock<T> = newListAndCacheBlock { list -> SelectBlock(list, t) }
-        infix fun <T> update(t: T): UpdateBlock<T> = newListAndCacheBlock { list -> UpdateBlock(list, t) }
+        infix fun <T : Any> select(t: T): SelectBlock<T> = newListAndCacheBlock { list -> SelectBlock(list, t) }
+        infix fun <T : Any> update(t: T): UpdateBlock<T> = newListAndCacheBlock { list -> UpdateBlock(list, t) }
 
         private fun <T : BuildingBlock> newListAndCacheBlock(funktion: (blocks: MutableList<BuildingBlock>) -> T): T {
             val list = mutableListOf<BuildingBlock>()

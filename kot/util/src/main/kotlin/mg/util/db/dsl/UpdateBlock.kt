@@ -12,7 +12,9 @@ data class UpdateBlock<T>(override val blocks: MutableList<BuildingBlock>, val t
         return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
     }
 
-    override fun build(): String {
+    override fun build(dp: DslParameters): String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun buildFields(dp: DslParameters): String = ""
 }
