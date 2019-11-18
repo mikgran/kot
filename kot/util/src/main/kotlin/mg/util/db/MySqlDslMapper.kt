@@ -5,6 +5,7 @@ import mg.util.common.Common.hasContent
 import mg.util.db.dsl.*
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
 object MySqlDslMapper : DslMapper {
@@ -49,12 +50,27 @@ object MySqlDslMapper : DslMapper {
 
         val p = getParameters(blocks)
 
-        buildTypeTUidAndAlias(p)
-        buildFields(p)
-        buildOperations(p)
+        p.typeT = of(p.selectBlock?.type)
+                .getOrElseThrow { Exception("buildSelect: Missing select type") }!!
+        p.uniqueId = of(dbo)
+                .map { it.buildUniqueId(p.typeT!!) }
+                .filter(Common::hasContent)
+                .getOrElseThrow { Exception("buildSelect: Cannot build uid for ${p.selectBlock?.type}") }!!
+        p.uniqueIdAlias = AliasBuilder.alias(p.uniqueId!!)
+
+        p.fields = p.typeT!!::class.memberProperties.joinToString(", ") { "${p.uniqueIdAlias}.${it.name}" }
+
+        of(p.whereBlock)
+                .map { it.type }
+                .filter { it is KProperty1<*, *> }
+                .map { it as KProperty1<*, *> }
+                .map { p.operations = "${p.uniqueIdAlias}.${it.name} = '${p.valueBlock?.type?.toString()}'" }
+
+        // p.operations = "${p.uniqueIdAlias}.${kProperty1} = '${p.valueBlock?.type?.toString()}'"
         // buildJoins(p)
 
-        // Sql select PersonB where PersonB::firstName eq "name" join Permission on Person::id eq Permission::person_id
+        // Sql select PersonB where PersonB::firstName eq "name" join Permission on Person::id eq Permission::person_id'
+        // SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'
         val builder = of(StringBuilder())
                 .rcv { append("SELECT ") }
                 .rcv { append(p.fields) }
@@ -72,43 +88,6 @@ object MySqlDslMapper : DslMapper {
                 .rcv { append("") }
 
         return builder.get().toString()
-    }
-
-    private fun buildJoins(p: MySqlDslMapper.SelectParameters): String {
-
-        // process a list of typeV joins
-//        p.typeT = of(p.innerJoinBlock?.type)
-//                .getOrElseThrow { Exception("buildSelect: Missing join type") }!!
-//
-//        p.uniqueId = of(dbo)
-//                .map { it.buildUniqueId(p.typeT!!) }
-//                .filter(Common::hasContent)
-//                .getOrElseThrow { Exception("buildSelect: Cannot build uid for ${p.selectBlock?.type}") }!!
-//
-//        p.uniqueIdAlias = AliasBuilder.alias(p.uniqueId!!)
-
-
-        return p.innerJoinBlock?.type!!::class.simpleName ?: ""
-    }
-
-    private fun buildOperations(p: SelectParameters) {
-        p.operations = "${p.uniqueIdAlias}.${p.whereBlock?.type?.name} = '${p.valueBlock?.type?.toString()}'"
-    }
-
-    private fun buildFields(p: SelectParameters) {
-        p.fields = p.typeT!!::class.memberProperties.joinToString(", ") { "${p.uniqueIdAlias}.${it.name}" }
-    }
-
-    private fun buildTypeTUidAndAlias(p: SelectParameters) {
-        p.typeT = of(p.selectBlock?.type)
-                .getOrElseThrow { Exception("buildSelect: Missing select type") }!!
-
-        p.uniqueId = of(dbo)
-                .map { it.buildUniqueId(p.typeT!!) }
-                .filter(Common::hasContent)
-                .getOrElseThrow { Exception("buildSelect: Cannot build uid for ${p.selectBlock?.type}") }!!
-
-        p.uniqueIdAlias = AliasBuilder.alias(p.uniqueId!!)
     }
 
     private fun getParameters(blocks: MutableList<BuildingBlock>): SelectParameters {

@@ -2,6 +2,8 @@ package mg.util.db
 
 import mg.util.common.Common.hasContent
 import mg.util.db.DBTest.PersonB
+import mg.util.db.dsl.BuildingBlock
+import mg.util.db.dsl.InnerJoinBlock
 import mg.util.db.dsl.Sql
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -26,7 +28,7 @@ internal class MySqlDslMapperTest {
     // @Test
     fun testBuildingSqlFromDsl2() {
 
-        val sql = Sql select Place() join Address()
+        val sql: BuildingBlock = Sql select Place() // join Address()
 
         val candidate = MySqlDslMapper.map(sql.list())
 
