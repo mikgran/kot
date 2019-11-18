@@ -159,7 +159,6 @@ class Opt2<T : Any> {
 
         @JvmStatic
         fun <T : Any> empty(): Opt2<T> = Opt2()
-
     }
 }
 

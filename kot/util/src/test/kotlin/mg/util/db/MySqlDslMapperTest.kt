@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 internal class MySqlDslMapperTest {
 
-    private data class Address(val fullAddress: String = "", val streetName: String = "", val streetNumber: Int = 0)
+    private data class Address(val fullAddress: String = "")
     private data class Place(val address: Address = Address(), val rentInCents: Int = 0)
 
     @Test
@@ -25,10 +25,10 @@ internal class MySqlDslMapperTest {
         assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'", candidate)
     }
 
-    // @Test
+    @Test
     fun testBuildingSqlFromDsl2() {
 
-        val sql: BuildingBlock = Sql select Place() // join Address()
+        val sql: BuildingBlock = Sql select Place() join Address()
 
         val candidate = MySqlDslMapper.map(sql.list())
 
@@ -37,8 +37,7 @@ internal class MySqlDslMapperTest {
         val a = AliasBuilder.alias(dbo.buildUniqueId(Address()))
 
         assertHasContent(candidate)
-        assertEquals("SELECT $p.address, $a.fullAddress, $a.streetName," +
-                " $a.streetNumber FROM Place536353721 $p JOIN Address $a", candidate)
+        assertEquals("SELECT $p.address, $p.rentInCents, $a.fullAddress FROM Place536353721 $p JOIN Address2002641509 $a", candidate)
     }
 
     private fun assertHasContent(candidate: String) {

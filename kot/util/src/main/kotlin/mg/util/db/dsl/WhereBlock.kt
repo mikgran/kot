@@ -15,8 +15,6 @@ data class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
 
     override fun build(dp: DslParameters): String {
 
-        println("uid: ${dp.uniqueIdAlias}")
-
         val operations = of(type)
                 .filter { it is KProperty1<*, *> }
                 .map { it as KProperty1<*, *> }
@@ -24,8 +22,10 @@ data class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
                 .getOrElse("")
 
         val builder = of(StringBuilder())
-                .rcv { append(" WHERE ") }
-                .rcv { append(operations) }
+                .rcv {
+                    append(" WHERE ")
+                    append(operations)
+                }
 
         return builder.get().toString()
     }
