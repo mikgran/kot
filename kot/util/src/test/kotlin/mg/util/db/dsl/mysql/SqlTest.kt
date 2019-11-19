@@ -1,23 +1,22 @@
-package mg.util.db
+package mg.util.db.dsl.mysql
 
-import mg.util.db.DBTest.PersonB
-import mg.util.db.dsl.mysql.*
+import mg.util.db.DBTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class SqlTest {
+class SqlTest {
 
     @Test
     fun testSqlBuilder() {
 
-        val sql = Sql select PersonB() where PersonB::firstName eq "name"
+        val sql = Sql select DBTest.PersonB() where DBTest.PersonB::firstName eq "name"
 
         val list: MutableList<BuildingBlock> = sql.list()
 
         assertTrue(list.isNotEmpty())
-        assertEquals(PersonB(), (list[0] as SelectBlock<*>).type)
-        assertEquals(PersonB::firstName, (list[1] as WhereBlock<*>).type)
+        assertEquals(DBTest.PersonB(), (list[0] as SelectBlock<*>).type)
+        assertEquals(DBTest.PersonB::firstName, (list[1] as WhereBlock<*>).type)
         assertEquals("name", (list[2] as ValueBlock<*>).type)
     }
 

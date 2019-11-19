@@ -1,6 +1,6 @@
 package mg.util.db.dsl.mysql
 
-class Sql {
+open class Sql {
     companion object {
 
         infix fun <T : Any> select(t: T): SelectBlock<T> = newListAndCacheBlock { list -> SelectBlock(list, t) }
