@@ -87,8 +87,8 @@ internal class DBOTest {
     }
 
     private fun testFind() {
-        val test1 = "test1"
-        val test2 = "test2"
+        val test1 = "test1DBOTest"
+        val test2 = "test2DBOTest"
 
         val person = Person(test1, test2)
 
@@ -96,11 +96,11 @@ internal class DBOTest {
 
         val personTest2 = Person(test1, test2)
 
-        val candidateList = dbo.find(personTest2, dbConfig.connection)
+        val candidatePersonList = dbo.find(personTest2, dbConfig.connection)
 
-        assertNotNull(candidateList)
-        assertTrue(candidateList.isNotEmpty())
-        assertTrue(contains(test1, test2, candidateList))
+        assertNotNull(candidatePersonList)
+        assertTrue(candidatePersonList.isNotEmpty())
+        assertTrue(contains(test1, test2, candidatePersonList))
     }
 
     private fun testSave() {

@@ -21,10 +21,9 @@ data class InnerJoinBlock<T : Any>(override val blocks: MutableList<BuildingBloc
 
     override fun build(dp: DslParameters): String {
 
-        // "JOIN Address a"
         return of(StringBuilder())
                 .rcv {
-                    append(" JOIN ")
+                    append(" JOIN ") // "JOIN Address a"
                     append(uid)
                     append(" ")
                     append(uidAlias)

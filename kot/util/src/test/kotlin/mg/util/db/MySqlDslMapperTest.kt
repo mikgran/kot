@@ -28,7 +28,7 @@ internal class MySqlDslMapperTest {
     @Test
     fun testBuildingSqlFromDsl2() {
 
-        val sql: BuildingBlock = Sql select Place() join Address()
+        val sql = Sql select Place() join Address()
 
         val candidate = MySqlDslMapper.map(sql.list())
 

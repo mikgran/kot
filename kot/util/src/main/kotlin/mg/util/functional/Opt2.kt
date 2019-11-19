@@ -162,11 +162,9 @@ class Opt2<T : Any> {
     }
 }
 
-fun <T: Any> Opt2<T>.rcv(block: T.() -> Unit): Opt2<T> {
+inline fun <T: Any> Opt2<T>.rcv(block: T.() -> Unit): Opt2<T> {
     when {
         isPresent() -> block(get()!!)
     }
     return this
 }
-
-

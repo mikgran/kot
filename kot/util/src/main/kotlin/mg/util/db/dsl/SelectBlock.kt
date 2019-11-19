@@ -21,14 +21,15 @@ data class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
     override fun build(dp: DslParameters): String {
 
-        val builder = of(StringBuilder()).rcv {
-            append("SELECT ")
-            append(dp.fields)  // SELECT p.firstName, p.lastName FROM Persons p
-            append(" FROM ")
-            append(dp.uniqueId)
-            append(" ")
-            append(dp.uniqueIdAlias)
-        }
+        val builder = of(StringBuilder())
+                .rcv {
+                    append("SELECT ") // SELECT p.firstName, p.lastName FROM Persons p
+                    append(dp.fields)
+                    append(" FROM ")
+                    append(dp.uniqueId)
+                    append(" ")
+                    append(dp.uniqueIdAlias)
+                }
 
         return builder.get().toString()
     }
