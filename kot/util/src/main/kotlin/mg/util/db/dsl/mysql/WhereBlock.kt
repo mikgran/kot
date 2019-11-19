@@ -1,4 +1,4 @@
-package mg.util.db.dsl
+package mg.util.db.dsl.mysql
 
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv

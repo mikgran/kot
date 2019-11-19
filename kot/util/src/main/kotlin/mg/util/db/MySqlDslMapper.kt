@@ -1,8 +1,8 @@
 package mg.util.db
 
-import mg.util.db.dsl.BuildingBlock
-import mg.util.db.dsl.DslParameters
-import mg.util.db.dsl.SelectBlock
+import mg.util.db.dsl.mysql.BuildingBlock
+import mg.util.db.dsl.mysql.DslParameters
+import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
 
 object MySqlDslMapper : DslMapper {

@@ -1,4 +1,4 @@
-package mg.util.db.dsl
+package mg.util.db.dsl.mysql
 
 data class ValueBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
     override fun toString(): String {

@@ -1,4 +1,4 @@
-package mg.util.db.dsl
+package mg.util.db.dsl.mysql
 
 import mg.util.db.Config
 import mg.util.db.DBConfig

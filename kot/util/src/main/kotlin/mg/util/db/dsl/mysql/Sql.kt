@@ -1,4 +1,4 @@
-package mg.util.db.dsl
+package mg.util.db.dsl.mysql
 
 class Sql {
     companion object {

@@ -1,4 +1,4 @@
-package mg.util.db.dsl
+package mg.util.db.dsl.mysql
 
 import mg.util.common.Common
 import mg.util.db.AliasBuilder

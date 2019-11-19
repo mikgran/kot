@@ -1,4 +1,4 @@
-package mg.util.db.dsl
+package mg.util.db.dsl.mysql
 
 // import java.lang.StringBuilder
 import mg.util.db.AliasBuilder

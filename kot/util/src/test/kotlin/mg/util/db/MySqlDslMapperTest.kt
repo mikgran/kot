@@ -2,9 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common.hasContent
 import mg.util.db.DBTest.PersonB
-import mg.util.db.dsl.BuildingBlock
-import mg.util.db.dsl.InnerJoinBlock
-import mg.util.db.dsl.Sql
+import mg.util.db.dsl.mysql.Sql
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

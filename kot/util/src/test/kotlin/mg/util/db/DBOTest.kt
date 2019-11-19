@@ -2,8 +2,8 @@ package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.DBTest.*
-import mg.util.db.dsl.BuildingBlock
-import mg.util.db.dsl.Sql
+import mg.util.db.dsl.mysql.BuildingBlock
+import mg.util.db.dsl.mysql.Sql
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*

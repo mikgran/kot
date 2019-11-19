@@ -1,6 +1,6 @@
 package mg.util.db
 
-import mg.util.db.dsl.BuildingBlock
+import mg.util.db.dsl.mysql.BuildingBlock
 
 interface DslMapper {
 
