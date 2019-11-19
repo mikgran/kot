@@ -1,5 +1,6 @@
 package mg.util.db.dsl.mysql
 
+import mg.util.db.dsl.DslParameters
 import kotlin.reflect.KProperty1
 
 // TODO: handle updates

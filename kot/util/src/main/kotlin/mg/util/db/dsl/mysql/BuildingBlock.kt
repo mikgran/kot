@@ -4,6 +4,7 @@ import mg.util.db.Config
 import mg.util.db.DBConfig
 import mg.util.db.DBO
 import mg.util.db.SqlMapperFactory
+import mg.util.db.dsl.DslParameters
 
 abstract class BuildingBlock {
     abstract val blocks: MutableList<BuildingBlock>

@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.BuildingBlock
 import mg.util.functional.Opt2
 import java.sql.Connection

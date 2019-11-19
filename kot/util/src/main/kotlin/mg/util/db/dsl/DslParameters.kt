@@ -1,4 +1,4 @@
-package mg.util.db.dsl.mysql
+package mg.util.db.dsl
 
 data class DslParameters(var typeT: Any? = null,
                          var uniqueId: String? = null,

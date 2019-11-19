@@ -1,7 +1,6 @@
-package mg.util.db
+package mg.util.db.dsl
 
 import mg.util.db.dsl.mysql.BuildingBlock
-import mg.util.db.dsl.mysql.DslParameters
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
 
@@ -12,7 +11,7 @@ object DslMapper {
         return of(blockList)
                 .filter { it.isNotEmpty() }
                 .ifMissingThrow { Exception("map: List of blocks was empty") }
-                .map(::buildSql)
+                .map(DslMapper::buildSql)
                 .getOrElseThrow { Exception("map: Unable to build sql for list $blockList") } ?: ""
     }
 
