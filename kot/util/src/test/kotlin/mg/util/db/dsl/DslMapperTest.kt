@@ -6,6 +6,7 @@ import mg.util.db.DBO
 import mg.util.db.DBTest.PersonB
 import mg.util.db.SqlMapperFactory
 import mg.util.db.dsl.mysql.Sql
+import mg.util.db.dsl.oracle.Sql as SqlOracle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -44,4 +45,13 @@ internal class DslMapperTest {
     private fun assertHasContent(candidate: String) {
         assertTrue(hasContent(candidate), "no mapped content")
     }
+
+    @Test
+    fun testOracleSqlSelect() {
+
+        SqlOracle select PersonB() where PersonB::firstName eq "name"
+
+
+    }
+
 }

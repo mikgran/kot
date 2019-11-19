@@ -1,5 +1,6 @@
 package mg.util.db.dsl.mysql
 
+import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import kotlin.reflect.KProperty1
 

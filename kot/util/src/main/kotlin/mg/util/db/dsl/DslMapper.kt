@@ -1,6 +1,5 @@
 package mg.util.db.dsl
 
-import mg.util.db.dsl.mysql.BuildingBlock
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
 

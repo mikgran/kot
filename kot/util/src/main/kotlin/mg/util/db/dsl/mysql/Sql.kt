@@ -1,8 +1,9 @@
 package mg.util.db.dsl.mysql
 
+import mg.util.db.dsl.BuildingBlock
+
 open class Sql {
     companion object {
-
         infix fun <T : Any> select(t: T): SelectBlock<T> = newListAndCacheBlock { list -> SelectBlock(list, t) }
         infix fun <T : Any> update(t: T): UpdateBlock<T> = newListAndCacheBlock { list -> UpdateBlock(list, t) }
 
