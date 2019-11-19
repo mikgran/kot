@@ -2,7 +2,7 @@ package mg.util.db
 
 interface SqlMapper {
 
-    // DDL
+    // DDL, DML
     // CREATE, SELECT, UPDATE, DELETE, ALTER, RENAME, TRUNCATE
 
     fun <T : Any> buildCreateTable(metadata: Metadata<T>): String
