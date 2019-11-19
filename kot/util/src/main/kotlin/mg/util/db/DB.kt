@@ -10,11 +10,11 @@ class DB {
     private var dbConfig: DBConfig = DBConfig(Config())
 
     fun <T : Any> save(type: T) {
-
-        val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
-        val connection = getConnection()
-        dbo.ensureTable(type, connection)
-        dbo.save(type, connection)
+        getDBO().apply {
+            val connection = getConnection()
+            ensureTable(type, connection)
+            save(type, connection)
+        }
     }
 
     private fun getConnection(): Connection {
@@ -24,22 +24,11 @@ class DB {
                 .getOrElseThrow { Exception("Connection closed.") }!!
     }
 
-    fun <T : Any> find(type: T): List<T> {
+    private fun getDBO() = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
 
-        val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
-        val connection = getConnection()
-        return dbo.find(type, connection)
-    }
+    fun <T : Any> find(type: T): List<T> = getDBO().find(type, getConnection())
 
-    fun <T : Any> buildUniqueId(t: T): String {
-        return DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql")).buildUniqueId(t)
-    }
+    fun <T : Any> buildUniqueId(t: T): String = getDBO().buildUniqueId(t)
 
-    fun findByDsl(dsl: MutableList<BuildingBlock>) : Any {
-
-        val sqlString = DslMapperFactory.get(dbConfig.mapper).map(dsl)
-        return null as Any
-        // return DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql")).find(sqlString))
-    }
-
+    fun <T : Any> findByDsl(dsl: BuildingBlock): List<T> = getDBO().findBy(dsl, getConnection())
 }

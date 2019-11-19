@@ -80,11 +80,13 @@ class DBO(private val mapper: SqlMapper) {
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
     }
 
-    fun findBy(block: BuildingBlock) : List<Any> {
+    fun <T: Any>findBy(block: BuildingBlock, connection: Connection) : List<T> {
 
+        val list: MutableList<BuildingBlock> = block.list()
 
+        val sql = MySqlDslMapper.map(list)
 
-        return listOf<String>()
+        return listOf()
     }
 
     fun <T : Any> find(t: T, connection: Connection): List<T> {

@@ -125,7 +125,7 @@ internal class DBOTest {
 
         val sql: BuildingBlock = Sql select PersonB() where PersonB::firstName eq "name"
 
-        val find: List<Any> = dbo.findBy(sql)
+        val find: List<Any> = dbo.findBy(sql, dbConfig.connection)
 
         // TODO
     }
