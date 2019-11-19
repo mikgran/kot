@@ -1,8 +1,10 @@
-package mg.util.db
+package mg.util.db.dsl
 
 import mg.util.common.Common.hasContent
+import mg.util.db.AliasBuilder
+import mg.util.db.DBO
 import mg.util.db.DBTest.PersonB
-import mg.util.db.dsl.DslMapper
+import mg.util.db.SqlMapperFactory
 import mg.util.db.dsl.mysql.Sql
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
