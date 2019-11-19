@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class MySqlDslMapperTest {
+internal class DslMapperTest {
 
     private data class Address(val fullAddress: String = "")
     private data class Place(val address: Address = Address(), val rentInCents: Int = 0)
@@ -17,7 +17,7 @@ internal class MySqlDslMapperTest {
 
         val sql = Sql select PersonB() where PersonB::firstName eq "name"
 
-        val candidate = MySqlDslMapper.map(sql.list())
+        val candidate = DslMapper.map(sql.list())
 
         assertHasContent(candidate)
         assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'", candidate)
@@ -28,7 +28,7 @@ internal class MySqlDslMapperTest {
 
         val sql = Sql select Place() join Address()
 
-        val candidate = MySqlDslMapper.map(sql.list())
+        val candidate = DslMapper.map(sql.list())
 
         val dbo = DBO(SqlMapperFactory.get("mysql"))
         val p = AliasBuilder.alias(dbo.buildUniqueId(Place()))

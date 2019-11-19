@@ -84,7 +84,7 @@ class DBO(private val mapper: SqlMapper) {
 
         val list: MutableList<BuildingBlock> = block.list()
 
-        val sql = MySqlDslMapper.map(list)
+        val sql = DslMapper.map(list)
 
         return listOf()
     }
