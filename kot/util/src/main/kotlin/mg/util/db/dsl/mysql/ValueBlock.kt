@@ -1,6 +1,6 @@
 package mg.util.db.dsl.mysql
 
-open class ValueBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
+open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
     override fun toString(): String {
         return "${simpleName()}(type=$type)"
     }
