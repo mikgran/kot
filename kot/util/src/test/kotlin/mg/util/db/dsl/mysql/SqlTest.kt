@@ -11,7 +11,7 @@ class SqlTest {
     @Test
     fun testSqlBuilder() {
 
-        val sql = Sql select DBTest.PersonB() where DBTest.PersonB::firstName eq "name"
+        val sql = Sql() select DBTest.PersonB() where DBTest.PersonB::firstName eq "name"
 
         val list: MutableList<BuildingBlock> = sql.list()
 

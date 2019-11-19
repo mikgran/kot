@@ -19,7 +19,7 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDsl1() {
 
-        val sql = SqlMysql select PersonB() where PersonB::firstName eq "name"
+        val sql = SqlMysql() select PersonB() where PersonB::firstName eq "name"
 
         val candidate = DslMapper.map(sql.list())
 
@@ -30,7 +30,7 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDsl2() {
 
-        val sql = SqlMysql select Place() join Address()
+        val sql = SqlMysql() select Place() join Address()
 
         val candidate = DslMapper.map(sql.list())
 
@@ -49,7 +49,7 @@ internal class DslMapperTest {
     @Test
     fun testOracleSqlSelect() {
 
-        val sql = SqlOracle select PersonB() where PersonB::firstName eq "name"
+        val sql = SqlOracle() select PersonB() where PersonB::firstName eq "name"
 
         val candidate = DslMapper.map(sql.list())
 
