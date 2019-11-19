@@ -6,7 +6,7 @@ import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.full.memberProperties
 
-data class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
+open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
     infix fun <T : Any> where(type: T): WhereBlock<T> {
         return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
     }

@@ -3,7 +3,7 @@ package mg.util.db.dsl.mysql
 import kotlin.reflect.KProperty1
 
 // TODO: handle updates
-data class UpdateBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
+open class UpdateBlock<T>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
     override fun toString(): String {
         return "${simpleName()}(type=$type)"
     }
