@@ -7,7 +7,7 @@ import mg.util.functional.rcv
 import kotlin.reflect.KProperty1
 
 open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
-    infix fun <T : Any> eq(type: T): ValueBlock<T> {
+    open infix fun <T : Any> eq(type: T): ValueBlock<T> {
         return getAndCacheBlock(type, blocks) { t, b -> ValueBlock(b, t) }
     }
 
@@ -15,7 +15,7 @@ open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
         return "${simpleName()}(type=$type)"
     }
 
-    override fun build(dp: DslParameters): String {
+    override fun buildSelect(dp: DslParameters): String {
 
         val operations = of(type)
                 .filter { it is KProperty1<*, *> }

@@ -49,8 +49,16 @@ internal class DslMapperTest {
     @Test
     fun testOracleSqlSelect() {
 
-        SqlOracle select PersonB() where PersonB::firstName eq "name"
+        val sql = SqlOracle select PersonB() where PersonB::firstName eq "name"
+//        val dslParameters = DslParameters()
+//        val builtFields = sql.list()[0].buildFields(dslParameters)
+//        val built = sql.list()[0].build(dslParameters)
+//        println("buildFields: $builtFields")
+//        println("built: $built")
 
+        val sqlStr = DslMapper.map(sql.list())
+
+        println("sqlStr: $sqlStr")
 
     }
 

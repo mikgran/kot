@@ -21,7 +21,7 @@ open class InnerJoinBlock<T : Any>(override val blocks: MutableList<BuildingBloc
         return "${simpleName()}(type=$type)"
     }
 
-    override fun build(dp: DslParameters): String {
+    override fun buildSelect(dp: DslParameters): String {
 
         return of(StringBuilder())
                 .rcv {

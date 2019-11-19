@@ -9,11 +9,11 @@ import mg.util.functional.rcv
 import kotlin.reflect.full.memberProperties
 
 open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
-    infix fun <T : Any> where(type: T): WhereBlock<T> {
+    open infix fun <T : Any> where(type: T): WhereBlock<T> {
         return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
     }
 
-    infix fun <T : Any> join(type: T): InnerJoinBlock<T> {
+    open infix fun <T : Any> join(type: T): InnerJoinBlock<T> {
         return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
     }
 
@@ -21,7 +21,7 @@ open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         return "${simpleName()}(type=$type)"
     }
 
-    override fun build(dp: DslParameters): String {
+    override fun buildSelect(dp: DslParameters): String {
 
         val builder = of(StringBuilder())
                 .rcv {

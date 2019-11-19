@@ -35,7 +35,7 @@ object DslMapper {
                 .joinToString(", ")
 
         return blocks
-                .map { it.build(dp) }
+                .map { it.buildSelect(dp) }
                 .fold("") { a, b -> a + b }
     }
 }
