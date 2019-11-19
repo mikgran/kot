@@ -5,7 +5,7 @@ import mg.util.db.AliasBuilder
 import mg.util.db.DBO
 import mg.util.db.DBTest.PersonB
 import mg.util.db.SqlMapperFactory
-import mg.util.db.dsl.mysql.Sql
+import mg.util.db.dsl.mysql.Sql as SqlMysql
 import mg.util.db.dsl.oracle.Sql as SqlOracle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -19,7 +19,7 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDsl1() {
 
-        val sql = Sql select PersonB() where PersonB::firstName eq "name"
+        val sql = SqlMysql select PersonB() where PersonB::firstName eq "name"
 
         val candidate = DslMapper.map(sql.list())
 
@@ -30,7 +30,7 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDsl2() {
 
-        val sql = Sql select Place() join Address()
+        val sql = SqlMysql select Place() join Address()
 
         val candidate = DslMapper.map(sql.list())
 
@@ -50,16 +50,11 @@ internal class DslMapperTest {
     fun testOracleSqlSelect() {
 
         val sql = SqlOracle select PersonB() where PersonB::firstName eq "name"
-//        val dslParameters = DslParameters()
-//        val builtFields = sql.list()[0].buildFields(dslParameters)
-//        val built = sql.list()[0].build(dslParameters)
-//        println("buildFields: $builtFields")
-//        println("built: $built")
 
-        val sqlStr = DslMapper.map(sql.list())
+        val candidate = DslMapper.map(sql.list())
 
-        println("sqlStr: $sqlStr")
-
+        assertHasContent(candidate)
+        // assertEqual
     }
 
 }
