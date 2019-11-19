@@ -13,9 +13,7 @@ open class InnerJoinBlock<T : Any>(override val blocks: MutableList<BuildingBloc
     private var uid: String? = null
     private var uidAlias: String? = null
 
-    infix fun <T : Any> join(type: T): InnerJoinBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
-    }
+    infix fun <T : Any> join(type: T): InnerJoinBlock<T> = getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
 
     override fun toString(): String {
         return "${simpleName()}(type=$type)"

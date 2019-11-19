@@ -9,13 +9,12 @@ import mg.util.functional.rcv
 import kotlin.reflect.full.memberProperties
 
 open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
-    open infix fun <T : Any> where(type: T): WhereBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
-    }
 
-    open infix fun <T : Any> join(type: T): InnerJoinBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
-    }
+    open fun <T: Any> newWhere(type: T, list: MutableList<BuildingBlock>) = WhereBlock(list, type)
+    open fun <T: Any> newInnerJoin(type: T, list: MutableList<BuildingBlock>) = InnerJoinBlock(list, type)
+
+    open infix fun <T : Any> where(type: T): WhereBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newWhere(t, b) }
+    open infix fun <T : Any> join(type: T): InnerJoinBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newInnerJoin(t, b) }
 
     override fun toString(): String {
         return "${simpleName()}(type=$type)"

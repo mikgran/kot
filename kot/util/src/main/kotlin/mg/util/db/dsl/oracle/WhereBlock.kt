@@ -5,7 +5,5 @@ import mg.util.db.dsl.mysql.WhereBlock as MySqlWhereBlock
 
 class WhereBlock<T: Any>(override val blocks: MutableList<BuildingBlock>, override val type: T) : MySqlWhereBlock<T>(blocks, type) {
 
-    override infix fun <T : Any> eq(type: T): ValueBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> ValueBlock(b, t) }
-    }
+    override fun <T : Any> newValue(blocks: MutableList<BuildingBlock>, type: T): ValueBlock<T> = ValueBlock(blocks, type)
 }

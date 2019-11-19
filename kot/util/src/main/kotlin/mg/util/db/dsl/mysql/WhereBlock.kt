@@ -7,9 +7,10 @@ import mg.util.functional.rcv
 import kotlin.reflect.KProperty1
 
 open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
-    open infix fun <T : Any> eq(type: T): ValueBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> ValueBlock(b, t) }
-    }
+
+    open fun <T : Any> newValue(blocks: MutableList<BuildingBlock>, type: T) = ValueBlock(blocks, type)
+
+    open infix fun <T : Any> eq(type: T): ValueBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newValue(b, t) }
 
     override fun toString(): String {
         return "${simpleName()}(type=$type)"

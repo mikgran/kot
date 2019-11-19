@@ -8,13 +8,8 @@ import mg.util.db.dsl.mysql.SelectBlock as MySqlSelectBlock
 
 class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, override val type: T) : MySqlSelectBlock<T>(blocks, type) {
 
-    override infix fun <T : Any> where(type: T): WhereBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
-    }
-
-    override infix fun <T : Any> join(type: T): InnerJoinBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
-    }
+    override fun <T : Any> newWhere(type: T, list: MutableList<BuildingBlock>): WhereBlock<T> = WhereBlock(list, type)
+    override fun <T : Any> newInnerJoin(type: T, list: MutableList<BuildingBlock>): InnerJoinBlock<T> = InnerJoinBlock(list, type)
 
     override fun buildSelect(dp: DslParameters): String {
 
