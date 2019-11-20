@@ -2,7 +2,8 @@ package mg.util.db
 
 import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.BuildingBlock
-import mg.util.functional.Opt2
+import mg.util.db.dsl.mysql.SelectBlock
+import mg.util.functional.Opt2.Factory.of
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -38,7 +39,7 @@ class DBO(private val mapper: SqlMapper) {
 
     fun <T : Any> buildUniqueId(t: T): String {
 
-        val uid = Opt2.of(t)
+        val uid = of(t)
                 .map(::propertiesOfT)
                 .filter { it.size > 0 }
                 .map { it.filter { p -> p.name != "id" } }
@@ -51,18 +52,18 @@ class DBO(private val mapper: SqlMapper) {
     // TODO: create object? some other func name?
     fun <T : Any> save(t: T, connection: Connection) {
 
-        val insertSql = Opt2.of(t)
+        val insertSql = of(t)
                 .map(::buildMetadata)
                 .map(mapper::buildInsert)
                 .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
-        Opt2.of(getStatement(connection))
+        of(getStatement(connection))
                 .map { s -> s.executeUpdate(insertSql) }
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
     }
 
     private fun getStatement(connection: Connection): Statement? {
-        return Opt2.of(connection)
+        return of(connection)
                 .filter { !it.isClosed }
                 .ifMissingThrow { Exception(CONNECTION_WAS_CLOSED) }
                 .map(Connection::createStatement)
@@ -71,33 +72,47 @@ class DBO(private val mapper: SqlMapper) {
 
     fun <T : Any> ensureTable(t: T, connection: Connection) {
 
-        val createTableSql = Opt2.of(t)
+        val createTableSql = of(t)
                 .map(::buildMetadata)
                 .map(mapper::buildCreateTable)
                 .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
 
-        Opt2.of(getStatement(connection))
+        of(getStatement(connection))
                 .map { it.executeUpdate(createTableSql) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
     }
 
-    fun <T: Any>findBy(block: BuildingBlock, connection: Connection) : List<T> {
+    fun findBy(block: BuildingBlock, connection: Connection): List<Any> {
 
         val list: MutableList<BuildingBlock> = block.list()
 
+        val type = of(list)
+                .filter { it.isNotEmpty() }
+                .map { it[0] }
+                .filter { it is SelectBlock<*> }
+                .map { it as SelectBlock<*> }
+                .map { it.type }
+                .get()
+
         val sql = DslMapper.map(list)
 
-        return listOf()
+        @Suppress("UNCHECKED_CAST")
+        return of(getStatement(connection))
+                .map { it.executeQuery(sql) }
+                .filter(ResultSet::next)
+                .mapWith(type) { rs, t -> ObjectBuilder().buildListOfT(rs, t) }
+                .getOrElse(mutableListOf())
+                .toList()
     }
 
     fun <T : Any> find(t: T, connection: Connection): List<T> {
 
-        val findSql = Opt2.of(t)
+        val findSql = of(t)
                 .map(::buildMetadata)
                 .map(mapper::buildFind)
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
 
-        val mappedT = Opt2.of(getStatement(connection))
+        val mappedT = of(getStatement(connection))
                 .map { it.executeQuery(findSql) }
                 .filter(ResultSet::next)
                 .map { rs -> ObjectBuilder().buildListOfT(rs, t) }
@@ -105,7 +120,6 @@ class DBO(private val mapper: SqlMapper) {
 
         return mappedT ?: emptyList()
     }
-
 
 
     companion object {
@@ -116,6 +130,7 @@ class DBO(private val mapper: SqlMapper) {
         const val UNABLE_TO_CREATE_STATEMENT = "Unable to build create statement"
         const val UNABLE_TO_BUILD_CREATE_TABLE = "Unable to build create table"
         const val UNABLE_TO_CREATE_TABLE = "Unable to create a new table"
+        const val UNABLE_TO_DO_DSL_FIND = "Unable to find an object with: "
     }
 
 }

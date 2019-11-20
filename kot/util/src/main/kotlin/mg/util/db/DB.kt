@@ -30,5 +30,5 @@ class DB {
 
     fun <T : Any> buildUniqueId(t: T): String = getDBO().buildUniqueId(t)
 
-    fun <T : Any> findByDsl(dsl: BuildingBlock): List<T> = getDBO().findBy(dsl, getConnection())
+    fun findByDsl(dsl: BuildingBlock): List<Any> = getDBO().findBy(dsl, getConnection())
 }
