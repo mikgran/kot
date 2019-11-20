@@ -1,18 +1,16 @@
-package mg.util.db
+package mg.util.db.dsl
 
-import mg.util.db.dsl.mysql.BuildingBlock
-import mg.util.db.dsl.mysql.DslParameters
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
 
-object MySqlDslMapper : DslMapper {
+object DslMapper {
 
-    override fun map(blockList: MutableList<BuildingBlock>): String {
+    fun map(blockList: MutableList<BuildingBlock>): String {
 
         return of(blockList)
                 .filter { it.isNotEmpty() }
                 .ifMissingThrow { Exception("map: List of blocks was empty") }
-                .map(::buildSql)
+                .map(DslMapper::buildSql)
                 .getOrElseThrow { Exception("map: Unable to build sql for list $blockList") } ?: ""
     }
 
@@ -37,7 +35,7 @@ object MySqlDslMapper : DslMapper {
                 .joinToString(", ")
 
         return blocks
-                .map { it.build(dp) }
+                .map { it.buildSelect(dp) }
                 .fold("") { a, b -> a + b }
     }
 }

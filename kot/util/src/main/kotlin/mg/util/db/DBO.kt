@@ -1,6 +1,7 @@
 package mg.util.db
 
-import mg.util.db.dsl.mysql.BuildingBlock
+import mg.util.db.dsl.DslMapper
+import mg.util.db.dsl.BuildingBlock
 import mg.util.functional.Opt2
 import java.sql.Connection
 import java.sql.ResultSet
@@ -84,7 +85,7 @@ class DBO(private val mapper: SqlMapper) {
 
         val list: MutableList<BuildingBlock> = block.list()
 
-        val sql = MySqlDslMapper.map(list)
+        val sql = DslMapper.map(list)
 
         return listOf()
     }

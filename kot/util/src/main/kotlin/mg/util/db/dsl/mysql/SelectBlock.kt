@@ -2,24 +2,25 @@ package mg.util.db.dsl.mysql
 
 import mg.util.common.Common
 import mg.util.db.AliasBuilder
+import mg.util.db.dsl.BuildingBlock
+import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.full.memberProperties
 
-open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, val type: T) : BuildingBlock() {
-    infix fun <T : Any> where(type: T): WhereBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
-    }
+open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
 
-    infix fun <T : Any> join(type: T): InnerJoinBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
-    }
+    open fun <T: Any> newWhere(type: T, list: MutableList<BuildingBlock>) = WhereBlock(list, type)
+    open fun <T: Any> newInnerJoin(type: T, list: MutableList<BuildingBlock>) = InnerJoinBlock(list, type)
+
+    open infix fun <T : Any> where(type: T): WhereBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newWhere(t, b) }
+    open infix fun <T : Any> join(type: T): InnerJoinBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newInnerJoin(t, b) }
 
     override fun toString(): String {
         return "${simpleName()}(type=$type)"
     }
 
-    override fun build(dp: DslParameters): String {
+    override fun buildSelect(dp: DslParameters): String {
 
         val builder = of(StringBuilder())
                 .rcv {

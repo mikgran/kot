@@ -2,7 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.DBTest.*
-import mg.util.db.dsl.mysql.BuildingBlock
+import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.mysql.Sql
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
@@ -123,7 +123,7 @@ internal class DBOTest {
     @Test
     fun testDslSelect() {
 
-        val sql: BuildingBlock = Sql select PersonB() where PersonB::firstName eq "name"
+        val sql: BuildingBlock = Sql() select PersonB() where PersonB::firstName eq "name"
 
         val find: List<Any> = dbo.findBy(sql, dbConfig.connection)
 
