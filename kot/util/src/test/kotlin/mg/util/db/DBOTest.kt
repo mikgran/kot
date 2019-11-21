@@ -2,7 +2,6 @@ package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.DBTest.*
-import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.Sql
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.AfterAll
@@ -125,25 +124,18 @@ internal class DBOTest {
     @Test
     fun testDslSelect() {
 
+        val name = "name"
+        val bbb = "bbb"
 
         dbo.ensureTable(Uuuu(), dbConfig.connection)
-        dbo.save(Uuuu("name", "bbb"), dbConfig.connection)
+        dbo.save(Uuuu(name, bbb), dbConfig.connection)
 
-        val sql = Sql() select Uuuu() where Uuuu::firstName eq "name" and Uuuu::lastName eq "bbb"
+        val sql = Sql() select Uuuu() where Uuuu::firstName eq name and Uuuu::lastName eq bbb
 
-        println(DslMapper.map(sql.list()))
-
-        val list: List<Any> = dbo.findBy(sql, dbConfig.connection)
+        val list = dbo.findBy(sql, dbConfig.connection)
 
         assertTrue(list.isNotEmpty())
-        assertTrue(listContains(Uuuu("name", "bbb"), list))
-
-    }
-
-    private fun listContains(other: Uuuu, list: List<Any>): Boolean {
-        return list.any {
-            if (it is Uuuu) it.firstName == other.firstName else false
-        }
+        assertTrue(list.contains(Uuuu(name, bbb)))
     }
 
     @Suppress("unused")
