@@ -2,20 +2,24 @@ package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.DBTest.*
-import mg.util.db.dsl.BuildingBlock
+import mg.util.db.dsl.DslMapper
+import mg.util.db.dsl.DslParameters
 import mg.util.db.dsl.mysql.Sql
-import mg.util.functional.Opt2
+import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.Statement
 
 internal class DBOTest {
 
     private var dbConfig: DBConfig = DBConfig(TestConfig())
 
     data class Person(val firstName: String = "", val lastName: String = "")
+    data class Zzzz(val firstName: String = "", val lastName: String = "")
 
     private val firstName = "firstName"
     private val first1 = "first1"
@@ -63,7 +67,7 @@ internal class DBOTest {
 
     private fun testMap() {
 
-        val persons: ResultSet? = Opt2.of(dbConfig.connection)
+        val persons: ResultSet? = of(dbConfig.connection)
                 .map(Connection::createStatement)
                 .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildMetadata(testPerson2).uid}") }
                 .filter(ResultSet::next)
@@ -109,7 +113,7 @@ internal class DBOTest {
 
         dbo.save(testPerson2, dbConfig.connection)
 
-        val candidate = Opt2.of(dbConfig.connection)
+        val candidate = of(dbConfig.connection)
                 .map(Connection::createStatement)
                 .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildMetadata(testPerson2).uid}") }
                 .filter(ResultSet::next)
@@ -123,13 +127,25 @@ internal class DBOTest {
     @Test
     fun testDslSelect() {
 
-        val sql: BuildingBlock = Sql() select PersonB() // where PersonB::firstName eq "name"
 
-        val find: List<Any> = dbo.findBy(sql, dbConfig.connection)
+        dbo.ensureTable(Zzzz(), dbConfig.connection)
+        dbo.save(Zzzz("name", "bbb"), dbConfig.connection)
 
-        println("find.size: ${find.size}")
+        val sql = Sql() select Zzzz() where Zzzz::firstName eq "name" and Zzzz::lastName eq "bbb"
 
-        // TODO
+        println(DslMapper.map(sql.list()))
+
+        val list: List<Any> = dbo.findBy(sql, dbConfig.connection)
+
+        assertTrue(list.isNotEmpty())
+        assertTrue(listContains(Zzzz("name", "bbb"), list))
+
+    }
+
+    private fun listContains(other: Zzzz, list: List<Any>): Boolean {
+        return list.any {
+            if (it is Zzzz) it.firstName == other.firstName else false
+        }
     }
 
     @Suppress("unused")
@@ -139,24 +155,29 @@ internal class DBOTest {
         @JvmStatic
         internal fun afterAll() {
 
-            val person = Person("first1", "last2")
+            val person = Person("", "")
+            val personB = PersonB("", "")
+            val zzzz = Zzzz("", "")
             val dbConfig = DBConfig(TestConfig())
             val dbo = DBO(SqlMapperFactory.get("mysql"))
-            val uidTableName = dbo.buildMetadata(person).uid
+            val personUid = dbo.buildUniqueId(person)
+            val personBUId = dbo.buildUniqueId(personB)
+            val zzzzUuid = dbo.buildUniqueId(zzzz)
+            val list = listOf(personUid, personBUId, zzzzUuid)
 
-            val statement = Opt2.of(dbConfig.connection)
+            of(dbConfig.connection)
                     .map(Connection::createStatement)
-
-            nonThrowingBlock {
-                statement.map { it.executeUpdate("DELETE FROM $uidTableName") }
-            }
-
-            nonThrowingBlock {
-                statement.map { it.executeUpdate("DROP TABLE $uidTableName") }
-            }
+                    .ifPresent { stmt -> list.forEach { uid -> deleteFromUid(stmt, uid) } }
+                    .ifPresent { stmt -> list.forEach { uid -> dropTableUid(stmt, uid) } }
         }
 
-    }
+        private fun dropTableUid(statement: Statement, uid: String) {
+            nonThrowingBlock { statement.executeUpdate("DROP TABLE $uid") }
+        }
 
+        private fun deleteFromUid(statement: Statement, uid: String) {
+            nonThrowingBlock { statement.executeUpdate("DELETE FROM $uid") }
+        }
+    }
 }
 

@@ -12,6 +12,10 @@ open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
         return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
     }
 
+    infix fun <T: Any> and(type: T): AndBlock<T> {
+        return getAndCacheBlock(type, blocks) { t, b -> AndBlock(b, t) }
+    }
+
     override fun buildSelect(dp: DslParameters): String = " '$type'"
     override fun buildFields(dp: DslParameters): String = ""
 }

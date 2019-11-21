@@ -8,6 +8,8 @@ import kotlin.reflect.KProperty1
 
 open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
 
+    open fun getSqlKeyWord() = " WHERE "
+
     open fun <T : Any> newValue(blocks: MutableList<BuildingBlock>, type: T) = ValueBlock(blocks, type)
 
     open infix fun <T : Any> eq(type: T): ValueBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newValue(b, t) }
@@ -24,9 +26,10 @@ open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
                 .map { "${dp.uniqueIdAlias}.${it.name} =" }
                 .getOrElse("")
 
+
         val builder = of(StringBuilder())
                 .rcv {
-                    append(" WHERE ")
+                    append(getSqlKeyWord())
                     append(operations)
                 }
 
