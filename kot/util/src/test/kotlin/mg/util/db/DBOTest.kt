@@ -3,11 +3,9 @@ package mg.util.db
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.DBTest.*
 import mg.util.db.dsl.DslMapper
-import mg.util.db.dsl.DslParameters
 import mg.util.db.dsl.mysql.Sql
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
@@ -19,7 +17,7 @@ internal class DBOTest {
     private var dbConfig: DBConfig = DBConfig(TestConfig())
 
     data class Person(val firstName: String = "", val lastName: String = "")
-    data class Zzzz(val firstName: String = "", val lastName: String = "")
+    data class Uuuu(val firstName: String = "", val lastName: String = "")
 
     private val firstName = "firstName"
     private val first1 = "first1"
@@ -128,23 +126,23 @@ internal class DBOTest {
     fun testDslSelect() {
 
 
-        dbo.ensureTable(Zzzz(), dbConfig.connection)
-        dbo.save(Zzzz("name", "bbb"), dbConfig.connection)
+        dbo.ensureTable(Uuuu(), dbConfig.connection)
+        dbo.save(Uuuu("name", "bbb"), dbConfig.connection)
 
-        val sql = Sql() select Zzzz() where Zzzz::firstName eq "name" and Zzzz::lastName eq "bbb"
+        val sql = Sql() select Uuuu() where Uuuu::firstName eq "name" and Uuuu::lastName eq "bbb"
 
         println(DslMapper.map(sql.list()))
 
         val list: List<Any> = dbo.findBy(sql, dbConfig.connection)
 
         assertTrue(list.isNotEmpty())
-        assertTrue(listContains(Zzzz("name", "bbb"), list))
+        assertTrue(listContains(Uuuu("name", "bbb"), list))
 
     }
 
-    private fun listContains(other: Zzzz, list: List<Any>): Boolean {
+    private fun listContains(other: Uuuu, list: List<Any>): Boolean {
         return list.any {
-            if (it is Zzzz) it.firstName == other.firstName else false
+            if (it is Uuuu) it.firstName == other.firstName else false
         }
     }
 
@@ -157,13 +155,13 @@ internal class DBOTest {
 
             val person = Person("", "")
             val personB = PersonB("", "")
-            val zzzz = Zzzz("", "")
+            val uuuu = Uuuu("", "")
             val dbConfig = DBConfig(TestConfig())
             val dbo = DBO(SqlMapperFactory.get("mysql"))
             val personUid = dbo.buildUniqueId(person)
             val personBUId = dbo.buildUniqueId(personB)
-            val zzzzUuid = dbo.buildUniqueId(zzzz)
-            val list = listOf(personUid, personBUId, zzzzUuid)
+            val uuuuUid = dbo.buildUniqueId(uuuu)
+            val list = listOf(personUid, personBUId, uuuuUid)
 
             of(dbConfig.connection)
                     .map(Connection::createStatement)

@@ -9,10 +9,11 @@ import kotlin.reflect.KProperty1
 open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
 
     open fun getSqlKeyWord() = " WHERE "
+    open fun <T : Any> newValue(blocks: MutableList<BuildingBlock>, type: T, operation: String) = ValueBlock(blocks, type, operation)
 
-    open fun <T : Any> newValue(blocks: MutableList<BuildingBlock>, type: T) = ValueBlock(blocks, type)
-
-    open infix fun <T : Any> eq(type: T): ValueBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newValue(b, t) }
+    open infix fun <T : Any> eq(type: T): ValueBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newValue(b, t, "=") }
+    open infix fun <T : Any> lt(type: T): ValueBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newValue(b, t, "<") }
+    open infix fun <T : Any> gt(type: T): ValueBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newValue(b, t, ">") }
 
     override fun toString(): String {
         return "${simpleName()}(type=$type)"
@@ -23,7 +24,7 @@ open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
         val operations = of(type)
                 .filter { it is KProperty1<*, *> }
                 .map { it as KProperty1<*, *> }
-                .map { "${dp.uniqueIdAlias}.${it.name} =" }
+                .map { "${dp.uniqueIdAlias}.${it.name}" }
                 .getOrElse("")
 
 

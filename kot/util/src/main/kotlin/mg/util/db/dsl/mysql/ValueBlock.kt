@@ -3,7 +3,8 @@ package mg.util.db.dsl.mysql
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 
-open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
+open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T, open val operation: String) : BuildingBlock() {
+
     override fun toString(): String {
         return "${simpleName()}(type=$type)"
     }
@@ -16,6 +17,6 @@ open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
         return getAndCacheBlock(type, blocks) { t, b -> AndBlock(b, t) }
     }
 
-    override fun buildSelect(dp: DslParameters): String = " '$type'"
+    override fun buildSelect(dp: DslParameters): String = " $operation '$type'"
     override fun buildFields(dp: DslParameters): String = ""
 }
