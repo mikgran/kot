@@ -44,7 +44,7 @@ class DBO(private val mapper: SqlMapper) {
                 .filter { it.size > 0 }
                 .map { it.filter { p -> p.name != "id" } }
                 .map { it.fold("") { n, p -> n + p.name } }
-                .map { foldedNames -> t::class.simpleName + foldedNames.hashCode() }
+                .mapWith(t) { foldedNames, type -> type::class.simpleName + foldedNames.hashCode() }
 
         return uid.getOrElse("")
     }
