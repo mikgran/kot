@@ -1,7 +1,7 @@
 package mg.util.functional
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 internal class Opt2Test {
 
@@ -15,6 +15,33 @@ internal class Opt2Test {
 
         assertNotNull(get)
         assertEquals("$VALUE!", get)
+    }
+
+    @Test
+    fun test_mapAs() {
+
+        val strAny: Any? = VALUE
+
+        val opt = Opt2.of(strAny)
+
+        val candidate = opt.mapAs(String::class)
+
+        assertNotNull(candidate)
+        assertNotNull(candidate.get())
+        assertEquals(candidate.get()!!::class, String::class)
+        assertEquals(VALUE, candidate.get())
+    }
+
+    @Test
+    fun test_mapAs_doesNotThrow() {
+        assertDoesNotThrow {
+            val strAny2: Any? = VALUE
+            val candidate = Opt2.of(strAny2)
+                    .mapAs(Int::class)
+
+            assertNotNull(candidate)
+            assertNull(candidate.get())
+        }
     }
 
     @Test

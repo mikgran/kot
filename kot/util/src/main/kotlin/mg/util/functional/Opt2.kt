@@ -1,6 +1,8 @@
 package mg.util.functional
 
 import java.util.*
+import kotlin.reflect.KClass
+import kotlin.reflect.full.safeCast
 
 class Opt2<T : Any> {
 
@@ -142,6 +144,8 @@ class Opt2<T : Any> {
             else -> empty()
         }
     }
+
+    fun <V: Any> mapAs(asType: KClass<V>) : Opt2<V> = of(asType.safeCast(lazyT))
 
     companion object Factory {
 

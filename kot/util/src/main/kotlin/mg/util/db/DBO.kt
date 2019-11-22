@@ -1,7 +1,7 @@
 package mg.util.db
 
-import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.BuildingBlock
+import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
 import java.sql.Connection
@@ -84,13 +84,12 @@ class DBO(private val mapper: SqlMapper) {
 
     fun findBy(block: BuildingBlock, connection: Connection): List<Any> {
 
-        val list: MutableList<BuildingBlock> = block.list()
+        val list = block.list()
 
         val type = of(list)
                 .filter { it.isNotEmpty() }
                 .map { it[0] }
-                .filter { it is SelectBlock<*> }
-                .map { it as SelectBlock<*> }
+                .mapAs(SelectBlock::class)
                 .map { it.type }
                 .get()
 
@@ -98,7 +97,7 @@ class DBO(private val mapper: SqlMapper) {
 
         @Suppress("UNCHECKED_CAST")
         return of(getStatement(connection))
-                .map { it.executeQuery(sql) }
+                .mapWith(sql) { c, s -> c.executeQuery(s) }
                 .filter(ResultSet::next)
                 .mapWith(type) { rs, t -> ObjectBuilder().buildListOfT(rs, t) }
                 .getOrElse(mutableListOf())
@@ -113,14 +112,13 @@ class DBO(private val mapper: SqlMapper) {
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
 
         val mappedT = of(getStatement(connection))
-                .map { it.executeQuery(findSql) }
+                .mapWith(findSql) { c, sql -> c.executeQuery(sql) }
                 .filter(ResultSet::next)
-                .map { rs -> ObjectBuilder().buildListOfT(rs, t) }
+                .mapWith(t) { rs, type -> ObjectBuilder().buildListOfT(rs, type) }
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
 
         return mappedT ?: emptyList()
     }
-
 
     companion object {
         const val CONNECTION_WAS_CLOSED = "Connection was closed while attempting to read from it"
@@ -130,7 +128,7 @@ class DBO(private val mapper: SqlMapper) {
         const val UNABLE_TO_CREATE_STATEMENT = "Unable to build create statement"
         const val UNABLE_TO_BUILD_CREATE_TABLE = "Unable to build create table"
         const val UNABLE_TO_CREATE_TABLE = "Unable to create a new table"
-        const val UNABLE_TO_DO_DSL_FIND = "Unable to find an object with: "
+        // const val UNABLE_TO_DO_DSL_FIND = "Unable to find an object with: "
     }
 
 }
