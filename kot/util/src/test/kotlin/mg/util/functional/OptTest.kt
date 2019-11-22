@@ -183,7 +183,8 @@ internal class OptTest {
         assertNotNull(candidate2)
         assertEquals(3, candidate2)
 
-        val anyValue2 = 5 as Any
+        val anyValue2: Any
+        anyValue2 = 5
         val candidate3 = when (anyValue2) {
             "value1" -> 3
             5 -> 6
