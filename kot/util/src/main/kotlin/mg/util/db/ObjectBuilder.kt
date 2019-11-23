@@ -19,7 +19,7 @@ class ObjectBuilder {
         val constructor = Opt2.of(results)
                 .map(ResultSet::getMetaData)
                 .map(::getConstructorData)
-                .mapWith(t) { data, type -> getConstructor(type::class.constructors, data) }
+                .mapWith(t) { data, type -> narrowDown(type::class.constructors, data) }
                 .filter { it.t != null }
                 .getOrElseThrow { Exception("Unable to narrow down a constructor for object T") }!!
 
@@ -34,8 +34,8 @@ class ObjectBuilder {
         return listT
     }
 
-    private fun <T : Any> getConstructor(constr: Collection<KFunction<T>>,
-                                         rscd: MutableList<ConstructorData>): Wrap<Constructor<T>?> {
+    private fun <T : Any> narrowDown(constr: Collection<KFunction<T>>,
+                                     rscd: MutableList<ConstructorData>): Wrap<Constructor<T>?> {
         val result = Wrap<Constructor<T>?>(null)
         constr.map { c ->
             val constructorDatas = getConstructorDatas(c)
