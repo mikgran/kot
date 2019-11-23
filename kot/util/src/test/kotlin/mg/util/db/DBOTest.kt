@@ -74,7 +74,7 @@ internal class DBOTest {
 
         assertNotNull(candidateMapped)
         assertTrue(candidateMapped.isNotEmpty())
-        assertTrue(contains("first1", "last2", candidateMapped))
+        assertTrue(candidateMapped.contains(Person("first1", "last2")))
     }
 
     private fun contains(firstName: String, lastName: String, candidateMapped: List<Person>): Boolean {

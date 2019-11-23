@@ -32,7 +32,7 @@ internal class DslMapperTest {
     }
 
     @Test
-    fun testBuildingSqlFromDsl2() {
+    fun testBuildingSqlFromDslJoin() {
 
         val sql = SqlMysql() select Place() join Address()
 
