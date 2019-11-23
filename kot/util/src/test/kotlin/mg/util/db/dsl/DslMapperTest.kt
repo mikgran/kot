@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test
 
 internal class DslMapperTest {
 
+    private val dbo = DBO(SqlMapperFactory.get("mysql"))
+
     private data class Address(val fullAddress: String = "")
     private data class Place(val address: Address = Address(), val rentInCents: Int = 0)
 
@@ -23,8 +25,10 @@ internal class DslMapperTest {
 
         val candidate = DslMapper.map(sql.list())
 
+        val p = AliasBuilder.alias(dbo.buildUniqueId(PersonB()))
+
         assertHasContent(candidate)
-        assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName = 'name'", candidate)
+        assertEquals("SELECT $p.firstName, $p.lastName FROM PersonB608543900 $p WHERE $p.firstName = 'name'", candidate)
     }
 
     @Test
@@ -34,7 +38,6 @@ internal class DslMapperTest {
 
         val candidate = DslMapper.map(sql.list())
 
-        val dbo = DBO(SqlMapperFactory.get("mysql"))
         val p = AliasBuilder.alias(dbo.buildUniqueId(Place()))
         val a = AliasBuilder.alias(dbo.buildUniqueId(Address()))
 
@@ -53,8 +56,10 @@ internal class DslMapperTest {
 
         val candidate = DslMapper.map(sql.list())
 
+        val p = AliasBuilder.alias(dbo.buildUniqueId(PersonB()))
+
         assertHasContent(candidate)
-        assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 AS p WHERE p.firstName = 'name'", candidate)
+        assertEquals("SELECT $p.firstName, $p.lastName FROM PersonB608543900 AS $p WHERE $p.firstName = 'name'", candidate)
     }
 
 }
