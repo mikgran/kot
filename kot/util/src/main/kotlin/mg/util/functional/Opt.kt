@@ -55,10 +55,6 @@ class Opt<T>(v: T?) {
         } ?: false
     }
 
-    // XXX: create BiOpt for tracking the original and the result values.
-    // XXX: match { consumer }
-    // XXX: match { func } : BiOpt
-
     @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
                                  filter: (R?) -> Boolean,

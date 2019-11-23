@@ -49,7 +49,6 @@ class DBO(private val mapper: SqlMapper) {
         return uid.getOrElse("")
     }
 
-    // TODO: create object? some other func name?
     fun <T : Any> save(t: T, connection: Connection) {
 
         val insertSql = of(t)

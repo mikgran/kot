@@ -20,7 +20,7 @@ internal class DBOTest {
     data class Person(val firstName: String = "", val lastName: String = "")
     data class Uuuu(val firstName: String = "", val lastName: String = "")
 
-    // for joined save & find
+    // for joined save & find TODO
     // data class Billing(val amount: String = "", val person: Person = Person("", ""))
 
     private val firstName = "firstName"
@@ -147,7 +147,6 @@ internal class DBOTest {
                 .map { s -> s.executeUpdate("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, value VARCHAR(64) NOT NULL") }
 
         dbo.drop(Tttt(), dbConfig.connection)
-        // TODO
     }
 
     @Test
