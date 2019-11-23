@@ -77,16 +77,6 @@ internal class DBOTest {
         assertTrue(candidateMapped.contains(Person("first1", "last2")))
     }
 
-    private fun contains(firstName: String, lastName: String, candidateMapped: List<Person>): Boolean {
-        var found = false
-        candidateMapped.forEach {
-            if (firstName == it.firstName && lastName == it.lastName) {
-                found = true
-            }
-        }
-        return found
-    }
-
     private fun testFind() {
         val test1 = "test1DBOTest"
         val test2 = "test2DBOTest"
@@ -101,7 +91,7 @@ internal class DBOTest {
 
         assertNotNull(candidatePersonList)
         assertTrue(candidatePersonList.isNotEmpty())
-        assertTrue(contains(test1, test2, candidatePersonList))
+        assertTrue(candidatePersonList.contains(Person(test1, test2)))
     }
 
     private fun testSave() {
