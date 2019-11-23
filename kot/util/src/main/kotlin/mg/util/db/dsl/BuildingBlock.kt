@@ -9,8 +9,8 @@ abstract class BuildingBlock {
     abstract val blocks: MutableList<BuildingBlock>
     fun list() = blocks
     protected fun simpleName() = this::class.simpleName
-    abstract fun buildSelect(dp: DslParameters): String
-    abstract fun buildFields(dp: DslParameters): String
+    abstract fun buildSelect(dp: DslParameters): String // do as last always
+    abstract fun buildFields(dp: DslParameters): String // do as first always
     private val dbConfig = DBConfig(Config())
     internal val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
 
