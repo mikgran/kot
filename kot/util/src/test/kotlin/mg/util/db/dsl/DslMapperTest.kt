@@ -54,7 +54,7 @@ internal class DslMapperTest {
         val candidate = DslMapper.map(sql.list())
 
         assertHasContent(candidate)
-        // assertEqual
+        assertEquals("SELECT p.firstName, p.lastName FROM PersonB608543900 AS p WHERE p.firstName = 'name'", candidate)
     }
 
 }
