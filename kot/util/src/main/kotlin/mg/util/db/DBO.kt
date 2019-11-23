@@ -88,7 +88,7 @@ class DBO(private val mapper: SqlMapper) {
         val type = of(list)
                 .filter { it.isNotEmpty() }
                 .map { it[0] }
-                .mapAs(SelectBlock::class)
+                .mapTo(SelectBlock::class)
                 .map { it.type }
                 .get()
 

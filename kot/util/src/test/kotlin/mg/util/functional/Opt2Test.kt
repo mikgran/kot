@@ -24,7 +24,7 @@ internal class Opt2Test {
 
         val opt = Opt2.of(strAny)
 
-        val candidate = opt.mapAs(String::class)
+        val candidate = opt.mapTo(String::class)
 
         assertNotNull(candidate)
         assertNotNull(candidate.get())
@@ -37,7 +37,7 @@ internal class Opt2Test {
         assertDoesNotThrow {
             val strAny2: Any? = VALUE
             val candidate = Opt2.of(strAny2)
-                    .mapAs(Int::class)
+                    .mapTo(Int::class)
 
             assertNotNull(candidate)
             assertNull(candidate.get())

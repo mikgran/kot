@@ -145,7 +145,7 @@ class Opt2<T : Any> {
         }
     }
 
-    fun <V: Any> mapAs(asType: KClass<V>) : Opt2<V> = of(asType.safeCast(lazyT))
+    fun <V: Any> mapTo(toType: KClass<V>) : Opt2<V> = of(toType.safeCast(lazyT))
 
     companion object Factory {
 

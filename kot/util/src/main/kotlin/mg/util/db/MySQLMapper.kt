@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.functional.Opt2
+import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -10,7 +11,7 @@ object MySqlMapper : SqlMapper {
 
     override fun <T : Any> buildFind(metadata: Metadata<T>): String {
 
-        val sqlFind = Opt2.of(metadata)
+        val sqlFind = of(metadata)
                 .map(::buildSqlFind)
                 .get()
 
@@ -18,16 +19,17 @@ object MySqlMapper : SqlMapper {
     }
 
     override fun <T : Any> buildDrop(metadata: Metadata<T>): String {
-        return ""
+
+        return of(metadata)
+                .map { "DROP TABLE IF EXISTS ${it.uid}" }
+                .getOrElseThrow { Exception("Unable to build drop table for ${metadata.type::class}") } ?: ""
     }
 
     override fun <T : Any> buildInsert(metadata: Metadata<T>): String {
 
-        val sqlInsert = Opt2.of(metadata)
+        return of(metadata)
                 .map(::buildSqlInsert)
-                .getOrElseThrow { Exception("Unable to build insert for ${metadata.type::class}") }
-
-        return sqlInsert ?: ""
+                .getOrElseThrow { Exception("Unable to build insert for ${metadata.type::class}") } ?: ""
     }
 
     private fun <T : Any> buildSqlInsert(metadata: Metadata<T>): String {
@@ -36,16 +38,16 @@ object MySqlMapper : SqlMapper {
         val padding2 = ") VALUES ("
         val padding3 = ")"
 
-        val properties = Opt2.of(metadata)
+        val properties = of(metadata)
                 .map { it.properties }
                 .getOrElseThrow { Exception("No properties found in metadata") }
 
-        val fieldsCommaSeparated = Opt2.of(properties)
+        val fieldsCommaSeparated = of(properties)
                 .map { it.joinToString(", ") { p -> p.name } }
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("Unable to create insert fields string (field1, field2)") }
 
-        val fieldsValuesCommaSeparated = Opt2.of(properties)
+        val fieldsValuesCommaSeparated = of(properties)
                 .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, metadata.type)}'" } }
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("Unable to fetch field values for insert ('val1', 'val2')") }
@@ -57,7 +59,7 @@ object MySqlMapper : SqlMapper {
 
     override fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
 
-        val sqlFieldDefinitionsCommaSeparated = Opt2.of(metadata)
+        val sqlFieldDefinitionsCommaSeparated = of(metadata)
                 .map(::buildSqlFieldDefinitions)
                 .map { it.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
@@ -70,7 +72,7 @@ object MySqlMapper : SqlMapper {
 
     fun <T : Any> buildSqlFieldDefinitions(metadata: Metadata<T>): List<String> {
 
-        return Opt2.of(metadata)
+        return of(metadata)
                 .map { it.type::class.declaredMemberProperties }
                 .map { it.map(MySqlTypeMapper::getTypeString) }
                 .getOrElse(emptyList())
