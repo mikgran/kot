@@ -8,6 +8,7 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
     fun left() = left
     fun right() = right
 
+    @Suppress("unused")
     fun original() = left
     fun result() = right
 
@@ -25,7 +26,7 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
         val matchedRight = right.match(ref, predicate, mapper)
 
         @Suppress("UNCHECKED_CAST")
-        return BiOpt2.of(right, matchedRight.right()) as BiOpt2<T, V> // the new match situation is <old right, new right> type, force into T, V
+        return of(right, matchedRight.right()) as BiOpt2<T, V> // the new match situation is <old right, new right> type, force into T, V
     }
 
     fun case(predicate: (T) -> Boolean,
@@ -41,7 +42,7 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
     @Suppress("UNCHECKED_CAST")
     fun filter(filter: (T) -> Boolean): BiOpt2<T, V> = when {
         left.isPresent() && filter(left.get() as T) -> this
-        else -> BiOpt2.empty()
+        else -> empty()
     }
 
     fun getLeftOrElseThrow(exceptionProducer: () -> Throwable): T? = when {
