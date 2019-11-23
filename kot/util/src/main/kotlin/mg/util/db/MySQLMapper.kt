@@ -17,6 +17,10 @@ object MySqlMapper : SqlMapper {
         return sqlFind ?: ""
     }
 
+    override fun <T : Any> buildDrop(metadata: Metadata<T>): String {
+        return ""
+    }
+
     override fun <T : Any> buildInsert(metadata: Metadata<T>): String {
 
         val sqlInsert = Opt2.of(metadata)

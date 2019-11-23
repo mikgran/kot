@@ -13,10 +13,15 @@ import java.sql.Statement
 
 internal class DBOTest {
 
+    // TODO: different type finds and saves mapping
+
     private var dbConfig: DBConfig = DBConfig(TestConfig())
 
     data class Person(val firstName: String = "", val lastName: String = "")
     data class Uuuu(val firstName: String = "", val lastName: String = "")
+
+    // for joined save & find
+    // data class Billing(val amount: String = "", val person: Person = Person("", ""))
 
     private val firstName = "firstName"
     private val first1 = "first1"
@@ -112,7 +117,41 @@ internal class DBOTest {
     }
 
     @Test
-    fun testDslSelect() {
+    fun testSaveWithComposition() {
+
+//        dbo.ensureTable(testPerson2, dbConfig.connection)
+//
+//        dbo.save(testPerson2, dbConfig.connection)
+//
+//        val candidate = of(dbConfig.connection)
+//                .map(Connection::createStatement)
+//                .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildMetadata(testPerson2).uid}") }
+//                .filter(ResultSet::next)
+//                .map { rs -> "${rs.getString("firstName")} ${rs.getString("lastName")}" }
+//                .getOrElseThrow { Exception("Test failed: no test data found") }
+//
+//        assertNotNull(candidate)
+//        assertEquals("$first1 $last2", candidate)
+
+    }
+
+    @Test
+    fun testDrop() {
+
+        data class Tttt(val value: String = "")
+
+        val uid = dbo.buildUniqueId(Tttt())
+
+        of(dbConfig.connection)
+                .map(Connection::createStatement)
+                .map { s -> s.executeUpdate("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, value VARCHAR(64) NOT NULL") }
+
+        dbo.drop(Tttt(), dbConfig.connection)
+        // TODO
+    }
+
+    @Test
+    fun testDslSelectJoin() {
 
         val name = "name"
         val bbb = "bbb"

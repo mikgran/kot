@@ -120,6 +120,15 @@ class DBO(private val mapper: SqlMapper) {
         return mappedT ?: emptyList()
     }
 
+    fun <T: Any> drop(t: T, connection: Connection) {
+
+        of(t)
+                .map(::buildMetadata)
+                .map(mapper::buildDrop)
+
+
+    }
+
     companion object {
         const val CONNECTION_WAS_CLOSED = "Connection was closed while attempting to read from it"
         const val UNABLE_TO_BUILD_INSERT = "Unable to build insert from: "
