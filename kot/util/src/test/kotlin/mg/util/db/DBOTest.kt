@@ -3,6 +3,7 @@ package mg.util.db
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.AliasBuilder.alias
 import mg.util.db.DBTest.PersonB
+import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
@@ -127,16 +128,17 @@ internal class DBOTest {
 
         // TODO: use composition for testing
 
-        val uidBil = dbo.buildUniqueId(Billing())
-        val uidPer = dbo.buildUniqueId(Person())
-        val b = alias(uidBil)
-        val p = alias(uidPer)
+        val b = dbo.buildUniqueId(Billing())
+        val p = dbo.buildUniqueId(Person())
+        val b2 = alias(b)
+        val p2 = alias(p)
 
-        val sql = "SELECT * FROM $uidPer $p JOIN $uidBil $b ON $p.id = $b.${uidPer}id"
+        val sql = "SELECT * FROM $p $p2 JOIN $b $b2 ON $p2.id = $b2.${p}id"
+
         println(sql)
 
         dbo.ensureTable(Billing(), dbConfig.connection)
-        dbo.save(Billing("10", Person("fff", "lll")), dbConfig.connection)
+        // dbo.save(Billing("10", Person("fff", "lll")), dbConfig.connection)
 
         val candidate = of(dbConfig.connection)
                 .map(Connection::createStatement)

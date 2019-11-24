@@ -34,15 +34,19 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDslJoin() {
 
+        // TODO 1: fix join on a.f = b.f2
+
         val sql = SqlMysql() select Place() join Address()
 
         val candidate = DslMapper.map(sql.list())
 
-        val p = AliasBuilder.alias(dbo.buildUniqueId(Place()))
-        val a = AliasBuilder.alias(dbo.buildUniqueId(Address()))
+        val p2 = dbo.buildUniqueId(Place())
+        val a2 = dbo.buildUniqueId(Address())
+        val p = AliasBuilder.alias(p2)
+        val a = AliasBuilder.alias(a2)
 
         assertHasContent(candidate)
-        assertEquals("SELECT $p.address, $p.rentInCents, $a.fullAddress FROM Place536353721 $p JOIN Address2002641509 $a", candidate)
+        assertEquals("SELECT $p.address, $p.rentInCents, $a.fullAddress FROM $p2 $p JOIN $a2 $a", candidate)
     }
 
     private fun assertHasContent(candidate: String) {
