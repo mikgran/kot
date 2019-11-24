@@ -20,7 +20,7 @@ internal class DBOTest {
     data class Person(val firstName: String = "", val lastName: String = "")
     data class Uuuu(val firstName: String = "", val lastName: String = "")
 
-    // for joined save & find TODO
+    // TODO for joined save & find
     // data class Billing(val amount: String = "", val person: Person = Person("", ""))
 
     private val firstName = "firstName"
@@ -102,18 +102,22 @@ internal class DBOTest {
     private fun testSave() {
 
         dbo.ensureTable(testPerson2, dbConfig.connection)
-
         dbo.save(testPerson2, dbConfig.connection)
 
-        val candidate = of(dbConfig.connection)
+        val rs = of(dbConfig.connection)
                 .map(Connection::createStatement)
-                .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildMetadata(testPerson2).uid}") }
+                .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildUniqueId(testPerson2)}") }
                 .filter(ResultSet::next)
-                .map { rs -> "${rs.getString("firstName")} ${rs.getString("lastName")}" }
-                .getOrElseThrow { Exception("Test failed: no test data found") }
+                .getOrElseThrow { Exception("Test failed: no rows in db.") }!!
 
-        assertNotNull(candidate)
-        assertEquals("$first1 $last2", candidate)
+        val candidates = mutableListOf<Person>()
+        while (rs.next()) {
+            candidates += Person(rs.getString("firstName"), rs.getString("lastName"))
+        }
+
+        assertNotNull(candidates)
+        assertTrue(candidates.isNotEmpty())
+        assertTrue(candidates.contains(testPerson2))
     }
 
     @Test
@@ -142,11 +146,21 @@ internal class DBOTest {
 
         val uid = dbo.buildUniqueId(Tttt())
 
-        of(dbConfig.connection)
-                .map(Connection::createStatement)
-                .map { s -> s.executeUpdate("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, value VARCHAR(64) NOT NULL") }
+        val connection = of(dbConfig.connection)
+
+        connection.map(Connection::createStatement)
+                .map { it.executeUpdate("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, value VARCHAR(64) NOT NULL)") }
+
+        // TODO assert
 
         dbo.drop(Tttt(), dbConfig.connection)
+
+        val tables = connection.map(Connection::createStatement)
+                .map { it.executeQuery("SHOW TABLES") }
+                .filter(ResultSet::next)
+                .ifMissingThrow { Exception("Test failed") }
+
+        // TODO assertTrue()
     }
 
     @Test
