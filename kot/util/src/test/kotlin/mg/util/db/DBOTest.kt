@@ -106,7 +106,7 @@ internal class DBOTest {
 
         val rs = of(dbConfig.connection)
                 .map(Connection::createStatement)
-                .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildUniqueId(testPerson2)}") }
+                .map { it.executeQuery("SELECT * FROM ${dbo.buildUniqueId(testPerson2)}") }
                 .filter(ResultSet::next)
                 .getOrElseThrow { Exception("Test failed: no rows in db.") }!!
 
