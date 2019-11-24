@@ -27,6 +27,10 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
 
     companion object {
 
+        fun iof(rs: ResultSet): ResultSetIterator {
+            return of(rs)
+        }
+
         fun of(rs: ResultSet): ResultSetIterator {
             return ResultSetIterator(rs)
         }
