@@ -57,7 +57,7 @@ class ObjectBuilder {
     private fun getConstructorData(resultSetMetadata: ResultSetMetaData): MutableList<ConstructorData> {
         val list = mutableListOf<ConstructorData>()
         (1..resultSetMetadata.columnCount).forEach { i ->
-            if (resultSetMetadata.getColumnName(i) != DB_ID_FIELD) {
+            if (!resultSetMetadata.getColumnName(i).contains(DB_ID_FIELD)) {
                 list.add(ConstructorData(resultSetMetadata.getColumnClassName(i), resultSetMetadata.getColumnName(i)))
             }
         }

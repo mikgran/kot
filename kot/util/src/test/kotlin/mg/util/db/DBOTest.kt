@@ -1,19 +1,21 @@
 package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
-import mg.util.db.DBTest.*
+import mg.util.db.AliasBuilder.alias
+import mg.util.db.DBTest.PersonB
 import mg.util.db.dsl.mysql.Sql
+import mg.util.db.functional.ResultSetIterator.Companion.iof
+import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.ResultSetMetaData
 import java.sql.Statement
 
 internal class DBOTest {
-
-    // TODO: different type finds and saves mapping
 
     private var dbConfig: DBConfig = DBConfig(TestConfig())
 
@@ -21,7 +23,7 @@ internal class DBOTest {
     data class Uuuu(val firstName: String = "", val lastName: String = "")
 
     // TODO for joined save & find
-    // data class Billing(val amount: String = "", val person: Person = Person("", ""))
+    data class Billing(val amount: String = "", val person: Person = Person("", ""))
 
     private val firstName = "firstName"
     private val first1 = "first1"
@@ -71,7 +73,7 @@ internal class DBOTest {
 
         val persons: ResultSet? = of(dbConfig.connection)
                 .map(Connection::createStatement)
-                .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildMetadata(testPerson2).uid}") }
+                .map { it.executeQuery("SELECT * FROM ${dbo.buildUniqueId(testPerson2)}") }
                 .filter(ResultSet::next)
                 .getOrElseThrow { Exception("Test failed: no test data found") }
 
@@ -120,25 +122,41 @@ internal class DBOTest {
         assertTrue(candidates.contains(testPerson2))
     }
 
-    @Test
+    // @Test
     fun testSaveWithComposition() {
 
-//        dbo.ensureTable(testPerson2, dbConfig.connection)
-//
-//        dbo.save(testPerson2, dbConfig.connection)
-//
-//        val candidate = of(dbConfig.connection)
-//                .map(Connection::createStatement)
-//                .map { s -> s.executeQuery("SELECT * FROM ${dbo.buildMetadata(testPerson2).uid}") }
-//                .filter(ResultSet::next)
-//                .map { rs -> "${rs.getString("firstName")} ${rs.getString("lastName")}" }
-//                .getOrElseThrow { Exception("Test failed: no test data found") }
-//
-//        assertNotNull(candidate)
-//        assertEquals("$first1 $last2", candidate)
+        // TODO: use composition for testing
 
-        // TODO: test for saving with relation
+        val uidBil = dbo.buildUniqueId(Billing())
+        val uidPer = dbo.buildUniqueId(Person())
+        val b = alias(uidBil)
+        val p = alias(uidPer)
 
+        val sql = "SELECT * FROM $uidPer $p JOIN $uidBil $b ON $p.id = $b.${uidPer}id"
+        println(sql)
+
+        dbo.ensureTable(Billing(), dbConfig.connection)
+        dbo.save(Billing("10", Person("fff", "lll")), dbConfig.connection)
+
+        val candidate = of(dbConfig.connection)
+                .map(Connection::createStatement)
+                .map { it.executeQuery(sql) }
+//                .map { it.metaData }
+//                .map(::getColumnsAsCSVdata)
+//                .ifPresent (::println)
+
+        assertTrue(candidate.get()!!.next())
+    }
+
+    private fun getColumnsAsCSVdata(metaData: ResultSetMetaData?): String {
+
+        return of(metaData)
+                .map {
+                    (1..it.columnCount).joinToString(", ") { i ->
+                        it.getColumnName(i)
+                    }
+                }
+                .getOrElse("")
     }
 
     @Test
@@ -147,22 +165,27 @@ internal class DBOTest {
         data class Tttt(val value: String = "")
 
         val uid = dbo.buildUniqueId(Tttt())
-
         val connection = of(dbConfig.connection)
 
         connection.map(Connection::createStatement)
-                .map { it.executeUpdate("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, value VARCHAR(64) NOT NULL)") }
+                .mapWith(uid) { s, u -> s.executeUpdate("CREATE TABLE IF NOT EXISTS $u(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, value VARCHAR(64) NOT NULL)") }
 
-        // TODO assert
+        queryShowTables(connection)
+                .any { it.equals(uid, true) }
+                .apply(::assertTrue)
 
         dbo.drop(Tttt(), dbConfig.connection)
 
-        val tables = connection.map(Connection::createStatement)
-                .map { it.executeQuery("SHOW TABLES") }
-                .filter(ResultSet::next)
-                .ifMissingThrow { Exception("Test failed") }
+        queryShowTables(connection)
+                .none { it.equals(uid, true) }
+                .apply(::assertTrue)
+    }
 
-        // TODO assertTrue()
+    private fun queryShowTables(connection: Opt2<Connection>): List<String> {
+        return connection.map(Connection::createStatement)
+                .map { it.executeQuery("SHOW TABLES") }
+                .getAndMap(::iof)!!
+                .map { it.getString(1) }
     }
 
     @Test
@@ -189,24 +212,14 @@ internal class DBOTest {
         @JvmStatic
         internal fun afterAll() {
 
-            val person = Person("", "")
-            val personB = PersonB("", "")
-            val uuuu = Uuuu("", "")
             val dbConfig = DBConfig(TestConfig())
             val dbo = DBO(SqlMapperFactory.get("mysql"))
-            val personUid = dbo.buildUniqueId(person)
-            val personBUId = dbo.buildUniqueId(personB)
-            val uuuuUid = dbo.buildUniqueId(uuuu)
-            val list = listOf(personUid, personBUId, uuuuUid)
+            val list = listOf(Person(), PersonB(), Uuuu(), Billing())
+                    .map { dbo.buildUniqueId(it) }
 
             of(dbConfig.connection)
                     .map(Connection::createStatement)
                     .ifPresent { stmt -> list.forEach { uid -> deleteFromUid(stmt, uid) } }
-                    .ifPresent { stmt -> list.forEach { uid -> dropTableUid(stmt, uid) } }
-        }
-
-        private fun dropTableUid(statement: Statement, uid: String) {
-            nonThrowingBlock { statement.executeUpdate("DROP TABLE $uid") }
         }
 
         private fun deleteFromUid(statement: Statement, uid: String) {

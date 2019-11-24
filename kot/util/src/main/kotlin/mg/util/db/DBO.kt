@@ -119,13 +119,16 @@ class DBO(private val mapper: SqlMapper) {
         return mappedT ?: emptyList()
     }
 
-    fun <T: Any> drop(t: T, connection: Connection) {
+    fun <T : Any> drop(t: T, connection: Connection) {
 
-        of(t)
+        val dropSql = of(t)
                 .map(::buildMetadata)
                 .map(mapper::buildDrop)
+                .get()
 
-
+        of(connection)
+                .map(Connection::createStatement)
+                .mapWith(dropSql) { s, sql -> s.executeUpdate(sql) }
     }
 
     companion object {
