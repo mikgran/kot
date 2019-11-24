@@ -137,6 +137,8 @@ internal class DBOTest {
 //        assertNotNull(candidate)
 //        assertEquals("$first1 $last2", candidate)
 
+        // TODO: test for saving with relation
+
     }
 
     @Test
