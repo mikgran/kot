@@ -4,7 +4,7 @@ import mg.util.db.DBOTest.Person
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-internal class MySQLMapperTest {
+internal class MySqlMapperTest {
 
     private val person = Person("testname1", "testname2")
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
