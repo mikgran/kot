@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.reflect.full.declaredMemberProperties
 
-internal class TypeMapperTest {
+internal class MySqlTypeMapperTest {
 
     private val person = DBOTest.Person("testname1", "testname2")
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
