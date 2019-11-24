@@ -27,5 +27,10 @@ internal class MySqlTypeMapperTest {
         assertTrue(expectedFieldDefinitions.containsAll(candidates))
     }
 
+    // @Test
+    fun testMapping2() {
+
+    }
+
 
 }
