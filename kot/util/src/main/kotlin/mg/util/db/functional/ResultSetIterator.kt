@@ -20,7 +20,7 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
     fun <T : Any> map(mapper: (ResultSet) -> T): List<T> {
         val listT = mutableListOf<T>()
         while (resultSet.next()) {
-            listT.add(mapper(resultSet))
+            listT += mapper(resultSet)
         }
         return listT.toList()
     }
