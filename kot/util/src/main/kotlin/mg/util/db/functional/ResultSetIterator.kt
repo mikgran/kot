@@ -18,11 +18,11 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
     }
 
     fun <T : Any> map(mapper: (ResultSet) -> T): List<T> {
-        val listR = mutableListOf<T>()
+        val listT = mutableListOf<T>()
         while (resultSet.next()) {
-            listR.add(mapper(resultSet))
+            listT.add(mapper(resultSet))
         }
-        return listR.toList()
+        return listT.toList()
     }
 
     companion object {
