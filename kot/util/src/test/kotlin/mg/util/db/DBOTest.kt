@@ -3,6 +3,7 @@ package mg.util.db
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.AliasBuilder.alias
 import mg.util.db.DBTest.PersonB
+import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
@@ -52,7 +53,7 @@ internal class DBOTest {
     @Test
     fun testBuildingUid() {
 
-        val uidCandidate = dbo.buildUniqueId(Person(firstName, lastName))
+        val uidCandidate = buildUniqueId(Person(firstName, lastName))
 
         assertNotNull(uidCandidate)
         assertEquals("Person${(firstName + lastName).hashCode()}", uidCandidate)
@@ -74,7 +75,7 @@ internal class DBOTest {
 
         val persons: ResultSet? = of(dbConfig.connection)
                 .map(Connection::createStatement)
-                .map { it.executeQuery("SELECT * FROM ${dbo.buildUniqueId(testPerson2)}") }
+                .map { it.executeQuery("SELECT * FROM ${buildUniqueId(testPerson2)}") }
                 .filter(ResultSet::next)
                 .getOrElseThrow { Exception("Test failed: no test data found") }
 
@@ -109,7 +110,7 @@ internal class DBOTest {
 
         val rs = of(dbConfig.connection)
                 .map(Connection::createStatement)
-                .map { it.executeQuery("SELECT * FROM ${dbo.buildUniqueId(testPerson2)}") }
+                .map { it.executeQuery("SELECT * FROM ${buildUniqueId(testPerson2)}") }
                 .filter(ResultSet::next)
                 .getOrElseThrow { Exception("Test failed: no rows in db.") }!!
 
@@ -128,8 +129,8 @@ internal class DBOTest {
 
         // TODO: use composition for testing
 
-        val b = dbo.buildUniqueId(Billing())
-        val p = dbo.buildUniqueId(Person())
+        val b = buildUniqueId(Billing())
+        val p = buildUniqueId(Person())
         val b2 = alias(b)
         val p2 = alias(p)
 
@@ -166,7 +167,7 @@ internal class DBOTest {
 
         data class Tttt(val value: String = "")
 
-        val uid = dbo.buildUniqueId(Tttt())
+        val uid = buildUniqueId(Tttt())
         val connection = of(dbConfig.connection)
 
         connection.map(Connection::createStatement)
@@ -217,7 +218,7 @@ internal class DBOTest {
             val dbConfig = DBConfig(TestConfig())
             val dbo = DBO(SqlMapperFactory.get("mysql"))
             val list = listOf(Person(), PersonB(), Uuuu(), Billing())
-                    .map { dbo.buildUniqueId(it) }
+                    .map(::buildUniqueId)
 
             of(dbConfig.connection)
                     .map(Connection::createStatement)

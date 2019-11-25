@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common.hasContent
 import mg.util.common.Common.nonThrowingBlock
+import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
@@ -24,7 +25,7 @@ internal class DBTest {
 
             val db = DB()
             val testPerson = PersonB(fName, lName)
-            val uniqueId = db.buildUniqueId(PersonB("", ""))
+            val uniqueId = buildUniqueId(PersonB("", ""))
 
             db.save(testPerson)
 
@@ -48,7 +49,7 @@ internal class DBTest {
     fun testDBODelegate() {
 
         val db = DB()
-        val uid = db.buildUniqueId(PersonB("", ""))
+        val uid = buildUniqueId(PersonB("", ""))
         assertNotNull(uid)
         assertTrue(hasContent(uid))
     }

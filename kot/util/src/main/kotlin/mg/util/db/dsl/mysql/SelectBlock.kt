@@ -2,6 +2,8 @@ package mg.util.db.dsl.mysql
 
 import mg.util.common.Common
 import mg.util.db.AliasBuilder
+import mg.util.db.UidBuilder
+import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2.Factory.of
@@ -39,8 +41,10 @@ open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         dp.typeT = of(type)
                 .getOrElseThrow { Exception("buildFields: Missing select type") }!!
 
-        dp.uniqueId = of(dbo)
-                .map { it.buildUniqueId(dp.typeT!!) }
+        // TODO 1 of(dp.typeT).map()
+
+        dp.uniqueId = of(dp.typeT)
+                .map (::buildUniqueId)
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("buildFields: Cannot build uid for $type") }!!
 

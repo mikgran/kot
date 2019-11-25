@@ -1,6 +1,7 @@
 package mg.util.db
 
 import mg.util.db.DBTest.PersonB
+import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -16,7 +17,7 @@ internal class ObjectBuilderTest {
         val connection = dbConfig.connection
         dbo.ensureTable(PersonB("", ""), connection)
         dbo.save(PersonB(firstName, lastName), connection)
-        val uid = dbo.buildUniqueId(PersonB())
+        val uid = buildUniqueId(PersonB())
 
         val results = Opt2.of(connection.createStatement())
                 .map { it.executeQuery("SELECT * FROM $uid") }

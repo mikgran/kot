@@ -1,6 +1,8 @@
 package mg.util.db.dsl.mysql
 
 import mg.util.db.AliasBuilder
+import mg.util.db.UidBuilder
+import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2.Factory.of
@@ -33,7 +35,7 @@ open class InnerJoinBlock<T : Any>(override val blocks: MutableList<BuildingBloc
 
     override fun buildFields(dp: DslParameters): String {
 
-        of(type).mapWith(dbo) { t, d -> d.buildUniqueId(t) }
+        of(type).map(::buildUniqueId)
                 .ifPresent { uid = it }
                 .map { AliasBuilder.alias(uid!!) }
                 .ifPresent { uidAlias = it }

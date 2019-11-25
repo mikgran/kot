@@ -20,7 +20,7 @@ class DBO(private val mapper: SqlMapper) {
     fun <T : Any> buildMetadata(type: T): Metadata<T> {
 
         val propertiesOfT: ArrayList<KCallable<*>> = propertiesOfT(type)
-        val uid = buildUniqueId(type)
+        val uid = UidBuilder.buildUniqueId(type)
         val name = type::class.simpleName ?: ""
 
         return Metadata(
@@ -35,18 +35,6 @@ class DBO(private val mapper: SqlMapper) {
     private fun <T : Any> propertiesOfT(t: T): ArrayList<KCallable<*>> {
         return t::class.memberProperties
                 .toCollection(ArrayList())
-    }
-
-    fun <T : Any> buildUniqueId(t: T): String {
-
-        val uid = of(t)
-                .map(::propertiesOfT)
-                .filter { it.size > 0 }
-                .map { it.filter { p -> p.name != "id" } }
-                .map { it.fold("") { n, p -> n + p.name } }
-                .mapWith(t) { foldedNames, type -> type::class.simpleName + foldedNames.hashCode() }
-
-        return uid.getOrElse("")
     }
 
     fun <T : Any> save(t: T, connection: Connection) {
@@ -130,6 +118,10 @@ class DBO(private val mapper: SqlMapper) {
                 .map(Connection::createStatement)
                 .mapWith(dropSql) { s, sql -> s.executeUpdate(sql) }
     }
+
+//    fun <T : Any> buildUniqueId(t: T): String {
+//        return UidBuilder.buildUniqueId(t)
+//    }
 
     companion object {
         const val CONNECTION_WAS_CLOSED = "Connection was closed while attempting to read from it"

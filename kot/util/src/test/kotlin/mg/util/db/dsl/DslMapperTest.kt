@@ -5,11 +5,12 @@ import mg.util.db.AliasBuilder
 import mg.util.db.DBO
 import mg.util.db.DBTest.PersonB
 import mg.util.db.SqlMapperFactory
-import mg.util.db.dsl.mysql.Sql as SqlMysql
-import mg.util.db.dsl.oracle.Sql as SqlOracle
+import mg.util.db.UidBuilder.buildUniqueId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import mg.util.db.dsl.mysql.Sql as SqlMysql
+import mg.util.db.dsl.oracle.Sql as SqlOracle
 
 internal class DslMapperTest {
 
@@ -25,7 +26,7 @@ internal class DslMapperTest {
 
         val candidate = DslMapper.map(sql.list())
 
-        val p = AliasBuilder.alias(dbo.buildUniqueId(PersonB()))
+        val p = AliasBuilder.alias(buildUniqueId(PersonB()))
 
         assertHasContent(candidate)
         assertEquals("SELECT $p.firstName, $p.lastName FROM PersonB608543900 $p WHERE $p.firstName = 'name'", candidate)
@@ -40,8 +41,8 @@ internal class DslMapperTest {
 
         val candidate = DslMapper.map(sql.list())
 
-        val p2 = dbo.buildUniqueId(Place())
-        val a2 = dbo.buildUniqueId(Address())
+        val p2 = buildUniqueId(Place())
+        val a2 = buildUniqueId(Address())
         val p = AliasBuilder.alias(p2)
         val a = AliasBuilder.alias(a2)
 
@@ -60,7 +61,7 @@ internal class DslMapperTest {
 
         val candidate = DslMapper.map(sql.list())
 
-        val p = AliasBuilder.alias(dbo.buildUniqueId(PersonB()))
+        val p = AliasBuilder.alias(buildUniqueId(PersonB()))
 
         assertHasContent(candidate)
         assertEquals("SELECT $p.firstName, $p.lastName FROM PersonB608543900 AS $p WHERE $p.firstName = 'name'", candidate)

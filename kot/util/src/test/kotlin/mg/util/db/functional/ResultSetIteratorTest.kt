@@ -5,11 +5,12 @@ import mg.util.db.DBO
 import mg.util.db.DBOTest.Person
 import mg.util.db.SqlMapperFactory
 import mg.util.db.TestConfig
-import mg.util.db.functional.ResultSetIterator.Companion.of as iof
+import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.sql.Connection
+import mg.util.db.functional.ResultSetIterator.Companion.of as iof
 
 internal class ResultSetIteratorTest {
 
@@ -27,7 +28,7 @@ internal class ResultSetIteratorTest {
         dbo.save(person1, connection)
         dbo.save(person2, connection)
 
-        val uid = dbo.buildUniqueId(Person())
+        val uid = buildUniqueId(Person())
         val candidates = of(connection)
                 .map(Connection::createStatement)
                 .mapWith(uid) { s, u -> s.executeQuery("SELECT * FROM $u") }
