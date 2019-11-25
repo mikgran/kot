@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.SelectBlock
@@ -20,7 +21,7 @@ class DBO(private val mapper: SqlMapper) {
     fun <T : Any> buildMetadata(type: T): Metadata<T> {
 
         val propertiesOfT: ArrayList<KCallable<*>> = propertiesOfT(type)
-        val uid = UidBuilder.buildUniqueId(type)
+        val uid = buildUniqueId(type)
         val name = type::class.simpleName ?: ""
 
         return Metadata(
