@@ -1,35 +1,55 @@
 package mg.util.db
 
-import mg.util.functional.Opt2
+import mg.util.db.DBOTest.Person
+import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.reflect.full.declaredMemberProperties
 
 internal class MySqlTypeMapperTest {
 
-    private val person = DBOTest.Person("testname1", "testname2")
+    private val person = Person("testname1", "testname2")
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
 
+    data class Yyyyy(val a: Int = 0)
+    data class Qqqqq(val b: String = "", val c: Yyyyy = Yyyyy())
+
     @Test
-    fun testMapping() {
+    fun testMappingClassWithTwoStringFields() {
 
-        val metadata: Metadata<DBOTest.Person> = dbo.buildMetadata(person)
+        val metadata: Metadata<Person> = dbo.buildMetadata(person)
 
-        val candidates = Opt2.of(metadata)
-                .map { it.type::class.declaredMemberProperties }
-                .map { it.map(MySqlTypeMapper::getTypeString) }
-                .getOrElse(emptyList())
+        val candidates = buildCandidates(metadata)
 
         val expectedFieldDefinitions = listOf("firstName VARCHAR(64) NOT NULL", "lastName VARCHAR(64) NOT NULL")
 
+        assertContainsExpectedCandidates(candidates, expectedFieldDefinitions)
+    }
+
+    @Test
+    fun testMappingWithOneToOneRelation() {
+
+        val metadata = dbo.buildMetadata(Qqqqq())
+        val yyyyyUid = dbo.buildUniqueId(Yyyyy())
+
+        val candidates = buildCandidates(metadata)
+
+        val expectedFieldDefinitions = listOf("a VARCHAR(64) NOT NULL", "${yyyyyUid}id MEDIUMINT NOT NULL")
+
+        assertContainsExpectedCandidates(candidates, expectedFieldDefinitions)
+    }
+
+    private fun assertContainsExpectedCandidates(candidates: List<String>, expectedFieldDefinitions: List<String>) {
         assertNotNull(candidates)
         assertEquals(2, candidates.size)
         assertTrue(expectedFieldDefinitions.containsAll(candidates))
     }
 
-    // @Test
-    fun testMapping2() {
-
+    private fun <T: Any> buildCandidates(metadata: Metadata<T>): List<String> {
+        return of(metadata)
+                .map { it.type::class.declaredMemberProperties }
+                .map { it.map(MySqlTypeMapper::getTypeString) }
+                .getOrElse(emptyList())
     }
 
 
