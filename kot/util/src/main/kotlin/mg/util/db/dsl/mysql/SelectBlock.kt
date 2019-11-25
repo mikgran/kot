@@ -2,6 +2,7 @@ package mg.util.db.dsl.mysql
 
 import mg.util.common.Common
 import mg.util.db.AliasBuilder
+import mg.util.db.UidBuilder
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
@@ -11,8 +12,8 @@ import kotlin.reflect.full.memberProperties
 
 open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
 
-    open fun <T: Any> newWhere(type: T, list: MutableList<BuildingBlock>) = WhereBlock(list, type)
-    open fun <T: Any> newInnerJoin(type: T, list: MutableList<BuildingBlock>) = InnerJoinBlock(list, type)
+    open fun <T : Any> newWhere(type: T, list: MutableList<BuildingBlock>) = WhereBlock(list, type)
+    open fun <T : Any> newInnerJoin(type: T, list: MutableList<BuildingBlock>) = InnerJoinBlock(list, type)
 
     open infix fun <T : Any> where(type: T): WhereBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newWhere(t, b) }
     open infix fun <T : Any> join(type: T): InnerJoinBlock<T> = getAndCacheBlock(type, blocks) { t, b -> newInnerJoin(t, b) }
@@ -40,10 +41,8 @@ open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         dp.typeT = of(type)
                 .getOrElseThrow { Exception("buildFields: Missing select type") }!!
 
-        // TODO 1 of(dp.typeT).map()
-
         dp.uniqueId = of(dp.typeT)
-                .map (::buildUniqueId)
+                .map(::buildUniqueId)
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("buildFields: Cannot build uid for $type") }!!
 

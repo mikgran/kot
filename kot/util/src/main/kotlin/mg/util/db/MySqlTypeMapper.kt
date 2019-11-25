@@ -20,7 +20,7 @@ object MySqlTypeMapper {
     }
 
     private fun buildReferenceIdForCustomObject(type: KProperty1<out Any, Any?>, typeT: KClass<*>): String {
-        return "" //FIXME
+        return "" //FIXME 3 UidBuilder.buildUid
     }
 
 }
