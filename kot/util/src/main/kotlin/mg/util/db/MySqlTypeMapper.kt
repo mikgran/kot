@@ -3,6 +3,8 @@ package mg.util.db
 import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 
 object MySqlTypeMapper {
 
@@ -20,7 +22,10 @@ object MySqlTypeMapper {
     }
 
     private fun buildReferenceIdForCustomObject(type: KProperty1<out Any, Any?>, typeT: KClass<*>): String {
-        return "" //FIXME 3 UidBuilder.buildUid
+
+        val uid = UidBuilder.build(typeT)
+
+        return "${uid}id MEDIUMINT(9) ${typeT.}" // FIXME 3
     }
 
 }
