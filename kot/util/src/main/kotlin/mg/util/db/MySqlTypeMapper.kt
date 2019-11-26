@@ -1,10 +1,8 @@
 package mg.util.db
 
-import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.createType
 
 object MySqlTypeMapper {
 
@@ -16,16 +14,16 @@ object MySqlTypeMapper {
             typeT.simpleName == "Int" && type.name == "id" -> "${type.name} MEDIUMINT(9) NOT NULL AUTO INCREMENT PRIMARY KEY"
             typeT.simpleName == "String" -> "${type.name} VARCHAR(64) NOT NULL"
             typeT.simpleName == "Int" -> "${type.name} MEDIUMINT(9) NOT NULL"
-            else -> buildReferenceIdForCustomObject(type, typeT)
+            else -> buildReferenceIdForCustomObject(typeT)
         }
 
     }
 
-    private fun buildReferenceIdForCustomObject(type: KProperty1<out Any, Any?>, typeT: KClass<*>): String {
+    private fun buildReferenceIdForCustomObject(typeT: KClass<*>): String {
 
         val uid = UidBuilder.build(typeT)
-
-        return "${uid}id MEDIUMINT(9) ${typeT.}" // FIXME 3
+        val nullStr = if (typeT.createType().isMarkedNullable) "" else " NOT NULL"
+        return "${uid}id MEDIUMINT(9)$nullStr" // FIXME 3
     }
 
 }

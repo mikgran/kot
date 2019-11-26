@@ -124,7 +124,7 @@ internal class DBOTest {
         assertTrue(candidates.contains(testPerson2))
     }
 
-    // @Test
+    @Test
     fun testSaveWithComposition() {
 
         // TODO 2: use composition for testing
