@@ -10,6 +10,8 @@ import java.sql.ResultSet
 import java.sql.Statement
 import java.util.*
 import kotlin.reflect.KCallable
+import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
@@ -65,12 +67,24 @@ class DBO(private val mapper: SqlMapper) {
                 .map(mapper::buildCreateTable)
                 .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
 
-
-
+        println(createTableSql)
 
         of(getStatement(connection))
                 .map { it.executeUpdate(createTableSql) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
+
+        of(t).map(::getRelatedObjects)
+                .map { it.forEach { ro -> ensureTable(ro, connection) } }
+    }
+
+    private fun <T : Any> getRelatedObjects(t: T): List<Any> =
+            t::class.memberProperties.filter(::isNotKotlinLibrary)
+
+    private fun <T : Any> isNotKotlinLibrary(p: KProperty1<out T, Any?>): Boolean = isKotlinLibrary(p)
+
+    private fun <T : Any> isKotlinLibrary(p: KProperty1<out T, Any?>): Boolean {
+        val kClass = p.returnType.classifier as KClass<*>
+        return kClass.qualifiedName?.startsWith("kotlin") == false
     }
 
     fun findBy(block: BuildingBlock, connection: Connection): List<Any> {
