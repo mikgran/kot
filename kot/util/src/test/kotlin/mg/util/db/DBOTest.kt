@@ -68,13 +68,18 @@ internal class DBOTest {
         dbo.ensureTable(Simple(), dbConfig.connection)
 
         val simpleUid = build(Simple::class)
+        val compositionUid = build(Composition::class)
+        val multipleCompositionUid = build(MultipleComposition::class)
         val connection = of(dbConfig.connection)
 
         queryShowTables(connection)
                 .any { it.equals(simpleUid, ignoreCase = true) }
                 .apply(::assertTrue)
 
+        dbo.ensureTable(Composition(), dbConfig.connection)
 
+        queryShowTables(connection)
+                .any{it.equals(compositionUid, ignoreCase = true)}
 
 
         val cleanupList = listOf(Simple(), Composition(), MultipleComposition())
