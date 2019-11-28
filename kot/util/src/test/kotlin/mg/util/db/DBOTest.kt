@@ -3,8 +3,8 @@ package mg.util.db
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.AliasBuilder.alias
 import mg.util.db.DBTest.PersonB
+import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
-import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
-import java.sql.ResultSetMetaData
 import java.sql.Statement
 
 internal class DBOTest {
@@ -59,8 +58,31 @@ internal class DBOTest {
         assertEquals("Person${(firstName + lastName).hashCode()}", uidCandidate)
     }
 
-    // TOIMPROVE: test coverage
     @Test
+    fun testEnsureTable() {
+
+        data class Simple(val ffff: String = "aaaa")
+        data class Composition(val gggg: String = "bbbb", val hhhh: Simple = Simple("cccc"))
+        data class MultipleComposition(val iiii: Int = 0, val ssss: List<Simple> = listOf(Simple("1111"), Simple("2222")))
+
+        dbo.ensureTable(Simple(), dbConfig.connection)
+
+        val simpleUid = build(Simple::class)
+        val connection = of(dbConfig.connection)
+
+        queryShowTables(connection)
+                .any { it.equals(simpleUid, ignoreCase = true) }
+                .apply(::assertTrue)
+
+
+
+
+        val cleanupList = listOf(Simple(), Composition(), MultipleComposition())
+        cleanupList.forEach { nonThrowingBlock { dbo.drop(it, dbConfig.connection) } }
+    }
+
+    // TOIMPROVE: test coverage
+    // @Test
     fun testSaveMapAndFind() {
 
         testSave()
@@ -124,7 +146,7 @@ internal class DBOTest {
         assertTrue(candidates.contains(testPerson2))
     }
 
-    @Test
+    // @Test
     fun testSaveWithComposition() {
 
         // TODO 2: use composition for testing
@@ -149,16 +171,16 @@ internal class DBOTest {
         assertTrue(candidate.get()!!.next())
     }
 
-    private fun getColumnsAsCSVdata(metaData: ResultSetMetaData?): String {
-
-        return of(metaData)
-                .map {
-                    (1..it.columnCount).joinToString(", ") { i ->
-                        it.getColumnName(i)
-                    }
-                }
-                .getOrElse("")
-    }
+//    private fun getColumnsAsCSVdata(metaData: ResultSetMetaData?): String {
+//
+//        return of(metaData)
+//                .map {
+//                    (1..it.columnCount).joinToString(", ") { i ->
+//                        it.getColumnName(i)
+//                    }
+//                }
+//                .getOrElse("")
+//    }
 
     @Test
     fun testDrop() {
@@ -172,13 +194,13 @@ internal class DBOTest {
                 .mapWith(uid) { s, u -> s.executeUpdate("CREATE TABLE IF NOT EXISTS $u(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, value VARCHAR(64) NOT NULL)") }
 
         queryShowTables(connection)
-                .any { it.equals(uid, true) }
+                .any { it.equals(uid, ignoreCase = true) }
                 .apply(::assertTrue)
 
         dbo.drop(Tttt(), dbConfig.connection)
 
         queryShowTables(connection)
-                .none { it.equals(uid, true) }
+                .none { it.equals(uid, ignoreCase = true) }
                 .apply(::assertTrue)
     }
 
@@ -214,7 +236,6 @@ internal class DBOTest {
         internal fun afterAll() {
 
             val dbConfig = DBConfig(TestConfig())
-            val dbo = DBO(SqlMapperFactory.get("mysql"))
             val list = listOf(Person(), PersonB(), Uuuu(), Billing())
                     .map(::buildUniqueId)
 

@@ -11,7 +11,6 @@ import java.sql.Statement
 import java.util.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 
@@ -74,35 +73,24 @@ class DBO(private val mapper: SqlMapper) {
                 .map { it.executeUpdate(createTableSql) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
 
-        of(t).map(::getRelatedObjects)
-                .ifPresent { it.forEach{ i -> println(":: $i")} }
-//                .map { it.forEach { ro -> ensureTable(ro, connection) } }
+        of(t).map(::getNonKotlinFields)
+//                  .ifPresent { it.forEach { i -> println(":: $i") } }
+//                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
     }
 
-    private fun <T : Any> getRelatedObjects(t: T): List<Any> {
+    private fun <T : Any> getNonKotlinFields(t: T): List<Any> {
 
-
-
-      return  t::class.memberProperties
+        return t::class.memberProperties
+                .map { it.returnType.classifier as KClass<*> }
                 .filter(::isNotKotlinLibrary)
                 .filter(::isNotCollection)
     }
 
-    private fun <T : Any> isNotCollection(p: KProperty1<out T, Any?>): Boolean = !isCollection(p)
+    private fun isNotCollection(kClass: KClass<*>): Boolean = !isCollection(kClass)
+    private fun isCollection(kClass: KClass<*>): Boolean = kClass.isSubclassOf(Collection::class)
 
-    private fun <T : Any> isCollection(p: KProperty1<out T, Any?>): Boolean {
-        val kClass = p.returnType.classifier as KClass<*>
-        println("111 subClassOf: ${kClass.isSubclassOf(Collection::class)}")
-        return kClass.isSubclassOf(Collection::class)
-    }
-
-    private fun <T : Any> isNotKotlinLibrary(p: KProperty1<out T, Any?>): Boolean = !isKotlinLibrary(p)
-
-    private fun <T : Any> isKotlinLibrary(p: KProperty1<out T, Any?>): Boolean {
-        val kClass = p.returnType.classifier as KClass<*>
-        println("222 contains('kotlin'): ${kClass.qualifiedName?.contains("kotlin") == false}")
-        return kClass.qualifiedName?.contains("kotlin") == false
-    }
+    private fun isNotKotlinLibrary(kClass: KClass<*>): Boolean = !isKotlinLibrary(kClass)
+    private fun isKotlinLibrary(kClass: KClass<*>): Boolean = kClass.qualifiedName?.contains("kotlin") == false
 
     fun findBy(block: BuildingBlock, connection: Connection): List<Any> {
 
