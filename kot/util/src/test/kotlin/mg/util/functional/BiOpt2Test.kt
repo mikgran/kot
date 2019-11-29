@@ -118,5 +118,4 @@ internal class BiOpt2Test {
             biOpt.getRightOrElseThrow { Exception() }
         }
     }
-
 }
