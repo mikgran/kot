@@ -26,7 +26,9 @@ object UidBuilder {
         return opt.filter { it.size > 0 }
                 .map { it.filter { p -> p.name != "id" } }
                 .map { it.fold("") { n, p -> n + p.name } }
-                .mapWith(name) { foldedNames, simpleName -> simpleName + foldedNames.hashCode() }
+                .map { it.hashCode() }
+                .map { if (it < 0) (it and 0x7fffffff) else it }
+                .mapWith(name) { hashCode, simpleName -> simpleName + hashCode }
     }
 
     private fun <T : Any> propertiesOfT(t: T): ArrayList<KProperty1<out T, Any?>> {
