@@ -35,7 +35,7 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDslJoin() {
 
-        // TODO 1: fix join on a.f = b.f2
+        // TODO 1: "on a.f = b.f2"
 
         val sql = SqlMysql() select Place() join Address()
 

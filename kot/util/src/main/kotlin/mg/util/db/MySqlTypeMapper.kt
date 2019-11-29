@@ -20,11 +20,8 @@ object MySqlTypeMapper {
     }
 
     private fun buildReferenceIdForCustomObject(typeT: KClass<*>): String {
-
         val uid = UidBuilder.build(typeT)
-        // val nullStr = if (typeT.createType().isMarkedNullable) "" else " NOT NULL"
-        // return "${uid}id MEDIUMINT(9)$nullStr" // FIXME 3
-        return "${uid}id MEDIUMINT(9)" // FIXME 3
+        return "${uid}id MEDIUMINT(9)"
     }
 
 }

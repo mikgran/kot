@@ -58,30 +58,31 @@ internal class DBOTest {
         assertEquals("Person${(firstName + lastName).hashCode()}", uidCandidate)
     }
 
-    @Test
+    data class Simple(val ffff: String = "aaaa")
+    data class Composition(val gggg: String = "bbbb", val hhhh: Simple = Simple("cccc"))
+    data class MultipleComposition(val iiii: Int = 0, val ssss: List<Simple> = listOf(Simple("1111"), Simple("2222")))
+
+    @Test // TODO 4: fix ensure for different compositions
     fun testEnsureTable() {
-
-        data class Simple(val ffff: String = "aaaa")
-        data class Composition(val gggg: String = "bbbb", val hhhh: Simple = Simple("cccc"))
-        data class MultipleComposition(val iiii: Int = 0, val ssss: List<Simple> = listOf(Simple("1111"), Simple("2222")))
-
-        dbo.ensureTable(Simple(), dbConfig.connection)
-
         val simpleUid = build(Simple::class)
         val compositionUid = build(Composition::class)
         val multipleCompositionUid = build(MultipleComposition::class)
         val connection = of(dbConfig.connection)
 
+//        dbo.ensureTable(Composition(), dbConfig.connection)
+//        queryShowTables(connection)
+//                .any { it.equals(compositionUid, ignoreCase = true) }
+//                .apply(::assertTrue)
+//        dropCompositionTestTablesIfExists()
+
+        dbo.ensureTable(MultipleComposition(), dbConfig.connection)
         queryShowTables(connection)
-                .any { it.equals(simpleUid, ignoreCase = true) }
+                .any { it.equals(multipleCompositionUid, ignoreCase = true) }
                 .apply(::assertTrue)
+        dropCompositionTestTablesIfExists()
+    }
 
-        dbo.ensureTable(Composition(), dbConfig.connection)
-
-        queryShowTables(connection)
-                .any{it.equals(compositionUid, ignoreCase = true)}
-
-
+    private fun dropCompositionTestTablesIfExists() {
         val cleanupList = listOf(Simple(), Composition(), MultipleComposition())
         cleanupList.forEach { nonThrowingBlock { dbo.drop(it, dbConfig.connection) } }
     }
