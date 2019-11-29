@@ -11,6 +11,8 @@ import java.sql.Statement
 import java.util.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 
@@ -74,23 +76,42 @@ class DBO(private val mapper: SqlMapper) {
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
 
         of(t).map(::getNonKotlinFields)
-                .ifPresent { it.forEach { i -> println("nonkotlin field:: $i") } }
+        // .ifPresent { it.forEach { i -> println("nonkotlin field:: $i") } }
 //                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
     }
 
     private fun <T : Any> getNonKotlinFields(t: T): List<Any> {
 
-        return t::class.memberProperties
-                .map { it.returnType.classifier as KClass<*> }
-                .filter(::isNotKotlinLibrary)
-                .filter(::isNotCollection)
+
+        val customFields = t::class.memberProperties
+                .map(::classifierAsKClass)
+                .filter { isNotKotlinLibrary(it) && isNotCollection(it) }
+
+        val customFieldsCollections = t::class.memberProperties
+                .map {}
+
+
+
+        // println("cc:: $customFieldsCollections")
+
+
+        println("customFieldsCollections: $customFieldsCollections")
+
+        return customFields
     }
+
+    private fun <T : Any> classifierAsKClass(k: KProperty1<out T, Any?>) = k.returnType.classifier as KClass<*>
 
     private fun isNotCollection(kClass: KClass<*>): Boolean = !isCollection(kClass)
     private fun isCollection(kClass: KClass<*>): Boolean = kClass.isSubclassOf(Collection::class)
 
+
     private fun isNotKotlinLibrary(kClass: KClass<*>): Boolean = !isKotlinLibrary(kClass)
-    private fun isKotlinLibrary(kClass: KClass<*>): Boolean = kClass.qualifiedName?.contains("kotlin") == false
+    private fun isKotlinLibrary(kClass: KClass<*>): Boolean = kClass.qualifiedName?.contains("kotlin") == true
+
+    private fun printKClass(kClass: KClass<*>) {
+        println("${kClass.qualifiedName}")
+    }
 
     fun findBy(block: BuildingBlock, connection: Connection): List<Any> {
 
@@ -156,5 +177,5 @@ class DBO(private val mapper: SqlMapper) {
         const val UNABLE_TO_CREATE_TABLE = "Unable to create a new table"
         // const val UNABLE_TO_DO_DSL_FIND = "Unable to find an object with: "
     }
-
 }
+

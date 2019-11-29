@@ -20,6 +20,9 @@ internal class DBOTest {
 
     private var dbConfig: DBConfig = DBConfig(TestConfig())
 
+    data class Simple(val ffff: String = "aaaa")
+    data class Composition(val gggg: String = "bbbb", val hhhh: Simple = Simple("cccc"))
+    data class MultipleComposition(val iiii: Int = 0, val ssss: List<Simple> = listOf(Simple("1111"), Simple("2222")))
     data class Person(val firstName: String = "", val lastName: String = "")
     data class Uuuu(val firstName: String = "", val lastName: String = "")
 
@@ -58,10 +61,6 @@ internal class DBOTest {
         assertEquals("Person${(firstName + lastName).hashCode()}", uidCandidate)
     }
 
-    data class Simple(val ffff: String = "aaaa")
-    data class Composition(val gggg: String = "bbbb", val hhhh: Simple = Simple("cccc"))
-    data class MultipleComposition(val iiii: Int = 0, val ssss: List<Simple> = listOf(Simple("1111"), Simple("2222")))
-
     @Test // TODO 4: fix ensure for different compositions
     fun testEnsureTable() {
         val simpleUid = build(Simple::class)
@@ -69,17 +68,17 @@ internal class DBOTest {
         val multipleCompositionUid = build(MultipleComposition::class)
         val connection = of(dbConfig.connection)
 
-//        dbo.ensureTable(Composition(), dbConfig.connection)
-//        queryShowTables(connection)
-//                .any { it.equals(compositionUid, ignoreCase = true) }
-//                .apply(::assertTrue)
-//        dropCompositionTestTablesIfExists()
-
-        dbo.ensureTable(MultipleComposition(), dbConfig.connection)
+        dbo.ensureTable(Composition(), dbConfig.connection)
         queryShowTables(connection)
-                .any { it.equals(multipleCompositionUid, ignoreCase = true) }
+                .any { it.equals(compositionUid, ignoreCase = true) }
                 .apply(::assertTrue)
         dropCompositionTestTablesIfExists()
+
+//        dbo.ensureTable(MultipleComposition(), dbConfig.connection)
+//        queryShowTables(connection)
+//                .any { it.equals(multipleCompositionUid, ignoreCase = true) }
+//                .apply(::assertTrue)
+//        dropCompositionTestTablesIfExists()
     }
 
     private fun dropCompositionTestTablesIfExists() {
