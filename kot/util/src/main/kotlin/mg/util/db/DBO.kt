@@ -82,7 +82,7 @@ class DBO(private val mapper: SqlMapper) {
 
     private fun <T : Any> getNonKotlinFields(t: T): List<Any> {
 
-
+        // TODO 5 collections with non "kotlin.package" classes
         val customFields = t::class.memberProperties
                 .map(::classifierAsKClass)
                 .filter { isNotKotlinLibrary(it) && isNotCollection(it) }

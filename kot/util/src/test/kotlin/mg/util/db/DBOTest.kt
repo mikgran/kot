@@ -74,6 +74,8 @@ internal class DBOTest {
                 .apply(::assertTrue)
         dropCompositionTestTablesIfExists()
 
+
+
 //        dbo.ensureTable(MultipleComposition(), dbConfig.connection)
 //        queryShowTables(connection)
 //                .any { it.equals(multipleCompositionUid, ignoreCase = true) }

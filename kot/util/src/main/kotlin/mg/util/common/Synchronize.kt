@@ -4,6 +4,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 // shameless rip from the net
+// val p by Synchronize(0)
 class Synchronize<T>(defaultValue: T): ReadWriteProperty<Any, T> {
     private var backingField = defaultValue
 
