@@ -51,6 +51,30 @@ class DBO(private val mapper: SqlMapper) {
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
     }
 
+    private fun getStatement(connection: Connection): Statement? {
+        return of(connection)
+                .filter { !it.isClosed }
+                .ifMissingThrow { Exception(CONNECTION_WAS_CLOSED) }
+                .map(Connection::createStatement)
+                .getOrElseThrow { Exception(UNABLE_TO_CREATE_STATEMENT) }
+    }
+
+    fun <T : Any> ensureTable(t: T, connection: Connection) {
+
+        val createTableSql = of(t)
+                .map(::buildMetadata)
+                .map(mapper::buildCreateTable)
+                .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
+
+        of(getStatement(connection))
+                .map { it.executeUpdate(createTableSql) }
+                .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
+
+        of(t).map(::getNonKotlinFields)
+        // .ifPresent { it.forEach { i -> println("nonkotlin field:: $i") } }
+//                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
+    }
+
     // Collection<String> kotlin classes not included
     // Collection<Any> is not included
     // Collection<Simple> custom classes are included
@@ -75,30 +99,6 @@ class DBO(private val mapper: SqlMapper) {
 
 
         return customFields
-    }
-
-    private fun getStatement(connection: Connection): Statement? {
-        return of(connection)
-                .filter { !it.isClosed }
-                .ifMissingThrow { Exception(CONNECTION_WAS_CLOSED) }
-                .map(Connection::createStatement)
-                .getOrElseThrow { Exception(UNABLE_TO_CREATE_STATEMENT) }
-    }
-
-    fun <T : Any> ensureTable(t: T, connection: Connection) {
-
-        val createTableSql = of(t)
-                .map(::buildMetadata)
-                .map(mapper::buildCreateTable)
-                .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
-
-        of(getStatement(connection))
-                .map { it.executeUpdate(createTableSql) }
-                .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
-
-        of(t).map(::getNonKotlinFields)
-        // .ifPresent { it.forEach { i -> println("nonkotlin field:: $i") } }
-//                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
     }
 
     private fun isNotCollectionTypeKotlin(list: List<*>): Boolean = !isCollectionTypeKotlin(list)
