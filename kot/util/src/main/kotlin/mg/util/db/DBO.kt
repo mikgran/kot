@@ -5,15 +5,12 @@ import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
+import java.lang.reflect.Field
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
 import java.util.*
 import kotlin.reflect.KCallable
-import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
@@ -54,6 +51,32 @@ class DBO(private val mapper: SqlMapper) {
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
     }
 
+    // Collection<String> kotlin classes not included
+    // Collection<Any> is not included
+    // Collection<Simple> custom classes are included
+    private fun <T : Any> getNonKotlinFields(t: T): List<Any> {
+
+        // TODO 5 Simple And Collections<Simple> with non "kotlin.package" classes
+        val customFields = t::class.java.declaredFields
+                .asList()
+                .map(Field::getType)
+                .filter { !it.packageName.startsWith("kotlin") }
+
+        val customFieldsOfCollections = t::class.java.declaredFields
+                .asList()
+                .map(Field::getType)
+                .filter { it is List<*> }
+                .map { it as List<*> }
+
+        customFieldsOfCollections
+                .filter(::isNotCollectionTypeKotlin)
+
+
+
+
+        return customFields
+    }
+
     private fun getStatement(connection: Connection): Statement? {
         return of(connection)
                 .filter { !it.isClosed }
@@ -69,8 +92,6 @@ class DBO(private val mapper: SqlMapper) {
                 .map(mapper::buildCreateTable)
                 .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
 
-        println(createTableSql)
-
         of(getStatement(connection))
                 .map { it.executeUpdate(createTableSql) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
@@ -80,37 +101,12 @@ class DBO(private val mapper: SqlMapper) {
 //                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
     }
 
-    private fun <T : Any> getNonKotlinFields(t: T): List<Any> {
-
-        // TODO 5 collections with non "kotlin.package" classes
-        val customFields = t::class.memberProperties
-                .map(::classifierAsKClass)
-                .filter { isNotKotlinLibrary(it) && isNotCollection(it) }
-
-        val customFieldsCollections = t::class.memberProperties
-                .map {}
-
-
-
-        // println("cc:: $customFieldsCollections")
-
-
-        println("customFieldsCollections: $customFieldsCollections")
-
-        return customFields
-    }
-
-    private fun <T : Any> classifierAsKClass(k: KProperty1<out T, Any?>) = k.returnType.classifier as KClass<*>
-
-    private fun isNotCollection(kClass: KClass<*>): Boolean = !isCollection(kClass)
-    private fun isCollection(kClass: KClass<*>): Boolean = kClass.isSubclassOf(Collection::class)
-
-
-    private fun isNotKotlinLibrary(kClass: KClass<*>): Boolean = !isKotlinLibrary(kClass)
-    private fun isKotlinLibrary(kClass: KClass<*>): Boolean = kClass.qualifiedName?.contains("kotlin") == true
-
-    private fun printKClass(kClass: KClass<*>) {
-        println("${kClass.qualifiedName}")
+    private fun isNotCollectionTypeKotlin(list: List<*>): Boolean = !isCollectionTypeKotlin(list)
+    private fun isCollectionTypeKotlin(list: List<*>): Boolean {
+        if (list.isNotEmpty()) {
+            return list[0]!!::class.java.packageName.startsWith("kotlin")
+        }
+        return false
     }
 
     fun findBy(block: BuildingBlock, connection: Connection): List<Any> {
