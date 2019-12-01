@@ -5,18 +5,13 @@ import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.mysql.Sql
 import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.KCallable
-import kotlin.reflect.full.declaredMemberProperties
 
 // mysql dialect object to sql mapper
 object MySqlMapper : SqlMapper {
 
     override fun <T : Any> buildFind(metadata: Metadata<T>): String {
-
-        val sqlFind = of(metadata)
-                .map(::buildSqlFind)
-                .get()
-
-        return sqlFind ?: ""
+        val sql = Sql() select metadata.type
+        return DslMapper.map(sql.list())
     }
 
     override fun <T : Any> buildDrop(metadata: Metadata<T>): String {
@@ -59,34 +54,8 @@ object MySqlMapper : SqlMapper {
     private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
 
     override fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
-
-//        val sqlFieldDefinitionsCommaSeparated = of(metadata)
-//                .map(::buildSqlFieldDefinitions)
-//                .map { it.joinToString(", ") }
-//                .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
-//
-//        val createStringPreFix = "CREATE TABLE IF NOT EXISTS ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-//        val createStringPostFix = ")"
-//
-//        return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
-
         val sql = Sql() create metadata.type
-
         return DslMapper.map(sql.list())
-    }
-
-    fun <T : Any> buildSqlFieldDefinitions(metadata: Metadata<T>): List<String> {
-
-        return of(metadata)
-                .map { it.type::class.declaredMemberProperties }
-                .map { it.map(MySqlTypeMapper::getTypeString) }
-                .getOrElse(emptyList())
-    }
-
-    // TOIMPROVE: create direct sql mappers too?
-    fun <T : Any> create(t: T): String {
-
-        return t.toString()
     }
 
     private fun <T : Any> buildSqlFind(metadata: Metadata<T>): String = "SELECT * FROM " + metadata.uid

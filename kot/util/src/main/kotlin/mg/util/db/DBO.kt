@@ -35,8 +35,7 @@ class DBO(private val mapper: SqlMapper) {
     }
 
     private fun <T : Any> propertiesOfT(t: T): ArrayList<KCallable<*>> {
-        return t::class.memberProperties
-                .toCollection(ArrayList())
+        return t::class.memberProperties.toCollection(ArrayList())
     }
 
     fun <T : Any> save(t: T, connection: Connection) {
@@ -71,7 +70,7 @@ class DBO(private val mapper: SqlMapper) {
                 .map { it.executeUpdate(createTableSql) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
 
-       //  of(t).map(::getNonKotlinFields)
+        //  of(t).map(::getNonKotlinFields)
         // .ifPresent { it.forEach { i -> println("nonkotlin field:: $i") } }
 //                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
     }

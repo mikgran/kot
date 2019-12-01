@@ -6,6 +6,8 @@ import mg.util.functional.Opt2.Factory.of
 
 object DslMapper {
 
+    fun map(block: BuildingBlock): String = map(block.list())
+
     fun map(blockList: MutableList<BuildingBlock>): String {
 
         return of(blockList)
@@ -27,7 +29,7 @@ object DslMapper {
 
     private fun buildCreate(blocks: MutableList<BuildingBlock>): String {
         val dp = DslParameters()
-        blocks.map { it.buildFields(dp)}
+        blocks.map { it.buildFields(dp) }
         return blocks.map { it.buildCreate(dp) }
                 .fold("") { a, b -> a + b }
     }

@@ -8,6 +8,8 @@ internal class MySqlMapperTest {
 
     private val person = Person("testname1", "testname2")
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
+    private val personUid = UidBuilder.build(Person::class)
+    private val personAlias = AliasBuilder.alias(personUid)
 
     @Test
     fun testCreateTable() {
@@ -20,19 +22,6 @@ internal class MySqlMapperTest {
         assertEquals("CREATE TABLE IF NOT EXISTS ${personMetadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
 
         // TOIMPROVE: test coverage for exceptions
-    }
-
-    @Test
-    fun testBuildSqlFieldDefinitionsForMetadata() {
-
-        val personMetadata = dbo.buildMetadata(person)
-
-        val fieldDefinitionsCandidate = MySqlMapper.buildSqlFieldDefinitions(personMetadata)
-
-        val expectedFieldDefinitions = listOf("firstName VARCHAR(64) NOT NULL", "lastName VARCHAR(64) NOT NULL")
-
-        assertNotNull(fieldDefinitionsCandidate)
-        assertTrue(fieldDefinitionsCandidate.containsAll(expectedFieldDefinitions))
     }
 
     @Test
@@ -55,7 +44,7 @@ internal class MySqlMapperTest {
 
         val findCandidate = MySqlMapper.buildFind(personMetadata)
 
-        val expectedFind = "SELECT * FROM ${personMetadata.uid}"
+        val expectedFind = "SELECT $personAlias.firstName, $personAlias.lastName FROM $personUid $personAlias"
 
         assertNotNull(findCandidate)
         assertEquals(expectedFind, findCandidate)
