@@ -1,4 +1,4 @@
-package mg.util.db.dsl
+package mg.util.db.dsl.mysql
 
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
