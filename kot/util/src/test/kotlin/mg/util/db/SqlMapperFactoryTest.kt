@@ -1,7 +1,9 @@
 package mg.util.db
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import mg.util.db.dsl.mysql.Sql as MySql
+import mg.util.db.dsl.oracle.Sql as OrSql
 
 internal class SqlMapperFactoryTest {
 
@@ -10,11 +12,15 @@ internal class SqlMapperFactoryTest {
 
         val sqlMapperCandidate = SqlMapperFactory.get("mysql")
 
-        assertTrue(SqlMapper::class == sqlMapperCandidate::class)
+        assertTrue(MySql::class == sqlMapperCandidate.sql::class)
 
         val sqlMapperCandidate2 = SqlMapperFactory.get("xxx") // case defaults
 
-        assertTrue(SqlMapper::class == sqlMapperCandidate2::class)
+        assertTrue(MySql::class == sqlMapperCandidate2.sql::class)
+
+        val sqlMapperCandidate3 = SqlMapperFactory.get("oracle")
+
+        assertTrue(OrSql::class == sqlMapperCandidate3.sql::class)
     }
 
 

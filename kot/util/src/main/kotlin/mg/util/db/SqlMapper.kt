@@ -6,7 +6,7 @@ import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.KCallable
 
 // mysql dialect object to sql mapper
-class SqlMapper(private val sql: Sql) {
+class SqlMapper(internal val sql: Sql) {
 
     fun <T : Any> buildFind(metadata: Metadata<T>): String {
         val sql = sql select metadata.type
