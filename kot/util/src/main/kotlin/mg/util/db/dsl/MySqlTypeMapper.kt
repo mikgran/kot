@@ -2,11 +2,10 @@ package mg.util.db.dsl
 
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
-import kotlin.reflect.full.createType
 
-class MySqlTypeMapper {
+open class MySqlTypeMapper {
 
-    fun getTypeString(type: KProperty1<out Any, Any?>): String {
+    open fun getTypeString(type: KProperty1<out Any, Any?>): String {
 
         val typeT = type.returnType.classifier as KClass<*>
 
