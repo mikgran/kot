@@ -1,6 +1,7 @@
 package mg.util.db
 
 import mg.util.db.DBOTest.Person
+import mg.util.db.dsl.mysql.Sql
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -16,7 +17,7 @@ internal class SqlMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val createTableSqlCandidate = SqlMapper().buildCreateTable(personMetadata)
+        val createTableSqlCandidate = SqlMapper(Sql()).buildCreateTable(personMetadata)
 
         assertNotNull(createTableSqlCandidate)
         assertEquals("CREATE TABLE IF NOT EXISTS ${personMetadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
@@ -29,7 +30,7 @@ internal class SqlMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val insertCandidate = SqlMapper().buildInsert(personMetadata)
+        val insertCandidate = SqlMapper(Sql()).buildInsert(personMetadata)
 
         val expectedInsert = "INSERT INTO ${personMetadata.uid} (firstName, lastName) VALUES ('testname1', 'testname2')"
 
@@ -42,7 +43,7 @@ internal class SqlMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val findCandidate = SqlMapper().buildFind(personMetadata)
+        val findCandidate = SqlMapper(Sql()).buildFind(personMetadata)
 
         val expectedFind = "SELECT $personAlias.firstName, $personAlias.lastName FROM $personUid $personAlias"
 

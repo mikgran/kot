@@ -2,15 +2,14 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.db.dsl.DslMapper
-import mg.util.db.dsl.mysql.Sql
 import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.KCallable
 
 // mysql dialect object to sql mapper
-class SqlMapper {
+class SqlMapper(private val sql: Sql) {
 
     fun <T : Any> buildFind(metadata: Metadata<T>): String {
-        val sql = Sql() select metadata.type
+        val sql = sql select metadata.type
         return DslMapper.map(sql.list())
     }
 
@@ -54,7 +53,7 @@ class SqlMapper {
     private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
 
     fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
-        val sql = Sql() create metadata.type
+        val sql = sql create metadata.type
         return DslMapper.map(sql.list())
     }
 }
