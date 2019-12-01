@@ -52,8 +52,7 @@ internal class DslMapperTest {
     }
 
 
-
-        @Test
+    @Test
     fun testBuildingSqlFromDslJoin() {
 
         // TODO 1: "on a.f = b.f2"

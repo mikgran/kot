@@ -2,6 +2,7 @@ package mg.util.db.dsl
 
 import mg.util.db.dsl.mysql.CreateBlock
 import mg.util.db.dsl.mysql.DropBlock
+import mg.util.db.dsl.mysql.InsertBlock
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
 
@@ -23,10 +24,18 @@ object DslMapper {
             is SelectBlock<*> -> buildSelectNew(blocks)
             is CreateBlock<*> -> buildCreate(blocks)
             is DropBlock<*> -> buildDrop(blocks)
+            is InsertBlock<*> -> buildInsert(blocks)
             // is SelectBlock<*> -> buildSelect(blocks)
             // is UpdateBlock<*> -> throw Exception("<UpdateBlock not yet implemented>")
             else -> throw Exception("Class ${blocks[0]::class} not yet implemented")
         }
+    }
+
+    private fun buildInsert(blocks: MutableList<BuildingBlock>): String {
+        val dp = DslParameters()
+        blocks.map { it.buildFields(dp) }
+        return blocks.map { it.buildInsert(dp) }
+                .fold("") { a, b -> a + b }
     }
 
     private fun buildDrop(blocks: MutableList<BuildingBlock>): String {

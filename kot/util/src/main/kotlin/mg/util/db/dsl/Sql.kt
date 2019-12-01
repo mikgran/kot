@@ -1,9 +1,6 @@
 package mg.util.db.dsl
 
-import mg.util.db.dsl.mysql.CreateBlock
-import mg.util.db.dsl.mysql.DropBlock
-import mg.util.db.dsl.mysql.SelectBlock
-import mg.util.db.dsl.mysql.UpdateBlock
+import mg.util.db.dsl.mysql.*
 
 abstract class Sql {
 
@@ -18,9 +15,14 @@ abstract class Sql {
     open fun <T : Any> newUpdate(list: MutableList<BuildingBlock>, t: T) = UpdateBlock(list, t)
     open fun <T : Any> newCreate(list: MutableList<BuildingBlock>, t: T) = CreateBlock(list, t)
     open fun <T : Any> newDrop(list: MutableList<BuildingBlock>, t: T) = DropBlock(list, t)
+    open fun <T : Any> newInsert(list: MutableList<BuildingBlock>, t: T) = InsertBlock(list, t)
 
     open infix fun <T : Any> select(t: T): SelectBlock<T> = newCachedBlock { list -> newSelect(list, t) }
     open infix fun <T : Any> update(t: T): UpdateBlock<T> = newCachedBlock { list -> newUpdate(list, t) }
     open infix fun <T : Any> create(t: T): CreateBlock<T> = newCachedBlock { list -> newCreate(list, t) }
     open infix fun <T : Any> drop(t: T): DropBlock<T> = newCachedBlock { list -> newDrop(list, t) }
+
+    open infix fun <T : Any> insert(t: T): InsertBlock<T> {
+        return newCachedBlock { list -> newInsert(list, t) }
+    }
 }

@@ -7,9 +7,10 @@ import mg.util.functional.Opt2
 abstract class BuildingBlock(protected val t: Any) {
     abstract val blocks: MutableList<BuildingBlock>
     fun list() = blocks
-    protected fun simpleName() = this::class.simpleName
+    internal fun simpleName() = this::class.simpleName
     open fun buildCreate(dp: DslParameters): String = ""
     open fun buildDrop(dp: DslParameters): String = ""
+    open fun buildInsert(dp: DslParameters): String = ""
     open fun buildSelect(dp: DslParameters): String = "" // do as last always
     open fun buildFields(dp: DslParameters): String { // do as first always
         dp.typeT = Opt2.of(t)
