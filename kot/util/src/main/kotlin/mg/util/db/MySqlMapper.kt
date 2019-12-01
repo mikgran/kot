@@ -1,7 +1,8 @@
 package mg.util.db
 
 import mg.util.common.Common
-import mg.util.functional.Opt2
+import mg.util.db.dsl.DslMapper
+import mg.util.db.dsl.mysql.Sql
 import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.declaredMemberProperties
@@ -59,15 +60,19 @@ object MySqlMapper : SqlMapper {
 
     override fun <T : Any> buildCreateTable(metadata: Metadata<T>): String {
 
-        val sqlFieldDefinitionsCommaSeparated = of(metadata)
-                .map(::buildSqlFieldDefinitions)
-                .map { it.joinToString(", ") }
-                .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
+//        val sqlFieldDefinitionsCommaSeparated = of(metadata)
+//                .map(::buildSqlFieldDefinitions)
+//                .map { it.joinToString(", ") }
+//                .getOrElseThrow { Exception("Unable to build create for ${metadata.type::class}") }
+//
+//        val createStringPreFix = "CREATE TABLE IF NOT EXISTS ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+//        val createStringPostFix = ")"
+//
+//        return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
 
-        val createStringPreFix = "CREATE TABLE IF NOT EXISTS ${metadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-        val createStringPostFix = ")"
+        val sql = Sql() create metadata.type
 
-        return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
+        return DslMapper.map(sql.list())
     }
 
     fun <T : Any> buildSqlFieldDefinitions(metadata: Metadata<T>): List<String> {

@@ -64,13 +64,14 @@ class DBO(private val mapper: SqlMapper) {
         val createTableSql = of(t)
                 .map(::buildMetadata)
                 .map(mapper::buildCreateTable)
+                .ifPresent(::println)
                 .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
 
         of(getStatement(connection))
                 .map { it.executeUpdate(createTableSql) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
 
-        of(t).map(::getNonKotlinFields)
+       //  of(t).map(::getNonKotlinFields)
         // .ifPresent { it.forEach { i -> println("nonkotlin field:: $i") } }
 //                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
     }

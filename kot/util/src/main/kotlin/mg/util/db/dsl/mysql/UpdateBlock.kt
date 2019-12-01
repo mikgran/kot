@@ -9,9 +9,5 @@ open class UpdateBlock<T>(override val blocks: MutableList<BuildingBlock>, open 
 
     infix fun <T : KProperty1<*, *>> where(type: T): WhereBlock<T> = getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
 
-    override fun buildSelect(dp: DslParameters): String = ""
-
-    override fun buildFields(dp: DslParameters): String = ""
-
     override fun toString(): String = "${simpleName()}(type=$type)"
 }

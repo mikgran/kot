@@ -13,15 +13,9 @@ object MySqlTypeMapper {
         return when {
             typeT.simpleName == "Int" && type.name == "id" -> "${type.name} MEDIUMINT(9) NOT NULL AUTO INCREMENT PRIMARY KEY"
             typeT.simpleName == "String" -> "${type.name} VARCHAR(64) NOT NULL"
-            typeT.simpleName == "Int" -> "${type.name} MEDIUMINT(9) NOT NULL"
-            else -> buildReferenceIdForCustomObject(typeT)
+            typeT.simpleName == "Int" -> "${type.name} MEDIUMINT NOT NULL"
+            else -> ""
         }
 
     }
-
-    private fun buildReferenceIdForCustomObject(typeT: KClass<*>): String {
-        val uid = UidBuilder.build(typeT)
-        return "${uid}id MEDIUMINT(9)"
-    }
-
 }

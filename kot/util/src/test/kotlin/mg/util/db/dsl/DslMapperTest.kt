@@ -5,6 +5,7 @@ import mg.util.db.AliasBuilder
 import mg.util.db.DBO
 import mg.util.db.DBTest.PersonB
 import mg.util.db.SqlMapperFactory
+import mg.util.db.UidBuilder
 import mg.util.db.UidBuilder.buildUniqueId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -33,6 +34,26 @@ internal class DslMapperTest {
     }
 
     @Test
+    fun testCreatingANewTable1() {
+
+        val sql = SqlMysql() create PersonB()
+
+        val uid = UidBuilder.build(PersonB::class)
+        val candidate = DslMapper.map(sql.list())
+
+        assertEquals("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", candidate)
+    }
+
+    @Test
+    fun testCreatingANewTableWithSimpleReference() {
+
+        // val sql = SqlMysql() create
+
+    }
+
+
+
+        @Test
     fun testBuildingSqlFromDslJoin() {
 
         // TODO 1: "on a.f = b.f2"
