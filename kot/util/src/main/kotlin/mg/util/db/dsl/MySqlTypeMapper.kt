@@ -1,4 +1,4 @@
-package mg.util.db
+package mg.util.db.dsl
 
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1

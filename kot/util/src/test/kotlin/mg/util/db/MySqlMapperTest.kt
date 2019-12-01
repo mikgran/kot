@@ -4,7 +4,7 @@ import mg.util.db.DBOTest.Person
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-internal class MySqlMapperTest {
+internal class SqlMapperTest {
 
     private val person = Person("testname1", "testname2")
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
@@ -16,7 +16,7 @@ internal class MySqlMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val createTableSqlCandidate = MySqlMapper.buildCreateTable(personMetadata)
+        val createTableSqlCandidate = SqlMapper().buildCreateTable(personMetadata)
 
         assertNotNull(createTableSqlCandidate)
         assertEquals("CREATE TABLE IF NOT EXISTS ${personMetadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
@@ -29,7 +29,7 @@ internal class MySqlMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val insertCandidate = MySqlMapper.buildInsert(personMetadata)
+        val insertCandidate = SqlMapper().buildInsert(personMetadata)
 
         val expectedInsert = "INSERT INTO ${personMetadata.uid} (firstName, lastName) VALUES ('testname1', 'testname2')"
 
@@ -42,7 +42,7 @@ internal class MySqlMapperTest {
 
         val personMetadata = dbo.buildMetadata(person)
 
-        val findCandidate = MySqlMapper.buildFind(personMetadata)
+        val findCandidate = SqlMapper().buildFind(personMetadata)
 
         val expectedFind = "SELECT $personAlias.firstName, $personAlias.lastName FROM $personUid $personAlias"
 

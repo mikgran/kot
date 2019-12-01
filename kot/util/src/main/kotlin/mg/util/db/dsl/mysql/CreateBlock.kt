@@ -4,6 +4,7 @@ import mg.util.common.Common
 import mg.util.db.*
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
+import mg.util.db.dsl.MySqlTypeMapper
 import mg.util.functional.Opt2
 import kotlin.reflect.full.declaredMemberProperties
 

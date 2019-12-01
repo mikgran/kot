@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.db.DBOTest.Person
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.dsl.MySqlTypeMapper
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
