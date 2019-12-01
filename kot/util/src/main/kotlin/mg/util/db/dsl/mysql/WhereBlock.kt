@@ -6,7 +6,7 @@ import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.KProperty1
 
-open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
+open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock(type) {
 
     open fun getSqlKeyWord() = " WHERE "
     open fun <T : Any> newValue(blocks: MutableList<BuildingBlock>, type: T, operation: String) = ValueBlock(blocks, type, operation)

@@ -8,7 +8,7 @@ import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.full.memberProperties
 
-open class InnerJoinBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
+open class InnerJoinBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock(type) {
 
     private var uid: String? = null
     private var uidAlias: String? = null

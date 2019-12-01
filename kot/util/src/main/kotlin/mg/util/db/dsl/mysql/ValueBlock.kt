@@ -3,7 +3,7 @@ package mg.util.db.dsl.mysql
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 
-open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T, open val operation: String) : BuildingBlock() {
+open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T, open val operation: String) : BuildingBlock(type) {
 
     override fun toString(): String {
         return "${simpleName()}(type=$type)"

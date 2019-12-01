@@ -16,9 +16,12 @@ class SqlMapper(internal val sql: Sql) {
 
     fun <T : Any> buildDrop(metadata: Metadata<T>): String {
 
-        return of(metadata)
-                .map { "DROP TABLE IF EXISTS ${it.uid}" }
-                .getOrElseThrow { Exception("Unable to build drop table for ${metadata.type::class}") } ?: ""
+        val sql = sql drop metadata.type
+
+        return DslMapper.map(sql)
+//        return of(metadata)
+//                .map { "DROP TABLE IF EXISTS ${it.uid}" }
+//                .getOrElseThrow { Exception("Unable to build drop table for ${metadata.type::class}") } ?: ""
     }
 
     fun <T : Any> buildInsert(metadata: Metadata<T>): String {

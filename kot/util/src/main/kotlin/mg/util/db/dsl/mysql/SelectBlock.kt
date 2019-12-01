@@ -1,15 +1,12 @@
 package mg.util.db.dsl.mysql
 
-import mg.util.common.Common
-import mg.util.db.AliasBuilder
-import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.full.memberProperties
 
-open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
+open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock(type) {
 
     open fun <T : Any> newWhere(type: T, list: MutableList<BuildingBlock>) = WhereBlock(list, type)
     open fun <T : Any> newInnerJoin(type: T, list: MutableList<BuildingBlock>) = InnerJoinBlock(list, type)
@@ -37,15 +34,7 @@ open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     }
 
     override fun buildFields(dp: DslParameters): String {
-        dp.typeT = of(type)
-                .getOrElseThrow { Exception("buildFields: Missing select type") }!!
-
-        dp.uniqueId = of(dp.typeT)
-                .map(::buildUniqueId)
-                .filter(Common::hasContent)
-                .getOrElseThrow { Exception("buildFields: Cannot build uid for $type") }!!
-
-        dp.uniqueIdAlias = AliasBuilder.build(dp.uniqueId!!)
+        super.buildFields(dp)
 
         // "SELECT p.firstName, p.lastName FROM Person p"
         return dp.typeT!!::class.memberProperties.joinToString(", ") { "${dp.uniqueIdAlias}.${it.name}" }

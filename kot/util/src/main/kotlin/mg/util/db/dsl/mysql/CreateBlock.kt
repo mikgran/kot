@@ -7,7 +7,7 @@ import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2
 import kotlin.reflect.full.declaredMemberProperties
 
-open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock() {
+open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock(type) {
 
     override fun buildCreate(dp: DslParameters): String {
 
