@@ -13,7 +13,7 @@ class SqlMapper(internal val sql: Sql) {
 
     fun <T : Any> buildDrop(metadata: Metadata<T>): String {
         val sql = sql drop metadata.type
-        return map(sql)
+        return map(sql.list())
     }
 
     fun <T : Any> buildInsert(metadata: Metadata<T>): String {
