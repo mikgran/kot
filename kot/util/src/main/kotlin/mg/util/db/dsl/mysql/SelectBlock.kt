@@ -2,7 +2,6 @@ package mg.util.db.dsl.mysql
 
 import mg.util.common.Common
 import mg.util.db.AliasBuilder
-import mg.util.db.UidBuilder
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
@@ -46,7 +45,7 @@ open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("buildFields: Cannot build uid for $type") }!!
 
-        dp.uniqueIdAlias = AliasBuilder.alias(dp.uniqueId!!)
+        dp.uniqueIdAlias = AliasBuilder.build(dp.uniqueId!!)
 
         // "SELECT p.firstName, p.lastName FROM Person p"
         return dp.typeT!!::class.memberProperties.joinToString(", ") { "${dp.uniqueIdAlias}.${it.name}" }

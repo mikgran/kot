@@ -1,7 +1,7 @@
 package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
-import mg.util.db.AliasBuilder.alias
+import mg.util.db.AliasBuilder.build
 import mg.util.db.DBTest.PersonB
 import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
@@ -152,8 +152,8 @@ internal class DBOTest {
 
         val b = buildUniqueId(Billing())
         val p = buildUniqueId(Person())
-        val b2 = alias(b)
-        val p2 = alias(p)
+        val b2 = build(b)
+        val p2 = build(p)
 
         val sql = "SELECT * FROM $p $p2 JOIN $b $b2 ON $p2.id = $b2.${p}id"
 

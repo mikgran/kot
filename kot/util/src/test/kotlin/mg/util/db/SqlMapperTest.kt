@@ -10,7 +10,7 @@ internal class SqlMapperTest {
     private val person = Person("testname1", "testname2")
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
     private val personUid = UidBuilder.build(Person::class)
-    private val personAlias = AliasBuilder.alias(personUid)
+    private val personAlias = AliasBuilder.build(personUid)
 
     @Test
     fun testCreateTable() {

@@ -21,7 +21,7 @@ object AliasBuilder {
 
     private val aliases = HashMap<String, HashMap<String, Alias>>()
 
-    @Synchronized fun alias(s: String): String {
+    @Synchronized fun build(s: String): String {
 
         val firstLetter = of(s)
                 .filter(String::isNotEmpty)

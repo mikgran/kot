@@ -19,7 +19,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("buildFields: Cannot build uid for $type") }!!
 
-        dp.uniqueIdAlias = AliasBuilder.alias(dp.uniqueId!!)
+        dp.uniqueIdAlias = AliasBuilder.build(dp.uniqueId!!)
 
         val sqlFieldDefinitionsCommaSeparated = Opt2.of(dp)
                 .map(::buildSqlFieldDefinitions)

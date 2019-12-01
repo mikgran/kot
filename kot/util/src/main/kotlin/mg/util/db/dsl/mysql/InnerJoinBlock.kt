@@ -36,7 +36,7 @@ open class InnerJoinBlock<T : Any>(override val blocks: MutableList<BuildingBloc
 
         of(type).map(::buildUniqueId)
                 .ifPresent { uid = it }
-                .map { AliasBuilder.alias(uid!!) }
+                .map { AliasBuilder.build(uid!!) }
                 .ifPresent { uidAlias = it }
 
         return of(type)
