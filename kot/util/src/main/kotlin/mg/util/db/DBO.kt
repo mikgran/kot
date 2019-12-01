@@ -95,9 +95,6 @@ class DBO(private val mapper: SqlMapper) {
         customFieldsOfCollections
                 .filter(::isNotCollectionTypeKotlin)
 
-
-
-
         return customFields
     }
 
@@ -158,10 +155,6 @@ class DBO(private val mapper: SqlMapper) {
                 .map(Connection::createStatement)
                 .mapWith(dropSql) { s, sql -> s.executeUpdate(sql) }
     }
-
-//    fun <T : Any> buildUniqueId(t: T): String {
-//        return UidBuilder.buildUniqueId(t)
-//    }
 
     companion object {
         const val CONNECTION_WAS_CLOSED = "Connection was closed while attempting to read from it"
