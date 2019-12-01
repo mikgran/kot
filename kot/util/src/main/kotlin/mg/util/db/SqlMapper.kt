@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.db.dsl.DslMapper
+import mg.util.db.dsl.Sql
 import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.KCallable
 

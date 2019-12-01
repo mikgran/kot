@@ -70,7 +70,7 @@ class DBO(private val mapper: SqlMapper) {
                 .map { it.executeUpdate(createTableSql) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
 
-        //  of(t).map(::getNonKotlinFields)
+        of(t).map(::getNonKotlinFields)
         // .ifPresent { it.forEach { i -> println("nonkotlin field:: $i") } }
 //                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
     }

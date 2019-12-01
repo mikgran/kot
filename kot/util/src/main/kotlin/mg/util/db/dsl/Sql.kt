@@ -1,6 +1,5 @@
-package mg.util.db
+package mg.util.db.dsl
 
-import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.mysql.CreateBlock
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.db.dsl.mysql.UpdateBlock
