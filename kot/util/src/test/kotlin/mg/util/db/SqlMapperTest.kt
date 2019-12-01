@@ -11,11 +11,10 @@ internal class SqlMapperTest {
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
     private val personUid = UidBuilder.build(Person::class)
     private val personAlias = AliasBuilder.build(personUid)
+    private val personMetadata = dbo.buildMetadata(person)
 
     @Test
     fun testCreateTable() {
-
-        val personMetadata = dbo.buildMetadata(person)
 
         val createTableSqlCandidate = SqlMapper(Sql()).buildCreateTable(personMetadata)
 
@@ -28,8 +27,6 @@ internal class SqlMapperTest {
     @Test
     fun testBuildInsert() {
 
-        val personMetadata = dbo.buildMetadata(person)
-
         val insertCandidate = SqlMapper(Sql()).buildInsert(personMetadata)
 
         val expectedInsert = "INSERT INTO ${personMetadata.uid} (firstName, lastName) VALUES ('testname1', 'testname2')"
@@ -41,13 +38,22 @@ internal class SqlMapperTest {
     @Test
     fun testFinding() {
 
-        val personMetadata = dbo.buildMetadata(person)
-
         val findCandidate = SqlMapper(Sql()).buildFind(personMetadata)
 
         val expectedFind = "SELECT $personAlias.firstName, $personAlias.lastName FROM $personUid $personAlias"
 
         assertNotNull(findCandidate)
         assertEquals(expectedFind, findCandidate)
+    }
+
+    @Test
+    fun testDrop() {
+
+        val dropCandidate = SqlMapper(Sql()).buildDrop(personMetadata)
+
+        val expectedDrop = "DROP TABLE IF EXISTS $personUid"
+
+        assertNotNull(dropCandidate)
+        assertEquals(expectedDrop, dropCandidate)
     }
 }
