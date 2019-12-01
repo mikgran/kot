@@ -38,10 +38,9 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .filter { dp.typeT != null }
                 .map { dp.typeT as Any }
                 .map { it::class.declaredMemberProperties }
-                .map { it.map(MySqlTypeMapper::getTypeString) }
+                .map { it.map { i -> MySqlTypeMapper().getTypeString(i) } }
                 .getOrElse(emptyList())
     }
-
 
 
 }

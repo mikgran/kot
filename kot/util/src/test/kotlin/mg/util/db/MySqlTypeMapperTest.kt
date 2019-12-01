@@ -47,10 +47,10 @@ internal class MySqlTypeMapperTest {
         assertTrue(expectedFieldDefinitions.containsAll(candidates))
     }
 
-    private fun <T: Any> buildCandidates(metadata: Metadata<T>): List<String> {
+    private fun <T : Any> buildCandidates(metadata: Metadata<T>): List<String> {
         return of(metadata)
                 .map { it.type::class.declaredMemberProperties }
-                .map { it.map(MySqlTypeMapper::getTypeString) }
+                .map { it.map { i -> MySqlTypeMapper().getTypeString(i) } }
                 .getOrElse(emptyList())
     }
 

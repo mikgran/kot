@@ -4,7 +4,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.createType
 
-object MySqlTypeMapper {
+class MySqlTypeMapper {
 
     fun getTypeString(type: KProperty1<out Any, Any?>): String {
 
