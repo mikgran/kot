@@ -57,6 +57,4 @@ class SqlMapper {
         val sql = Sql() create metadata.type
         return DslMapper.map(sql.list())
     }
-
-    private fun <T : Any> buildSqlFind(metadata: Metadata<T>): String = "SELECT * FROM " + metadata.uid
 }
