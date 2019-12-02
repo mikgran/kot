@@ -5,6 +5,7 @@ import mg.util.functional.Opt2.Factory.of
 
 // DDL, DML
 // CREATE, SELECT, UPDATE, DELETE, ALTER, RENAME, TRUNCATE(remove all rows from table), DROP
+// include methods for data migration
 object DslMapper {
 
     fun map(block: BuildingBlock): String = map(block.list())
