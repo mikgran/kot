@@ -22,4 +22,6 @@ abstract class Sql {
     open infix fun <T : Any> create(t: T): CreateBlock<T> = newCachedBlock { list -> newCreate(list, t) }
     open infix fun <T : Any> drop(t: T): DropBlock<T> = newCachedBlock { list -> newDrop(list, t) }
     open infix fun <T : Any> insert(t: T): InsertBlock<T> = newCachedBlock { list -> newInsert(list, t) }
+
+
 }

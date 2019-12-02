@@ -2,28 +2,25 @@ package mg.util.db.dsl
 
 import mg.util.common.Common.hasContent
 import mg.util.db.AliasBuilder
-import mg.util.db.DBO
 import mg.util.db.DBTest.PersonB
-import mg.util.db.SqlMapperFactory
 import mg.util.db.UidBuilder
 import mg.util.db.UidBuilder.buildUniqueId
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import mg.util.db.dsl.mysql.Sql as SqlMysql
+import mg.util.db.dsl.mysql.Sql as MySql
 import mg.util.db.dsl.oracle.Sql as SqlOracle
 
 internal class DslMapperTest {
 
-    private val dbo = DBO(SqlMapperFactory.get("mysql"))
-
-    private data class Address(val fullAddress: String = "")
-    private data class Place(val address: Address = Address(), val rentInCents: Int = 0)
+    private data class Address(var fullAddress: String = "")
+    private data class Place(var address: Address = Address(), var rentInCents: Int = 0)
+    private data class Floor(var number: Int = 0)
+    private data class Building(var fullAddress: String = "", var floors: List<Floor> = listOf(Floor(1)))
 
     @Test
     fun testBuildingSqlFromDsl1() {
 
-        val sql = SqlMysql() select PersonB() where PersonB::firstName eq "name"
+        val sql = MySql() select PersonB() where PersonB::firstName eq "name"
 
         val candidate = DslMapper.map(sql.list())
 
@@ -36,7 +33,7 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTable1() {
 
-        val sql = SqlMysql() create PersonB()
+        val sql = MySql() create PersonB()
 
         val uid = UidBuilder.build(PersonB::class)
         val candidate = DslMapper.map(sql.list())
@@ -44,20 +41,51 @@ internal class DslMapperTest {
         assertEquals("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", candidate)
     }
 
-    @Test
+    // @Test
     fun testCreatingANewTableWithSimpleReference() {
 
-        // val sql = SqlMysql() create
+        val sql = MySql() create Building("some address")
 
+        val buildingUid = UidBuilder.build(Building::class)
+        val floorUid = UidBuilder.build(Floor::class)
+
+        val candidate = DslMapper.map(sql.list())
+
+        assertNotNull(candidate)
+        assertEquals("CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "fullAddress VARCHAR(64) NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "number VARCHAR(64) NOT NULL);" +
+                "ALTER TABLE $floorUid ADD CONSTRAINT FOREIGN KEY (${buildingUid}id) REFERENCES $buildingUid (id);",
+                candidate)
     }
 
+    @Test
+    fun testUpdate() {
+
+        // UPDATE personb12345 SET field1 = new-value1, field2 = new-value2
+        val sql = MySql() update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
+
+        val uid = UidBuilder.build(PersonB::class)
+
+        val candidate = DslMapper.map(sql.list())
+
+        val expected = "UPDATE $uid SET firstName = 'newFirstName', lastName = 'newLastName'" +
+                " WHERE firstName = 'firstName'"
+
+        println("candidate: $candidate")
+        println("expected : $expected")
+
+        assertNotNull(candidate)
+        assertEquals(expected, candidate)
+    }
 
     @Test
     fun testBuildingSqlFromDslJoin() {
 
-        // TODO 1: "on a.f = b.f2"
+        // FIXME 1: "on a.f = b.f2", needs to be completed
 
-        val sql = SqlMysql() select Place() join Address()
+        val sql = MySql() select Place() join Address()
 
         val candidate = DslMapper.map(sql.list())
 

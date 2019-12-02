@@ -2,6 +2,7 @@ package mg.util.db.dsl.mysql
 
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
+import kotlin.reflect.KProperty1
 
 open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T, open val operation: String) : BuildingBlock(type) {
 
@@ -17,6 +18,9 @@ open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
         return getAndCacheBlock(type, blocks) { t, b -> AndBlock(b, t) }
     }
 
+    infix fun <T: KProperty1<*, *>> where(type: T): WhereBlock<T> {
+        return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t)}
+    }
     override fun buildSelect(dp: DslParameters): String = " $operation '$type'"
     override fun buildFields(dp: DslParameters): String = ""
 }

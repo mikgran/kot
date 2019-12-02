@@ -9,6 +9,13 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
     override fun buildCreate(dp: DslParameters): String {
 
+
+
+
+        return createSimple(dp)
+    }
+
+    private fun createSimple(dp: DslParameters): String {
         val sqlFieldDefinitionsCommaSeparated = Opt2.of(dp)
                 .map(::buildSqlFieldDefinitions)
                 .map { it.joinToString(", ") }
@@ -28,6 +35,4 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .map { it.map { i -> MySqlTypeMapper().getTypeString(i) } }
                 .getOrElse(emptyList())
     }
-
-
 }

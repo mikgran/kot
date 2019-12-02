@@ -1,9 +1,6 @@
 package mg.util.db.dsl
 
-import mg.util.db.dsl.mysql.CreateBlock
-import mg.util.db.dsl.mysql.DropBlock
-import mg.util.db.dsl.mysql.InsertBlock
-import mg.util.db.dsl.mysql.SelectBlock
+import mg.util.db.dsl.mysql.*
 import mg.util.functional.Opt2.Factory.of
 
 object DslMapper {
@@ -15,7 +12,7 @@ object DslMapper {
         return of(blockList)
                 .filter { it.isNotEmpty() }
                 .ifMissingThrow { Exception("map: List of blocks was empty") }
-                .map(DslMapper::buildSql)
+                .map(::buildSql)
                 .getOrElseThrow { Exception("map: Unable to build sql for list $blockList") } ?: ""
     }
 
@@ -25,10 +22,13 @@ object DslMapper {
             is CreateBlock<*> -> buildCreate(blocks)
             is DropBlock<*> -> buildDrop(blocks)
             is InsertBlock<*> -> buildInsert(blocks)
-            // is SelectBlock<*> -> buildSelect(blocks)
-            // is UpdateBlock<*> -> throw Exception("<UpdateBlock not yet implemented>")
+            is UpdateBlock<*> -> buildUpdate(blocks)
             else -> throw Exception("Class ${blocks[0]::class} not yet implemented")
         }
+    }
+
+    private fun buildUpdate(blocks: MutableList<BuildingBlock>): String {
+        return ""
     }
 
     private fun buildInsert(blocks: MutableList<BuildingBlock>): String {
