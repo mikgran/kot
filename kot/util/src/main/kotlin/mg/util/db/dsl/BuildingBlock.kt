@@ -29,9 +29,6 @@ abstract class BuildingBlock(val t: Any) {
     // buildDelete
     // buildTruncate
 
-    private val dbConfig = DBConfig(Config())
-    internal val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
-
     fun <T : Any, R : BuildingBlock> getAndCacheBlock(type: T, list: MutableList<BuildingBlock>, f: (type: T, list: MutableList<BuildingBlock>) -> R): R {
         val block = f(type, list)
         list.add(block)

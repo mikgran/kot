@@ -28,5 +28,5 @@ class DB {
 
     fun <T : Any> find(type: T): List<T> = getDBO().find(type, getConnection())
 
-    fun findByDsl(block: BuildingBlock): List<Any> = getDBO().findBy(block, getConnection())
+    fun find(block: BuildingBlock): List<Any> = getDBO().findBy(block, getConnection())
 }
