@@ -211,7 +211,7 @@ internal class DBOTest {
     }
 
     @Test
-    fun testDslSelectJoin() {
+    fun testDslSelect2() {
 
         val name = "name"
         val bbb = "bbb"

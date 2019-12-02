@@ -4,7 +4,7 @@ import mg.util.common.Common
 import mg.util.db.*
 import mg.util.functional.Opt2
 
-abstract class BuildingBlock(protected val t: Any) {
+abstract class BuildingBlock(val t: Any) {
     abstract val blocks: MutableList<BuildingBlock>
     fun list() = blocks
     internal fun simpleName() = this::class.simpleName
