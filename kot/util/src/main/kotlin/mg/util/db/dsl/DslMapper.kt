@@ -30,31 +30,15 @@ object DslMapper {
         }
     }
 
-    private fun buildUpdate(blocks: MutableList<BuildingBlock>): String {
-        val dp = DslParameters()
-        blocks.map { it.buildFields(dp) }
-        return blocks.map { it.buildDelete(dp) }
-                .fold("") { a, b -> a + b }
-    }
+    private fun buildUpdate(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildDelete(dp) }
+    private fun buildInsert(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildInsert(dp) }
+    private fun buildDrop(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildDrop(dp) }
+    private fun buildCreate(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildCreate(dp) }
 
-    private fun buildInsert(blocks: MutableList<BuildingBlock>): String {
+    private fun build(blocks: MutableList<BuildingBlock>, transformer: (BuildingBlock, DslParameters) -> String): String {
         val dp = DslParameters()
         blocks.map { it.buildFields(dp) }
-        return blocks.map { it.buildInsert(dp) }
-                .fold("") { a, b -> a + b }
-    }
-
-    private fun buildDrop(blocks: MutableList<BuildingBlock>): String {
-        val dp = DslParameters()
-        blocks.map { it.buildFields(dp) }
-        return blocks.map { it.buildDrop(dp) }
-                .fold("") { a, b -> a + b }
-    }
-
-    private fun buildCreate(blocks: MutableList<BuildingBlock>): String {
-        val dp = DslParameters()
-        blocks.map { it.buildFields(dp) }
-        return blocks.map { it.buildCreate(dp) }
+        return blocks.map { transformer(it, dp) }
                 .fold("") { a, b -> a + b }
     }
 
