@@ -38,4 +38,8 @@ open class WhereBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
     }
 
     override fun buildFields(dp: DslParameters): String = ""
+
+    override fun buildDelete(dp: DslParameters): String {
+        return "${getSqlKeyWord()}${(type as KProperty1<*, *>).name}"
+    }
 }

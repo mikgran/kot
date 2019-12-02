@@ -73,9 +73,6 @@ internal class DslMapperTest {
         val expected = "UPDATE $uid SET firstName = 'newFirstName', lastName = 'newLastName'" +
                 " WHERE firstName = 'firstName'"
 
-        println("candidate: $candidate")
-        println("expected : $expected")
-
         assertNotNull(candidate)
         assertEquals(expected, candidate)
     }

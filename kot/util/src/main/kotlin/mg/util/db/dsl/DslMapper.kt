@@ -3,6 +3,8 @@ package mg.util.db.dsl
 import mg.util.db.dsl.mysql.*
 import mg.util.functional.Opt2.Factory.of
 
+// DDL, DML
+// CREATE, SELECT, UPDATE, DELETE, ALTER, RENAME, TRUNCATE(remove all rows from table), DROP
 object DslMapper {
 
     fun map(block: BuildingBlock): String = map(block.list())
@@ -28,7 +30,10 @@ object DslMapper {
     }
 
     private fun buildUpdate(blocks: MutableList<BuildingBlock>): String {
-        return ""
+        val dp = DslParameters()
+        blocks.map { it.buildFields(dp) }
+        return blocks.map { it.buildDelete(dp) }
+                .fold("") { a, b -> a + b }
     }
 
     private fun buildInsert(blocks: MutableList<BuildingBlock>): String {

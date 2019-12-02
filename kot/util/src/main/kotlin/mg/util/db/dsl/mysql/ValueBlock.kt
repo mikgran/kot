@@ -14,13 +14,15 @@ open class ValueBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, 
         return getAndCacheBlock(type, blocks) { t, b -> InnerJoinBlock(b, t) }
     }
 
-    infix fun <T: Any> and(type: T): AndBlock<T> {
+    infix fun <T : Any> and(type: T): AndBlock<T> {
         return getAndCacheBlock(type, blocks) { t, b -> AndBlock(b, t) }
     }
 
-    infix fun <T: KProperty1<*, *>> where(type: T): WhereBlock<T> {
-        return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t)}
+    infix fun <T : KProperty1<*, *>> where(type: T): WhereBlock<T> {
+        return getAndCacheBlock(type, blocks) { t, b -> WhereBlock(b, t) }
     }
+
     override fun buildSelect(dp: DslParameters): String = " $operation '$type'"
     override fun buildFields(dp: DslParameters): String = ""
+    override fun buildDelete(dp: DslParameters): String = buildSelect(dp)
 }

@@ -12,6 +12,7 @@ abstract class BuildingBlock(val t: Any) {
     open fun buildDrop(dp: DslParameters): String = ""
     open fun buildInsert(dp: DslParameters): String = ""
     open fun buildDelete(dp: DslParameters): String = ""
+    open fun buildUpdate(dp: DslParameters): String = ""
     open fun buildSelect(dp: DslParameters): String = "" // do as last always
     open fun buildFields(dp: DslParameters): String { // do as first always
         dp.typeT = Opt2.of(t)
