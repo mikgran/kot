@@ -20,8 +20,8 @@ class DB {
     }
 
     fun <T : Any> save(type: T) {
+        val connection = getConnection()
         dbo.apply {
-            val connection = getConnection()
             ensureTable(type, connection)
             save(type, connection)
         }
