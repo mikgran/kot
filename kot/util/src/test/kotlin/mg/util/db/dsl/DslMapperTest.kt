@@ -42,6 +42,7 @@ internal class DslMapperTest {
     }
 
     // @Test
+    // FIXME 6 multiple table creation
     fun testCreatingANewTableWithSimpleReference() {
 
         val sql = MySql() create Building("some address")
