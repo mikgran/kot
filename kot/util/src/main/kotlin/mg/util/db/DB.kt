@@ -4,18 +4,13 @@ import mg.util.db.dsl.BuildingBlock
 import mg.util.functional.Opt2
 import java.sql.Connection
 
-// Very crude type T persistence solution
+// Very crude type T persistence solution, allows:
+// 1. basic hard bolted methods like find, save
+// 2. use of hard typed dsl free hand in case a more difficult sql is required
 class DB {
 
     private var dbConfig: DBConfig = DBConfig(Config())
-
-    fun <T : Any> save(type: T) {
-        getDBO().apply {
-            val connection = getConnection()
-            ensureTable(type, connection)
-            save(type, connection)
-        }
-    }
+    private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
 
     private fun getConnection(): Connection {
         return Opt2.of(dbConfig)
@@ -24,9 +19,14 @@ class DB {
                 .getOrElseThrow { Exception("Connection closed.") }!!
     }
 
-    private fun getDBO() = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
+    fun <T : Any> save(type: T) {
+        dbo.apply {
+            val connection = getConnection()
+            ensureTable(type, connection)
+            save(type, connection)
+        }
+    }
 
-    fun <T : Any> find(type: T): List<T> = getDBO().find(type, getConnection())
-
-    fun find(block: BuildingBlock): List<Any> = getDBO().findBy(block, getConnection())
+    fun <T : Any> find(type: T): List<T> = dbo.find(type, getConnection())
+    fun find(block: BuildingBlock): List<Any> = dbo.findBy(block, getConnection())
 }
