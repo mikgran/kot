@@ -9,5 +9,5 @@ class SqlMapper(internal val sql: Sql) {
     fun <T : Any> buildDrop(metadata: Metadata<T>): String = map(sql drop metadata.type)
     fun <T : Any> buildInsert(metadata: Metadata<T>): String = map(sql insert metadata.type)
     fun <T : Any> buildCreateTable(metadata: Metadata<T>): String = map(sql create metadata.type)
-    // sql update metadata.type -> full update of all fields given based on id
+    // sql update metadata.type -> full update of all fields given based on ref fields
 }
