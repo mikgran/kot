@@ -3,20 +3,26 @@ package mg.util.db.dsl.mysql
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2
+import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.full.declaredMemberProperties
 
 open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock(type) {
 
     override fun buildCreate(dp: DslParameters): String {
 
-        //
+        // type (f1, f2, f3, custom1, collection<custom2>)
+        // create type (f1, f2, f3), buildForParent(custom1), buildForParent(collection<custom2>)
 
+        dp.typeT!!::class.java.declaredFields
+                // .map { println(it.name+": "+it.type); it}
+                .filter { Collection::class.java.isAssignableFrom(it.type) }
+                .forEach(::println)
 
         return createSimple(dp)
     }
 
     private fun createSimple(dp: DslParameters): String {
-        val sqlFieldDefinitionsCommaSeparated = Opt2.of(dp)
+        val sqlFieldDefinitionsCommaSeparated = of(dp)
                 .map(::buildSqlFieldDefinitions)
                 .map { it.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create") }
@@ -28,7 +34,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     }
 
     private fun buildSqlFieldDefinitions(dp: DslParameters): List<String> {
-        return Opt2.of(dp)
+        return of(dp)
                 .filter { dp.typeT != null }
                 .map { dp.typeT as Any }
                 .map { it::class.declaredMemberProperties }
