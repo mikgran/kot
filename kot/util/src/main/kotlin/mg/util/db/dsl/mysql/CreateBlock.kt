@@ -19,12 +19,11 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                     it.isAccessible = true
                     it.get(dp.typeT) as List<*>
                 }
-
-        lists.flatten()
+                .flatten()
                 .filterNotNull()
                 .distinctBy { it::class.java.packageName + it::class.java.simpleName }
+                //.distinctBy { it::class.java.simpleName }
                 .apply(::println)
-
 
         return createSimple(dp)
     }
