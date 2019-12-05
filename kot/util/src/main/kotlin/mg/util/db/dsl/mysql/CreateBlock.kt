@@ -2,7 +2,6 @@ package mg.util.db.dsl.mysql
 
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
-import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -13,10 +12,19 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         // type (f1, f2, f3, custom1, collection<custom2>)
         // create type (f1, f2, f3), buildForParent(custom1), buildForParent(collection<custom2>)
 
-        dp.typeT!!::class.java.declaredFields
-                // .map { println(it.name+": "+it.type); it}
-                .filter { Collection::class.java.isAssignableFrom(it.type) }
-                .forEach(::println)
+        val lists = dp.typeT!!::class.java.declaredFields
+                .filterNotNull()
+                .filter { List::class.java.isAssignableFrom(it.type) }
+                .map {
+                    it.isAccessible = true
+                    it.get(dp.typeT) as List<*>
+                }
+
+        lists.flatten()
+                .filterNotNull()
+                .distinctBy { it::class.java.packageName + it::class.java.simpleName }
+                .apply(::println)
+
 
         return createSimple(dp)
     }
