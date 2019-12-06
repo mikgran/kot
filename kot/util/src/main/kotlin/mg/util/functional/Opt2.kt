@@ -53,6 +53,11 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
+    fun filterNot(predicate: (T) -> Boolean): Opt2<T> = when {
+        isPresent() && !predicate(lazyT) -> this
+        else -> empty()
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(ref: R,
                                  predicate: (R) -> Boolean,
@@ -136,7 +141,7 @@ class Opt2<T : Any> {
     }
 
     // TOIMPROVE: find a better way for arity of type N objects
-    fun <R : Any, S : Any, V : Any> mapWith(r: R?, s: S?, mapper: (T, R, S) -> V) : Opt2<V> {
+    fun <R : Any, S : Any, V : Any> mapWith(r: R?, s: S?, mapper: (T, R, S) -> V): Opt2<V> {
         val ropt = of(r)
         val sopt = of(s)
         return when {
@@ -145,7 +150,7 @@ class Opt2<T : Any> {
         }
     }
 
-    fun <V: Any> mapTo(toType: KClass<V>) : Opt2<V> = of(toType.safeCast(lazyT))
+    fun <V : Any> mapTo(toType: KClass<V>): Opt2<V> = of(toType.safeCast(lazyT))
 
     companion object Factory {
 
@@ -166,7 +171,7 @@ class Opt2<T : Any> {
     }
 }
 
-inline fun <T: Any> Opt2<T>.rcv(block: T.() -> Unit): Opt2<T> {
+inline fun <T : Any> Opt2<T>.rcv(block: T.() -> Unit): Opt2<T> {
     when {
         isPresent() -> block(get()!!)
     }

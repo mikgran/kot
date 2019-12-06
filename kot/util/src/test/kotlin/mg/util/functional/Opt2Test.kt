@@ -185,6 +185,23 @@ internal class Opt2Test {
     }
 
     @Test
+    fun test_filterNot() {
+
+        val candidate = Opt2.of(VALUE)
+                .filterNot { it == ANOTHER_STRING }
+                .get()
+
+        assertNotNull(candidate)
+        assertEquals(VALUE, candidate)
+
+        val candidate2 = Opt2.of(VALUE)
+                .filterNot { it == VALUE }
+                .get()
+
+        assertNull(candidate2)
+    }
+
+    @Test
     fun test_equals() {
         val opt1 = Opt2.of(VALUE1)
         val opt2 = Opt2.of(VALUE2)
