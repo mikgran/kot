@@ -15,45 +15,44 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
         val bb = getCustomObjects(dp)
 
+        println(bb)
+
         val cc = getListsOfCustomObjects(dp)
                 .map { buildSqlForCustomCollections(dp, it) }
 
-//        lists.flatten()
-//                .filterNotNull()
-//                .distinctBy { it::class.java.packageName + it::class.java.simpleName }
-//                .apply(::println)
+        println(cc)
+
         return buildSqlForParent(dp)
     }
 
-    private fun getCustomObjects(parentDslParameters: DslParameters): List<Any> {
+    private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
+    private fun isKotlinPackage(field: Field) = field::class.java.packageName.contains("kotlin.")
 
-        typeOfParent(parentDslParameters)
-                .declaredFields
-                .filterNot(::isList)
+    private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> = parentDslParameters.typeT!!::class.java
 
-        return emptyList()
-    }
+    private fun buildSqlForCustomCollections(parentDslParameters: DslParameters, customObjects: List<Field>): String {
 
-    private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> =
-            parentDslParameters.typeT!!::class.java
-
-    private fun buildSqlForCustomCollections(parentDslParameters: DslParameters, listsOfCustomsObjects: List<*>): String {
-
+        customObjects
+                .filterNot(::isKotlinPackage)
+                .distinctBy { it::class.java.packageName + it::class.java.simpleName }
 
         return ""
     }
 
-    private fun getListsOfCustomObjects(dp: DslParameters): List<List<*>> {
-        return typeOfParent(dp).declaredFields
+    private fun getCustomObjects(parentDslParameters: DslParameters): List<Field> {
+        return typeOfParent(parentDslParameters)
+                .declaredFields
                 .filterNotNull()
-                .filter(::isList)
-                .map {
-                    it.isAccessible = true
-                    it.get(dp.typeT) as List<*>
-                }
+                .filterNot(::isList)
+                .filterNot(::isKotlinPackage)
     }
 
-    private fun isList(it: Field) = List::class.java.isAssignableFrom(it.type)
+    private fun getListsOfCustomObjects(dp: DslParameters): List<Field> {
+        return typeOfParent(dp)
+                .declaredFields
+                .filterNotNull()
+                .filter(::isList)
+    }
 
     private fun buildSqlForParent(dp: DslParameters): String {
         val sqlFieldDefinitionsCommaSeparated = of(dp)
