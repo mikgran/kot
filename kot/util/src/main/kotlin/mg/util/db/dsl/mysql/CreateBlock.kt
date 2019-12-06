@@ -15,12 +15,12 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
         val bb = getCustomObjects(dp)
 
-        println(bb)
+        // println(bb)
 
         val cc = getListsOfCustomObjects(dp)
                 .map { buildSqlForCustomCollections(dp, it) }
 
-        println(cc)
+        // println(cc)
 
         return buildSqlForParent(dp)
     }
@@ -30,11 +30,13 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
     private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> = parentDslParameters.typeT!!::class.java
 
-    private fun buildSqlForCustomCollections(parentDslParameters: DslParameters, customObjects: List<Field>): String {
+    private fun buildSqlForCustomCollections(parentDslParameters: DslParameters, collectionField: Field): String {
 
-        customObjects
-                .filterNot(::isKotlinPackage)
-                .distinctBy { it::class.java.packageName + it::class.java.simpleName }
+        collectionField.isAccessible = true
+        val collection = collectionField.get(parentDslParameters.typeT) as List<*>
+
+        collection.distinctBy { collectionField.type.packageName + collectionField.type.simpleName }
+                .map { println(it); it }
 
         return ""
     }
@@ -47,8 +49,8 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .filterNot(::isKotlinPackage)
     }
 
-    private fun getListsOfCustomObjects(dp: DslParameters): List<Field> {
-        return typeOfParent(dp)
+    private fun getListsOfCustomObjects(parentDslParameters: DslParameters): List<Field> {
+        return typeOfParent(parentDslParameters)
                 .declaredFields
                 .filterNotNull()
                 .filter(::isList)
