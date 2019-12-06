@@ -27,7 +27,6 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
     private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
     private fun isKotlinPackage(field: Field) = field::class.java.packageName.contains("kotlin.")
-
     private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> = parentDslParameters.typeT!!::class.java
 
     private fun buildSqlForCustomCollections(parentDslParameters: DslParameters, collectionField: Field): String {
@@ -35,7 +34,9 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         collectionField.isAccessible = true
         val collection = collectionField.get(parentDslParameters.typeT) as List<*>
 
-        collection.distinctBy { collectionField.type.packageName + collectionField.type.simpleName }
+        collection
+                .filterNotNull()
+                .distinctBy { "${it::class.java.packageName}.${it::class.java.simpleName}" }
                 .map { println(it); it }
 
         return ""
