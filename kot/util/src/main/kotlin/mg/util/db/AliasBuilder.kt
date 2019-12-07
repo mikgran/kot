@@ -8,6 +8,7 @@ import mg.util.functional.Opt2.Factory.of
         l = map {
           lastName = Alias("l")
           lastDate = Alias("l2")
+          lostDate = Alias("l3")
         }
         f = map {
           firstName = Alias("f")
@@ -20,9 +21,11 @@ object AliasBuilder {
         override fun toString(): String = if (i <= 1) c else "$c$i"
     }
 
-    private val aliases by Synchronize(HashMap<String, HashMap<String, Alias>>())
+    private var aliases = HashMap<String, HashMap<String, Alias>>()
 
-    fun build(s: String): String {
+    @Synchronized fun build(s: String): String {
+
+        println(aliases)
 
         val firstLetter = of(s)
                 .filter(String::isNotEmpty)
