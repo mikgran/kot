@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.common.Synchronize
 import mg.util.functional.Opt2.Factory.of
 
 /*
@@ -19,9 +20,10 @@ object AliasBuilder {
         override fun toString(): String = if (i <= 1) c else "$c$i"
     }
 
-    private val aliases = HashMap<String, HashMap<String, Alias>>()
+    // private val aliases =
+    private val aliases by Synchronize(HashMap<String, HashMap<String, Alias>>())
 
-    @Synchronized fun build(s: String): String {
+    fun build(s: String): String {
 
         val firstLetter = of(s)
                 .filter(String::isNotEmpty)
