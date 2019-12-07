@@ -1,17 +1,16 @@
 package mg.util.db
 
-import mg.util.common.Synchronize
 import mg.util.functional.Opt2.Factory.of
 
 /*
     map {
-        l = map {
-          lastName = Alias("l")
-          lastDate = Alias("l2")
-          lostDate = Alias("l3")
+        "l" = map {
+          "lastName" = Alias("l")
+          "lastDate "= Alias("l2")
+          "lostDate" = Alias("l3")
         }
-        f = map {
-          firstName = Alias("f")
+        "f" = map {
+          "firstName" = Alias("f")
         }
     }
 */
