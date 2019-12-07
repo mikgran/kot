@@ -6,11 +6,12 @@ import mg.util.db.DBOTest.Person
 import mg.util.db.SqlMapperFactory
 import mg.util.db.TestConfig
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.rcv
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.sql.Connection
-import mg.util.db.functional.ResultSetIterator.Companion.of as iof
 
 internal class ResultSetIteratorTest {
 
@@ -29,14 +30,15 @@ internal class ResultSetIteratorTest {
         dbo.save(person2, connection)
 
         val uid = buildUniqueId(Person())
-        val candidates = of(connection)
+        of(connection)
                 .map(Connection::createStatement)
                 .mapWith(uid) { s, u -> s.executeQuery("SELECT * FROM $u") }
-                .getAndMap(::iof)!!
-                .map { Person(it.getString(2), it.getString(3)) }
-
-        assertTrue(candidates.isNotEmpty())
-        assertTrue(candidates.containsAll(listOf(person1, person2)))
+                .map(::iof)
+                .map { it.map { i -> Person(i.getString(2), i.getString(3)) } }
+                .rcv {
+                    assertTrue(isNotEmpty())
+                    assertTrue(containsAll(listOf(person1, person2)))
+                }
     }
 
 }
