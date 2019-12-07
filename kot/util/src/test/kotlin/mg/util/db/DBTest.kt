@@ -3,6 +3,7 @@ package mg.util.db
 import mg.util.common.Common.hasContent
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.dsl.SqlMapperFactory
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*

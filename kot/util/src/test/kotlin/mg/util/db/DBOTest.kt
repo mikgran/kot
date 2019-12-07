@@ -5,6 +5,7 @@ import mg.util.db.AliasBuilder.build
 import mg.util.db.DBTest.PersonB
 import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.dsl.mysql.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2

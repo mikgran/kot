@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.db.dsl.SqlMapperFactory
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import mg.util.db.dsl.mysql.Sql as MySql

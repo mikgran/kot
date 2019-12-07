@@ -1,6 +1,9 @@
-package mg.util.db
+package mg.util.db.dsl
 
+import mg.util.db.AliasBuilder
+import mg.util.db.DBO
 import mg.util.db.DBOTest.Person
+import mg.util.db.UidBuilder
 import mg.util.db.dsl.mysql.Sql
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

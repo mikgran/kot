@@ -3,6 +3,7 @@ package mg.util.db
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslMapper
+import mg.util.db.dsl.SqlMapper
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
 import java.lang.reflect.Field

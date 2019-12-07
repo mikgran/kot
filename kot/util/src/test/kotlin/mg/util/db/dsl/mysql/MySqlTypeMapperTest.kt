@@ -3,7 +3,7 @@ package mg.util.db.dsl.mysql
 import mg.util.db.DBO
 import mg.util.db.DBOTest.Person
 import mg.util.db.Metadata
-import mg.util.db.SqlMapperFactory
+import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.Assertions.*

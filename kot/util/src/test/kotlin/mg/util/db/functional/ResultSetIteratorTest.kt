@@ -3,7 +3,7 @@ package mg.util.db.functional
 import mg.util.db.DBConfig
 import mg.util.db.DBO
 import mg.util.db.DBOTest.Person
-import mg.util.db.SqlMapperFactory
+import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.TestConfig
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.functional.ResultSetIterator.Companion.iof

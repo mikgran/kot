@@ -1,5 +1,6 @@
-package mg.util.db
+package mg.util.db.dsl
 
+import mg.util.db.dsl.SqlMapper
 import mg.util.db.dsl.oracle.Sql as OracleSql
 import mg.util.db.dsl.mysql.Sql as MySql
 

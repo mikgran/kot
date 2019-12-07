@@ -1,7 +1,7 @@
-package mg.util.db
+package mg.util.db.dsl
 
+import mg.util.db.Metadata
 import mg.util.db.dsl.DslMapper.map
-import mg.util.db.dsl.Sql
 
 // A collection of hard bolted Dsl to sql string conversions.
 class SqlMapper(internal val sql: Sql) {
