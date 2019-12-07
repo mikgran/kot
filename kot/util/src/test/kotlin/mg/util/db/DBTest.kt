@@ -1,12 +1,13 @@
 package mg.util.db
 
-import mg.util.common.Common.hasContent
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
+import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 
@@ -33,26 +34,13 @@ internal class DBTest {
             val candidates = Opt2.of(connection)
                     .map(Connection::createStatement)
                     .map { statement -> statement.executeQuery("SELECT * FROM $uniqueId") }
-                    .mapWith(ArrayList<PersonB>()) { rs, persons ->
-                        while (rs.next()) {
-                            persons.add(PersonB(rs.getString(fName), rs.getString(lName)))
-                        }
-                        persons
-                    }
+                    .map(::iof)
+                    .map { it.map { i -> PersonB(i.getString(fName), i.getString(lName)) } }
                     .getOrElse(ArrayList())
 
             assertTrue(candidates.isNotEmpty())
             assertTrue(candidates.any { p -> p.firstName == "aa" && p.lastName == "bb" })
         }
-    }
-
-    @Test
-    fun testDBODelegate() {
-
-        val db = DB()
-        val uid = buildUniqueId(PersonB("", ""))
-        assertNotNull(uid)
-        assertTrue(hasContent(uid))
     }
 
     @Test
