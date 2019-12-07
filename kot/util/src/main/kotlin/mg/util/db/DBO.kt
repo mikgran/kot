@@ -16,9 +16,6 @@ import kotlin.reflect.full.memberProperties
 // a simple Object-Relational-Mapping class
 class DBO(private val mapper: SqlMapper) {
 
-    // Considerations:
-    // - cache all Metadata objects?
-
     fun <T : Any> buildMetadata(type: T): Metadata<T> {
 
         val propertiesOfT: ArrayList<KCallable<*>> = propertiesOfT(type)
