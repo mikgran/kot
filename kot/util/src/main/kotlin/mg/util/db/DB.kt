@@ -10,8 +10,16 @@ import java.sql.Connection
 // 2. use of hard typed dsl free hand in case a more difficult sql is required
 class DB {
 
-    private val dbConfig: DBConfig = DBConfig(Config())
-    private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
+    fun <T : Any> save(type: T) {
+        val connection = getConnection()
+        dbo.ensureTable(type, connection)
+        dbo.save(type, connection)
+    }
+
+    fun <T : Any> find(type: T): List<T> = dbo.find(type, getConnection())
+
+    @Suppress("unused")
+    fun findBy(block: BuildingBlock): List<Any> = dbo.findBy(block, getConnection())
 
     private fun getConnection(): Connection {
         return of(dbConfig)
@@ -20,13 +28,8 @@ class DB {
                 .getOrElseThrow { Exception("Connection closed.") }!!
     }
 
-    fun <T : Any> save(type: T) {
-        val connection = getConnection()
-        dbo.ensureTable(type, connection)
-        dbo.save(type, connection)
+    companion object {
+        private val dbConfig: DBConfig = DBConfig(Config())
+        private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
     }
-
-    fun <T : Any> find(type: T): List<T> = dbo.find(type, getConnection())
-    @Suppress("unused")
-    fun findBy(block: BuildingBlock): List<Any> = dbo.findBy(block, getConnection())
 }
