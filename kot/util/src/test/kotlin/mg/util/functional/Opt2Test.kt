@@ -457,6 +457,16 @@ internal class Opt2Test {
         assertEquals(YYY, tempValue.a)
     }
 
+    @Test
+    fun test_mapping_through_to_list() {
+        // TODO 7
+        // Opt2.of(listOf(1, 2, 3))
+        // .listMap { it.toString() }
+        // instead of Opt2.of(listOf(1, 2, 3))
+        // .map { it.map { i -> i.toString() } }
+
+    }
+
     private fun getTempValue() = TempValue(YYY)
 
     class TempValue(var a: String?) {
