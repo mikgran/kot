@@ -20,7 +20,6 @@ object AliasBuilder {
         override fun toString(): String = if (i <= 1) c else "$c$i"
     }
 
-    // private val aliases =
     private val aliases by Synchronize(HashMap<String, HashMap<String, Alias>>())
 
     fun build(s: String): String {
