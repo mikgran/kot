@@ -51,7 +51,7 @@ class DBConfig(config: Config) {
     }
 
     val connection: Connection
-        get() = dataSource?.connection ?: throw IllegalArgumentException("Datasource not defined.")
+        get() = dataSource?.connection ?: throw IllegalArgumentException("DataSource not defined.")
 
     companion object {
         const val STR_CAN_NOT_BE_NULL = "can not be null"

@@ -61,7 +61,6 @@ class DBO(private val mapper: SqlMapper) {
         val createTableSql = of(t)
                 .map(::buildMetadata)
                 .map(mapper::buildCreateTable)
-                // .ifPresent(::println)
                 .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
 
         of(getStatement(connection))

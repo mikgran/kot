@@ -29,7 +29,7 @@ class DB {
     }
 
     companion object {
-        private val dbConfig: DBConfig = DBConfig(Config())
+        private val dbConfig = DBConfig(Config())
         private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
     }
 }
