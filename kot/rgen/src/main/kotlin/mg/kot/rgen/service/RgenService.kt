@@ -17,7 +17,7 @@ class RgenService {
 
     fun service() {
 
-        val dbConfig = DBConfig(Config())
+        val dbConfig = DBConfig.config
         val db = DB(dbConfig.connection)
 
         val person2 = Person2()

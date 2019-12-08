@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 internal class ObjectBuilderTest {
 
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
-    private val dbConfig = DBConfig(TestConfig())
+    private val dbConfig = DBConfig.testConfig
 
     @Test
     fun testBuildT() {

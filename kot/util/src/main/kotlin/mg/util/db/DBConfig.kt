@@ -6,7 +6,7 @@ import java.util.*
 import java.util.Objects.requireNonNull
 import javax.sql.DataSource
 
-class DBConfig(config: Config) {
+class DBConfig private constructor(config: Config) {
 
     private var properties = Properties()
         // get() = field
@@ -61,5 +61,8 @@ class DBConfig(config: Config) {
         const val DB_URL = "dbUrl"
         const val DB_DRIVER = "dbDriver"
         const val MAPPER = "mapper"
+
+        val testConfig = DBConfig(TestConfig())
+        val config = DBConfig(Config())
     }
 }

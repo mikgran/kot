@@ -15,7 +15,7 @@ internal class DBTest {
 
     data class PersonB(val firstName: String = "", val lastName: String = "")
 
-    private var dbConfig: DBConfig = DBConfig(Config())
+    private var dbConfig = DBConfig.config
     private val fName = "firstName"
     private val lName = "lastName"
 
@@ -76,7 +76,7 @@ internal class DBTest {
         internal fun afterTest() {
 
             val person = PersonB("first1", "last2")
-            val dbConfig = DBConfig(Config())
+            val dbConfig = DBConfig.config
             val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
             val uidTableName = dbo.buildMetadata(person).uid
             val sqlCommandsList = listOf("DELETE FROM $uidTableName", "DROP TABLE $uidTableName")

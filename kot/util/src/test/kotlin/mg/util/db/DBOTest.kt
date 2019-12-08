@@ -19,7 +19,7 @@ import java.sql.Statement
 
 internal class DBOTest {
 
-    private var dbConfig: DBConfig = DBConfig(TestConfig())
+    private var dbConfig = DBConfig.testConfig
 
     data class Simple(val ffff: String = "aaaa")
     data class SimpleComp(val gggg: String = "cccc")
@@ -235,7 +235,7 @@ internal class DBOTest {
         @JvmStatic
         internal fun afterAll() {
 
-            val dbConfig = DBConfig(TestConfig())
+            val dbConfig = DBConfig.testConfig
             val list = listOf(Person(), PersonB(), Uuuu(), Billing())
                     .map(::buildUniqueId)
 

@@ -10,6 +10,9 @@ import java.sql.Connection
 // 2. use of hard typed dsl free hand in case a more difficult sql is required
 class DB {
 
+    private val dbConfig = DBConfig.config
+    private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
+
     fun <T : Any> save(type: T) {
         val connection = getConnection()
         dbo.ensureTable(type, connection)
@@ -28,8 +31,4 @@ class DB {
                 .getOrElseThrow { Exception("Connection closed.") }!!
     }
 
-    companion object {
-        private val dbConfig = DBConfig(Config())
-        private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
-    }
 }
