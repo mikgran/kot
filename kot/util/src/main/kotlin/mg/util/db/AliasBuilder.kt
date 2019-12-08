@@ -24,8 +24,6 @@ object AliasBuilder {
 
     @Synchronized fun build(s: String): String {
 
-        println(aliases)
-
         val firstLetter = of(s)
                 .filter(String::isNotEmpty)
                 .ifMissingThrow { Exception("alias: Not possible to alias empty strings") }
