@@ -7,7 +7,6 @@ import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2.Factory.of
-import mg.util.functional.rcv
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.sql.Connection
@@ -35,10 +34,10 @@ internal class ResultSetIteratorTest {
                 .map(Connection::createStatement)
                 .mapWith(uid) { s, u -> s.executeQuery("SELECT * FROM $u") }
                 .map(::iof)
-                .map { it.map { i -> Person(i.getString(2), i.getString(3)) } }
-                .rcv {
-                    assertTrue(isNotEmpty())
-                    assertTrue(containsAll(listOf(person1, person2)))
+                .xm { map { Person(it.getString(2), it.getString(3)) } }
+                .apply {
+                    assertTrue(get()!!.isNotEmpty())
+                    assertTrue(get()!!.containsAll(listOf(person1, person2)))
                 }
     }
 

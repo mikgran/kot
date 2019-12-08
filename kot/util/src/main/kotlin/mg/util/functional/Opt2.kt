@@ -152,6 +152,11 @@ class Opt2<T : Any> {
 
     fun <V : Any> mapTo(toType: KClass<V>): Opt2<V> = of(toType.safeCast(lazyT))
 
+    fun <R : Any> xm(extensionMapper: T.() -> R): Opt2<R> = when {
+        isPresent() -> of(lazyT.extensionMapper())
+        else -> empty()
+    }
+
     companion object Factory {
 
         @JvmStatic

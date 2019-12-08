@@ -457,6 +457,22 @@ internal class Opt2Test {
         assertEquals(YYY, tempValue.a)
     }
 
+    @Test
+    fun test_lmap() {
+        Opt2.of(listOf(1, 2, 3, 4))
+                .xm { filter { it < 3 } }
+                .apply {
+                    assertNotNull(get())
+                    assertEquals(listOf(1, 2), get())
+                }
+
+        Opt2.of("someData")
+                .xm { length }
+                .apply {
+                    assertEquals(8, get())
+                }
+    }
+
     private fun getTempValue() = TempValue(YYY)
 
     class TempValue(var a: String?) {
@@ -475,6 +491,4 @@ internal class Opt2Test {
         const val XXX = "XXX"
         const val YYY = "YYY"
     }
-
-
 }

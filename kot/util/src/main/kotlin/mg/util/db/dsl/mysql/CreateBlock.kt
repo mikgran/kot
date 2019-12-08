@@ -70,11 +70,12 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     }
 
     private fun buildSqlFieldDefinitions(dp: DslParameters): List<String> {
+        val mapper = MySqlTypeMapper()
         return of(dp)
                 .filter { dp.typeT != null }
                 .map { dp.typeT as Any }
                 .map { it::class.declaredMemberProperties }
-                .map { it.map { i -> MySqlTypeMapper().getTypeString(i) } }
+                .xm { map(mapper::getTypeString) }
                 .getOrElse(emptyList())
     }
 }
