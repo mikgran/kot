@@ -1,9 +1,25 @@
 package mg.util.common
 
-// shameless rip from the net
-open class SingletonHolder<out T: Any, in A>(creator: (A) -> T) {
+/**
+ * shameless rip from the net:
+ * Preparation:
+ * ```
+ *      class Manager private constructor(context: Context) {
+ *           init {
+ *              // Init using context argument
+ *          }
+ *          companion object : SingletonHolder<Manager, Context>(::Manager)
+ *      }
+ * ```
+ * Usage:
+ * ```
+ *      Manager.getInstance(context).doStuff()
+ * ```
+ */
+open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
     private var creator: ((A) -> T)? = creator
-    @Volatile private var instance: T? = null
+    @Volatile
+    private var instance: T? = null
 
     fun getInstance(arg: A): T {
         val i = instance
