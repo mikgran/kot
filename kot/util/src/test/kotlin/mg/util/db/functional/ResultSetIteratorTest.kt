@@ -3,9 +3,8 @@ package mg.util.db.functional
 import mg.util.db.DBConfig
 import mg.util.db.DBO
 import mg.util.db.DBOTest.Person
-import mg.util.db.dsl.SqlMapperFactory
-import mg.util.db.TestConfig
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
@@ -25,9 +24,11 @@ internal class ResultSetIteratorTest {
         val person2 = Person("test2", "test33")
         val connection = dbConfig.connection
 
-        dbo.ensureTable(person1, connection)
-        dbo.save(person1, connection)
-        dbo.save(person2, connection)
+        with(dbo) {
+            ensureTable(person1, connection)
+            save(person1, connection)
+            save(person2, connection)
+        }
 
         val uid = buildUniqueId(Person())
         of(connection)
