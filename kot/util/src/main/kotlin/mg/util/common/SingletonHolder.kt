@@ -1,14 +1,14 @@
 package mg.util.common
 
 /**
- * shameless rip from the net:
+ * Shameless rip from the net:
  * Preparation:
  * ```
  *      class Manager private constructor(context: Context) {
- *           init {
+ *          init {
  *              // Init using context argument
  *          }
- *          companion object : SingletonHolder<Manager, Context>(::Manager)
+ *          companion object : SingletonHolder<Manager, Context>(::Manager) // pass the constructor
  *      }
  * ```
  * Usage:
