@@ -13,9 +13,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         // type (f1, f2, f3, custom1, collection<custom2>)
         // create type (f1, f2, f3), buildForParent(custom1), buildForParent(collection<custom2>)
 
-        val bb = getCustomObjects(dp)
-
-        // println(bb)
+        val customObjects = getCustomObjects(dp)
 
         val cc = getListsOfCustomObjects(dp)
                 .map { buildSqlForCustomCollections(dp, it) }
@@ -26,7 +24,9 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     }
 
     private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
-    private fun isKotlinPackage(field: Field) = field::class.java.packageName.contains("kotlin.")
+    private fun isKotlinPackage(field: Field) = field.type::class.java.packageName.contains("kotlin.")
+    private fun isJavaPackage(field: Field) = field.type::class.java.packageName.contains("java.")
+
     private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> = parentDslParameters.typeT!!::class.java
 
     private fun buildSqlForCustomCollections(parentDslParameters: DslParameters, collectionField: Field): String {
@@ -37,9 +37,29 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         collection
                 .filterNotNull()
                 .distinctBy { "${it::class.java.packageName}.${it::class.java.simpleName}" }
-                .map { println(it); it }
+        // .map { println(it); it }
 
         return ""
+    }
+
+    private fun getListsOfCustomObjects(parentDslParameters: DslParameters): List<Field> {
+
+        val listsWithCustoms = mutableListOf<Any>()
+
+        val allLists = typeOfParent(parentDslParameters)
+                .declaredFields
+                .filterNotNull()
+                .filter(::isList)
+                .forEach { field ->
+                    field.isAccessible = true
+                    var firstElement: Any? = null
+                    of(field.get(parentDslParameters.typeT) as List<*>)
+                            .filter { it.isNotEmpty() }
+                            .ifPresent { firstElement = it[0] }
+                            .xmap { filterNotNull() }
+                            .xmap { all { it::class == firstElement!!::class } }
+                }
+        return emptyList()
     }
 
     private fun getCustomObjects(parentDslParameters: DslParameters): List<Field> {
@@ -48,13 +68,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .filterNotNull()
                 .filterNot(::isList)
                 .filterNot(::isKotlinPackage)
-    }
-
-    private fun getListsOfCustomObjects(parentDslParameters: DslParameters): List<Field> {
-        return typeOfParent(parentDslParameters)
-                .declaredFields
-                .filterNotNull()
-                .filter(::isList)
+                .filterNot(::isJavaPackage)
     }
 
     private fun buildSqlForParent(dp: DslParameters): String {
@@ -75,7 +89,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .filter { dp.typeT != null }
                 .map { dp.typeT as Any }
                 .map { it::class.declaredMemberProperties }
-                .xm { map(mapper::getTypeString) }
+                .xmap { map(mapper::getTypeString).filter(String::isNotEmpty) }
                 .getOrElse(emptyList())
     }
 }

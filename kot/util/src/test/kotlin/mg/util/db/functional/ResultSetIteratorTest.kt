@@ -34,7 +34,7 @@ internal class ResultSetIteratorTest {
                 .map(Connection::createStatement)
                 .mapWith(uid) { s, u -> s.executeQuery("SELECT * FROM $u") }
                 .map(::iof)
-                .xm { map { Person(it.getString(2), it.getString(3)) } }
+                .xmap { map { Person(it.getString(2), it.getString(3)) } }
                 .apply {
                     assertTrue(get()!!.isNotEmpty())
                     assertTrue(get()!!.containsAll(listOf(person1, person2)))
