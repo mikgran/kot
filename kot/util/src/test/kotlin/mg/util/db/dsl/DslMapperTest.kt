@@ -17,7 +17,7 @@ internal class DslMapperTest {
     private data class Address(var fullAddress: String = "")
     private data class Place(var address: Address = Address(), var rentInCents: Int = 0)
     private data class Floor(var number: Int = 0)
-    private data class Building(var fullAddress: String = "", var floors: List<Floor> = listOf(Floor(1)))
+    private data class Building(var fullAddress: String = "", var address: Address = Address(), var floors: List<Floor> = listOf(Floor(1)))
 
     @Test
     fun testBuildingSqlFromDsl1() {
