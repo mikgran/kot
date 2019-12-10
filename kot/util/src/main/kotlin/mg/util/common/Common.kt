@@ -19,7 +19,4 @@ object Common {
             // no operation
         }
     }
-
-
 }
-

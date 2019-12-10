@@ -1,6 +1,8 @@
 package mg.util.db.dsl
 
 import mg.util.common.Common.hasContent
+import mg.util.common.PredicateComposition.Companion.plus
+import mg.util.common.FunctionComposition.Companion.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.DBTest.PersonB
 import mg.util.db.UidBuilder
@@ -114,6 +116,28 @@ internal class DslMapperTest {
 
         assertHasContent(candidate)
         assertEquals("SELECT $p.firstName, $p.lastName FROM $uid AS $p WHERE $p.firstName = 'name'", candidate)
+    }
+
+    @Test
+    fun test_FunctionAndPredicateComposition() {
+
+        fun same(value: Int): Int = value
+        fun twice(value: Int): Int = value * 2
+        fun thrice(value: Int): Int = value * 3
+
+        fun isLengthLessThanTen(s: String): Boolean = s.length < 10
+        fun isAContained(s: String): Boolean = s.contains("a")
+
+        fun isAContainedInLengthLessThanTen(s: String) = (::isLengthLessThanTen + ::isAContained)(s)
+
+        fun multiplyBy6(i: Int) = (::same + ::twice + ::thrice)(i)
+        fun multiplyBy2(i: Int) = (::same + ::twice)(i)
+
+        assertTrue(isAContainedInLengthLessThanTen("a"))
+        assertFalse(isAContainedInLengthLessThanTen("abccbbccbb"))
+
+        assertEquals(6, multiplyBy6(1))
+        assertEquals(2, multiplyBy2(1))
     }
 
 }

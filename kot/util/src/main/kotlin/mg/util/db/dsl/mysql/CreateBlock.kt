@@ -46,12 +46,18 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         // TODO: 8
         val listsWithCustoms = mutableListOf<Any>()
 
+        typeOfParent(parentDslParameters)
+                .declaredFields
+                .filterNotNull()
+                .filter(::isList)
+
+
         val allLists = typeOfParent(parentDslParameters)
                 .declaredFields
                 .filterNotNull()
                 .filter(::isList)
                 .forEach { isEveryElementInListFieldTheSame(it, parentDslParameters) }
-        
+
         return emptyList()
     }
 
