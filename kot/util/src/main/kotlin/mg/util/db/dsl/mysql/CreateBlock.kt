@@ -43,7 +43,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     }
 
     private fun getListsOfCustomObjects(parentDslParameters: DslParameters): List<Field> {
-
+        // TODO: 8
         val listsWithCustoms = mutableListOf<Any>()
 
         val allLists = typeOfParent(parentDslParameters)
