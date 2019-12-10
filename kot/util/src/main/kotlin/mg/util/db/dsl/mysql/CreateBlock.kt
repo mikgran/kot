@@ -76,16 +76,17 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .xmap { all { it::class == firstElement!!::class } }
     }
 
-    fun ttt(f: Field) = (!::isList or !::isKotlinPackage or !::isJavaPackage)(f)
+    fun isCustom(f: Field) = (!::isList or !::isKotlinPackage or !::isJavaPackage)(f)
     fun rrr(f: Field) = (::isList and ::isKotlinPackage and ::isJavaPackage)(f)
 
     private fun getCustomObjects(parentDslParameters: DslParameters): List<Field> {
         return typeOfParent(parentDslParameters)
                 .declaredFields
                 .filterNotNull()
-                .filterNot(::isList)
-                .filterNot(::isKotlinPackage)
-                .filterNot(::isJavaPackage)
+                .filter(::isCustom)
+//                .filterNot(::isList)
+//                .filterNot(::isKotlinPackage)
+//                .filterNot(::isJavaPackage)
     }
 
     private fun buildSqlForParent(dp: DslParameters): String {
