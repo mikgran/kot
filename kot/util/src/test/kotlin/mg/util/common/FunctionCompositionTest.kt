@@ -26,11 +26,12 @@ internal class FunctionCompositionTest {
         assertTrue(isLengthLessThanTenOrIsAContained("bbbbbbbbba"))
         assertTrue(isLengthLessThanTenOrIsAContained("bbbbbbb"))
 
-        fun isAContainedInLengthLessThanTen(s: String) = (::isLengthLessThanTen..::isAContained)(s)
-        fun isAContainedInLengthLessThanTenB(s: String) = (::isLengthLessThanTen and ::isAContained)(s)
-        assertTrue(isAContainedInLengthLessThanTen("a"))
-        assertFalse(isAContainedInLengthLessThanTen("abccbbccbb"))
-        assertFalse(isAContainedInLengthLessThanTenB("abccbbccbb"))
+        fun isAContainedAndLengthLessThanTen(s: String) = (::isLengthLessThanTen..::isAContained)(s)
+        fun isAContainedAndLengthLessThanTenB(s: String) = (::isLengthLessThanTen and ::isAContained)(s)
+        assertTrue(isAContainedAndLengthLessThanTen("a"))
+        assertTrue(isAContainedAndLengthLessThanTenB("a"))
+        assertFalse(isAContainedAndLengthLessThanTen("abccbbccbb"))
+        assertFalse(isAContainedAndLengthLessThanTenB("abccbbccbb"))
 
         fun multiplyBy6(i: Int) = (::same + ::twice + ::thrice)(i)
         fun multiplyBy2(i: Int) = (::same + ::twice)(i)

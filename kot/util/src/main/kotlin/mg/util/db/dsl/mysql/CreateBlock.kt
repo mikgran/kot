@@ -1,8 +1,7 @@
 package mg.util.db.dsl.mysql
 
-import mg.util.common.PredicateComposition.Companion.and
-import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
+import mg.util.common.PredicateComposition.Companion.not
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2.Factory.of
@@ -16,9 +15,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         // type (f1, f2, f3, custom1, collection<custom2>)
         // create type (f1, f2, f3), buildForParent(custom1), buildForParent(collection<custom2>)
 
-        val customObjects = getCustomObjects(dp)
-
-        println(customObjects)
+        val customObjects = getCustomObjects(dp)// .map { println(it.type);it }
 
         val cc = getListsOfCustomObjects(dp)
                 .map { buildSqlForCustomCollections(dp, it) }
@@ -29,9 +26,8 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     }
 
     private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
-    private fun isKotlinPackage(field: Field) = field.type::class.java.packageName.contains("kotlin.")
-    private fun isJavaPackage(field: Field) = field.type::class.java.packageName.contains("java.")
-
+    private fun isKotlinPackage(field: Field) = field.type.packageName.contains("kotlin.")
+    private fun isJavaPackage(field: Field) = field.type.packageName.contains("java.")
     private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> = parentDslParameters.typeT!!::class.java
 
     private fun buildSqlForCustomCollections(parentDslParameters: DslParameters, collectionField: Field): String {
@@ -50,12 +46,6 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     private fun getListsOfCustomObjects(parentDslParameters: DslParameters): List<Field> {
         // TODO: 8
         val listsWithCustoms = mutableListOf<Any>()
-
-        typeOfParent(parentDslParameters)
-                .declaredFields
-                .filterNotNull()
-                .filter(::isList)
-
 
         val allLists = typeOfParent(parentDslParameters)
                 .declaredFields
@@ -76,17 +66,13 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .xmap { all { it::class == firstElement!!::class } }
     }
 
-    fun isCustom(f: Field) = (!::isList or !::isKotlinPackage or !::isJavaPackage)(f)
-    fun rrr(f: Field) = (::isList and ::isKotlinPackage and ::isJavaPackage)(f)
+    private fun isCustom(field: Field) = (!(::isList or ::isKotlinPackage or ::isJavaPackage))(field)
 
     private fun getCustomObjects(parentDslParameters: DslParameters): List<Field> {
         return typeOfParent(parentDslParameters)
                 .declaredFields
                 .filterNotNull()
                 .filter(::isCustom)
-//                .filterNot(::isList)
-//                .filterNot(::isKotlinPackage)
-//                .filterNot(::isJavaPackage)
     }
 
     private fun buildSqlForParent(dp: DslParameters): String {
