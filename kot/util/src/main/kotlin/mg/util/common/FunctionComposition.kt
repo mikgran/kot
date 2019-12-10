@@ -13,8 +13,8 @@ class FunctionComposition {
 class PredicateComposition {
     companion object {
         operator fun <T> ((T) -> Boolean).plus(other: (T) -> Boolean): (T) -> Boolean {
-            return { i ->
-                this(i) && other(i)
+            return {
+                this(it) && other(it)
             }
         }
     }
