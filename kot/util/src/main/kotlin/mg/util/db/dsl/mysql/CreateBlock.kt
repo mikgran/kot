@@ -50,16 +50,19 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .declaredFields
                 .filterNotNull()
                 .filter(::isList)
-                .forEach { field ->
-                    field.isAccessible = true
-                    var firstElement: Any? = null
-                    of(field.get(parentDslParameters.typeT) as List<*>)
-                            .filter { it.isNotEmpty() }
-                            .ifPresent { firstElement = it[0] }
-                            .xmap { filterNotNull() }
-                            .xmap { all { it::class == firstElement!!::class } }
-                }
+                .forEach { isEveryElementInListFieldTheSame(it, parentDslParameters) }
+        
         return emptyList()
+    }
+
+    private fun isEveryElementInListFieldTheSame(field: Field, parentDslParameters: DslParameters) {
+        field.isAccessible = true
+        var firstElement: Any? = null
+        of(field.get(parentDslParameters.typeT) as List<*>)
+                .filter { it.isNotEmpty() }
+                .ifPresent { firstElement = it[0] }
+                .xmap { filterNotNull() }
+                .xmap { all { it::class == firstElement!!::class } }
     }
 
     private fun getCustomObjects(parentDslParameters: DslParameters): List<Field> {
