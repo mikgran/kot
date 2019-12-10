@@ -62,7 +62,7 @@ class DBConfig private constructor(config: Config) {
         const val DB_DRIVER = "dbDriver"
         const val MAPPER = "mapper"
 
-        val testConfig = DBConfig(TestConfig())
-        val config = DBConfig(Config())
+        val testConfig by lazy { DBConfig(TestConfig()) }
+        val productionConfig by lazy { DBConfig(Config()) }
     }
 }

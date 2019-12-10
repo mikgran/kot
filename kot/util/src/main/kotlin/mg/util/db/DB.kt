@@ -10,7 +10,7 @@ import java.sql.Connection
 // 2. use of hard typed dsl free hand in case a more difficult sql is required
 class DB {
 
-    private val dbConfig = DBConfig.config
+    private val dbConfig = DBConfig.productionConfig
     private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
 
     fun <T : Any> save(type: T) {

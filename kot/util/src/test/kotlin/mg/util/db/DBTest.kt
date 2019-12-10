@@ -15,7 +15,7 @@ internal class DBTest {
 
     data class PersonB(val firstName: String = "", val lastName: String = "")
 
-    private var dbConfig = DBConfig.config
+    private var dbConfig = DBConfig.productionConfig
     private val fName = "firstName"
     private val lName = "lastName"
 
@@ -33,13 +33,13 @@ internal class DBTest {
 
             val candidates = Opt2.of(connection)
                     .map(Connection::createStatement)
-                    .map { statement -> statement.executeQuery("SELECT * FROM $uniqueId") }
+                    .map { it.executeQuery("SELECT * FROM $uniqueId") }
                     .map(::iof)
                     .map { it.map { i -> PersonB(i.getString(fName), i.getString(lName)) } }
                     .getOrElse(ArrayList())
 
             assertTrue(candidates.isNotEmpty())
-            assertTrue(candidates.any { p -> p.firstName == "aa" && p.lastName == "bb" })
+            assertTrue(candidates.any { it.firstName == "aa" && it.lastName == "bb" })
         }
     }
 
@@ -54,7 +54,7 @@ internal class DBTest {
         val personListCandidate = db.find(PersonB())
 
         assertTrue(personListCandidate.isNotEmpty())
-        assertTrue(personListCandidate.any { person -> person.firstName == "aa" && person.lastName == "bb" })
+        assertTrue(personListCandidate.any { it.firstName == "aa" && it.lastName == "bb" })
     }
 
     @Test
@@ -76,7 +76,7 @@ internal class DBTest {
         internal fun afterTest() {
 
             val person = PersonB("first1", "last2")
-            val dbConfig = DBConfig.config
+            val dbConfig = DBConfig.productionConfig
             val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
             val uidTableName = dbo.buildMetadata(person).uid
             val sqlCommandsList = listOf("DELETE FROM $uidTableName", "DROP TABLE $uidTableName")

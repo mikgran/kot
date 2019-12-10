@@ -458,7 +458,7 @@ internal class Opt2Test {
     }
 
     @Test
-    fun test_lmap() {
+    fun test_xmap() {
         Opt2.of(listOf(1, 2, 3, 4))
                 .xmap { filter { it < 3 } }
                 .apply {

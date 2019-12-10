@@ -26,7 +26,7 @@ object UidBuilder {
         return opt.filter { it.size > 0 }
                 .xmap { filter { it.name != "id" } }
                 .xmap { fold("") { n, p -> n + p.name } }
-                .xmap { hashCode() }
+                .map { it.hashCode() }
                 .map { if (it < 0) (it and 0x7fffffff) else it }
                 .mapWith(name) { hashCode, simpleName -> simpleName + hashCode }
     }
