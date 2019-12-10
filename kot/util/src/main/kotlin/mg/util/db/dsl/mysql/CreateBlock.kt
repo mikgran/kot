@@ -1,6 +1,8 @@
 package mg.util.db.dsl.mysql
 
-import mg.util.common.PredicateComposition.Companion.plus
+import mg.util.common.PredicateComposition.Companion.and
+import mg.util.common.PredicateComposition.Companion.not
+import mg.util.common.PredicateComposition.Companion.or
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2.Factory.of
@@ -74,13 +76,13 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .xmap { all { it::class == firstElement!!::class } }
     }
 
-    fun ttt(f: Field) = (::isList + ::isKotlinPackage + ::isJavaPackage)(f)
+    fun ttt(f: Field) = (!::isList or !::isKotlinPackage or !::isJavaPackage)(f)
+    fun rrr(f: Field) = (::isList and ::isKotlinPackage and ::isJavaPackage)(f)
 
     private fun getCustomObjects(parentDslParameters: DslParameters): List<Field> {
         return typeOfParent(parentDslParameters)
                 .declaredFields
                 .filterNotNull()
-//                 .filterNot(::ttt)
                 .filterNot(::isList)
                 .filterNot(::isKotlinPackage)
                 .filterNot(::isJavaPackage)

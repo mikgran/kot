@@ -1,8 +1,11 @@
 package mg.util.db.dsl
 
 import mg.util.common.Common.hasContent
-import mg.util.common.PredicateComposition.Companion.plus
 import mg.util.common.FunctionComposition.Companion.plus
+import mg.util.common.PredicateComposition.Companion.and
+import mg.util.common.PredicateComposition.Companion.or
+import mg.util.common.PredicateComposition.Companion.rangeTo
+import mg.util.common.PredicateComposition.Companion.not
 import mg.util.db.AliasBuilder
 import mg.util.db.DBTest.PersonB
 import mg.util.db.UidBuilder
@@ -128,16 +131,25 @@ internal class DslMapperTest {
         fun isLengthLessThanTen(s: String): Boolean = s.length < 10
         fun isAContained(s: String): Boolean = s.contains("a")
 
-        fun isAContainedInLengthLessThanTen(s: String) = (::isLengthLessThanTen + ::isAContained)(s)
+        fun isLengthLessThanTenOrIsAContained(s: String) = (::isLengthLessThanTen or ::isAContained)(s)
+        assertFalse(isLengthLessThanTenOrIsAContained("bbbbbbbbbb"))
+        assertTrue(isLengthLessThanTenOrIsAContained("bbbbbbbbba"))
+        assertTrue(isLengthLessThanTenOrIsAContained("bbbbbbb"))
+
+        fun isAContainedInLengthLessThanTen(s: String) = (::isLengthLessThanTen..::isAContained)(s)
+        fun isAContainedInLengthLessThanTenB(s: String) = (::isLengthLessThanTen and ::isAContained)(s)
+        assertTrue(isAContainedInLengthLessThanTen("a"))
+        assertFalse(isAContainedInLengthLessThanTen("abccbbccbb"))
+        assertFalse(isAContainedInLengthLessThanTenB("abccbbccbb"))
 
         fun multiplyBy6(i: Int) = (::same + ::twice + ::thrice)(i)
         fun multiplyBy2(i: Int) = (::same + ::twice)(i)
-
-        assertTrue(isAContainedInLengthLessThanTen("a"))
-        assertFalse(isAContainedInLengthLessThanTen("abccbbccbb"))
-
         assertEquals(6, multiplyBy6(1))
         assertEquals(2, multiplyBy2(1))
+
+        fun isNotAContained(s: String) = (!::isAContained)(s)
+        assertTrue(isNotAContained("bbb"))
+        assertFalse(isNotAContained("aaa"))
     }
 
 }
