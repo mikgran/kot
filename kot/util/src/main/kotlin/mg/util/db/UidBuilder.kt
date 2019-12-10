@@ -24,9 +24,9 @@ object UidBuilder {
 
     private fun <T : Any> buildUid(opt: Opt2<ArrayList<KProperty1<out T, Any?>>>, name: String): Opt2<String> {
         return opt.filter { it.size > 0 }
-                .map { it.filter { p -> p.name != "id" } }
-                .map { it.fold("") { n, p -> n + p.name } }
-                .map { it.hashCode() }
+                .xmap { filter { it.name != "id" } }
+                .xmap { fold("") { n, p -> n + p.name } }
+                .xmap { hashCode() }
                 .map { if (it < 0) (it and 0x7fffffff) else it }
                 .mapWith(name) { hashCode, simpleName -> simpleName + hashCode }
     }
