@@ -19,6 +19,7 @@ internal class FunctionCompositionTest {
 
         fun isLengthLessThanTen(s: String): Boolean = s.length < 10
         fun isAContained(s: String): Boolean = s.contains("a")
+        fun isBContained(s: String): Boolean = s.contains("b")
 
         fun isLengthLessThanTenOrIsAContained(s: String) = (::isLengthLessThanTen or ::isAContained)(s)
         assertFalse(isLengthLessThanTenOrIsAContained("bbbbbbbbbb"))
@@ -39,5 +40,10 @@ internal class FunctionCompositionTest {
         fun isNotAContained(s: String) = (!::isAContained)(s)
         assertTrue(isNotAContained("bbb"))
         assertFalse(isNotAContained("aaa"))
+
+        fun isNotAAndBContained(s: String) = (!::isAContained and ::isBContained)(s)
+        assertTrue(isNotAAndBContained("bbb"))
+        assertFalse(isNotAAndBContained("ab"))
+        assertFalse(isNotAAndBContained("aaa"))
     }
 }
