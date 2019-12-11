@@ -3,6 +3,7 @@ package mg.util.db.dsl
 import mg.util.common.Common
 import mg.util.db.*
 import mg.util.functional.Opt2
+import mg.util.functional.Opt2.Factory.of
 
 abstract class BuildingBlock(val t: Any) {
     abstract val blocks: MutableList<BuildingBlock>
@@ -14,20 +15,24 @@ abstract class BuildingBlock(val t: Any) {
     open fun buildDelete(dp: DslParameters): String = ""
     open fun buildUpdate(dp: DslParameters): String = ""
     open fun buildSelect(dp: DslParameters): String = "" // do as last always
-    open fun buildFields(dp: DslParameters): String { // do as first always
-        dp.typeT = Opt2.of(t)
+    open fun buildFields(dp: DslParameters): String = "" // do as first always
+
+    // buildDelete
+    // buildTruncate
+
+    open fun buildDslParameters(): DslParameters {
+        val dp = DslParameters()
+        dp.typeT = of(this.t)
                 .getOrElseThrow { Exception("buildFields: Missing select type") }!!
 
-        dp.uniqueId = Opt2.of(dp.typeT)
+        dp.uniqueId = of(dp.typeT)
                 .map(UidBuilder::buildUniqueId)
                 .filter(Common::hasContent)
                 .getOrElseThrow { Exception("buildFields: Cannot build uid for $t") }!!
 
         dp.uniqueIdAlias = AliasBuilder.build(dp.uniqueId!!)
-        return ""
+        return dp
     }
-    // buildDelete
-    // buildTruncate
 
     fun <T : Any, R : BuildingBlock> getAndCacheBlock(type: T, list: MutableList<BuildingBlock>, f: (type: T, list: MutableList<BuildingBlock>) -> R): R {
         val block = f(type, list)

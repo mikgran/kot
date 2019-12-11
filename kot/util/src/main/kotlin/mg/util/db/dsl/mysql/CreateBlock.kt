@@ -15,14 +15,18 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         // type (f1, f2, f3, custom1, collection<custom2>)
         // create type (f1, f2, f3), buildForParent(custom1), buildForParent(collection<custom2>)
 
-        val customObjects = getCustomObjects(dp)// .map { println(it.type);it }
+        val customObjects = getFieldsWithCustoms(dp) //.map { println(it.type);it }
 
-        val cc = getListsOfCustomObjects(dp)
-                .map { buildSqlForCustomCollections(dp, it) }
+        val cc = getFieldsWithListOfCustoms(dp) //.map { println(getO(it, dp)); it }
 
-        // println(cc)
+
+
 
         return buildSqlForParent(dp)
+    }
+
+    private fun fieldGet(it: Field, dp: DslParameters): List<*> {
+        return it.get(dp.typeT) as List<*>
     }
 
     private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
@@ -30,50 +34,30 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     private fun isJavaPackage(field: Field) = field.type.packageName.contains("java.")
     private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> = parentDslParameters.typeT!!::class.java
 
-    private fun buildSqlForCustomCollections(parentDslParameters: DslParameters, collectionField: Field): String {
-
-        collectionField.isAccessible = true
-        val collection = collectionField.get(parentDslParameters.typeT) as List<*>
-
-        collection
-                .filterNotNull()
-                .distinctBy { "${it::class.java.packageName}.${it::class.java.simpleName}" }
-        // .map { println(it); it }
-
-        return ""
-    }
-
-    private fun getListsOfCustomObjects(parentDslParameters: DslParameters): List<Field> {
-        // TODO: 8
-        val listsWithCustoms = mutableListOf<Any>()
-
-        val allLists = typeOfParent(parentDslParameters)
+    private fun getFieldsWithListOfCustoms(parentDslParameters: DslParameters): List<Field> {
+        return typeOfParent(parentDslParameters)
                 .declaredFields
                 .filterNotNull()
                 .filter(::isList)
-                .forEach { isEveryElementInListFieldTheSame(it, parentDslParameters) }
-
-        return emptyList()
+                .filter { isSingleTypeList(it, parentDslParameters) }
     }
 
-    private fun isEveryElementInListFieldTheSame(field: Field, parentDslParameters: DslParameters) {
+    private fun isSingleTypeList(field: Field, dp: DslParameters): Boolean {
         field.isAccessible = true
-        var firstElement: Any? = null
-        of(field.get(parentDslParameters.typeT) as List<*>)
-                .filter { it.isNotEmpty() }
-                .ifPresent { firstElement = it[0] }
-                .xmap { filterNotNull() }
-                .xmap { all { it::class == firstElement!!::class } }
+        return (field.get(dp.typeT) as List<*>)
+                .filterNotNull()
+                .distinctBy { i -> "${i::class.java.packageName}.${i::class.java.simpleName}" }
+                .size == 1
     }
 
-    private fun isCustom(field: Field) = (!(::isList or ::isKotlinPackage or ::isJavaPackage))(field)
-
-    private fun getCustomObjects(parentDslParameters: DslParameters): List<Field> {
+    private fun getFieldsWithCustoms(parentDslParameters: DslParameters): List<Field> {
         return typeOfParent(parentDslParameters)
                 .declaredFields
                 .filterNotNull()
                 .filter(::isCustom)
     }
+
+    private fun isCustom(field: Field) = (!(::isList or ::isKotlinPackage or ::isJavaPackage))(field)
 
     private fun buildSqlForParent(dp: DslParameters): String {
         val sqlFieldDefinitionsCommaSeparated = of(dp)
@@ -90,8 +74,8 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     private fun buildSqlFieldDefinitions(dp: DslParameters): List<String> {
         val mapper = MySqlTypeMapper()
         return of(dp)
-                .filter { dp.typeT != null }
-                .map { dp.typeT as Any }
+                .filter { it.typeT != null }
+                .map { it.typeT as Any }
                 .map { it::class.declaredMemberProperties }
                 .xmap { map(mapper::getTypeString).filter(String::isNotEmpty) }
                 .getOrElse(emptyList())

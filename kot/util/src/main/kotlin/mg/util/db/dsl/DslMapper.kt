@@ -36,8 +36,8 @@ object DslMapper {
 
     private fun build(blocks: MutableList<BuildingBlock>,
                       transformer: (BuildingBlock, DslParameters) -> String): String {
-        val dp = DslParameters()
-        blocks.map { it.buildFields(dp) }
+
+        val dp = blocks.first().buildDslParameters()
         return blocks.map { transformer(it, dp) }
                 .fold("") { a, b -> a + b }
     }
@@ -46,7 +46,7 @@ object DslMapper {
     // Select, Where, Value, Join, JoinValue, Join, JoinValue
     private fun buildSelectNew(blocks: MutableList<BuildingBlock>): String {
 
-        val dp = DslParameters()
+        val dp = blocks.first().buildDslParameters()
         dp.fields = blocks
                 .map { it.buildFields(dp) }
                 .filter { it.isNotEmpty() }
