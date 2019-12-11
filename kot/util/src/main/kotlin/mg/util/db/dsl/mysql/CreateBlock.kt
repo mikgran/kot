@@ -1,7 +1,7 @@
 package mg.util.db.dsl.mysql
 
-import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.PredicateComposition.Companion.not
+import mg.util.common.PredicateComposition.Companion.or
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2.Factory.of
@@ -15,18 +15,19 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         // type (f1, f2, f3, custom1, collection<custom2>)
         // create type (f1, f2, f3), buildForParent(custom1), buildForParent(collection<custom2>)
 
-        val customObjects = getFieldsWithCustoms(dp) //.map { println(it.type);it }
+        val customObjects = getFieldsWithCustoms(dp).map { println(fieldGet(it, dp));it }
 
-        val cc = getFieldsWithListOfCustoms(dp) //.map { println(getO(it, dp)); it }
+        val cc = getFieldsWithListOfCustoms(dp).map { println(fieldGet(it, dp)); it }
+
+        // buildSqlCreateWithRefField(dp.typeT as Any, customObjects.first())
 
 
-
-
-        return buildSqlForParent(dp)
+        return buildSqlCreate(dp)
     }
 
-    private fun fieldGet(it: Field, dp: DslParameters): List<*> {
-        return it.get(dp.typeT) as List<*>
+    private fun fieldGet(it: Field, dp: DslParameters): Any {
+        it.isAccessible = true
+        return it.get(dp.typeT)
     }
 
     private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
@@ -59,8 +60,8 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
     private fun isCustom(field: Field) = (!(::isList or ::isKotlinPackage or ::isJavaPackage))(field)
 
-    private fun buildSqlForParent(dp: DslParameters): String {
-        val sqlFieldDefinitionsCommaSeparated = of(dp)
+    private fun buildSqlCreate(dp: DslParameters): String {
+        val sqlFieldDefinitionsCommaSeparated = of(dp.typeT)
                 .map(::buildSqlFieldDefinitions)
                 .map { it.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create") }
@@ -71,13 +72,24 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
     }
 
-    private fun buildSqlFieldDefinitions(dp: DslParameters): List<String> {
+    private fun buildSqlFieldDefinitions(type: Any): List<String> {
         val mapper = MySqlTypeMapper()
-        return of(dp)
-                .filter { it.typeT != null }
-                .map { it.typeT as Any }
+        return of(type)
                 .map { it::class.declaredMemberProperties }
                 .xmap { map(mapper::getTypeString).filter(String::isNotEmpty) }
                 .getOrElse(emptyList())
     }
+
+//    private fun buildSqlCreateWithRefField(any: Any, first: Field) {
+//
+//        val sqlFieldDefinitionsCommaSeparated = of(dp)
+//                .map(::buildSqlFieldDefinitions)
+//                .map { it.joinToString(", ") }
+//                .getOrElseThrow { Exception("Unable to build create") }
+//
+//        val createStringPreFix = "CREATE TABLE IF NOT EXISTS ${dp.uniqueId}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+//        val createStringPostFix = ")"
+//
+//        return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
+//    }
 }
