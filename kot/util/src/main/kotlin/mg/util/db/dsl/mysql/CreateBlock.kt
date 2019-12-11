@@ -15,9 +15,9 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         // type (f1, f2, f3, custom1, collection<custom2>)
         // create type (f1, f2, f3), buildForParent(custom1), buildForParent(collection<custom2>)
 
-        val customObjects = getFieldsWithCustoms(dp).map { println(fieldGet(it, dp));it }
+        val customObjects = getFieldsWithCustoms(dp).map { println(fieldGet(it, dp.typeT!!));it }
 
-        val cc = getFieldsWithListOfCustoms(dp).map { println(fieldGet(it, dp)); it }
+        val cc = getFieldsWithListOfCustoms(dp).map { println(fieldGet(it, dp.typeT!!)); it }
 
         // buildSqlCreateWithRefField(dp.typeT as Any, customObjects.first())
 
@@ -25,14 +25,14 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         return buildSqlCreate(dp)
     }
 
-    private fun fieldGet(it: Field, dp: DslParameters): Any {
+    private fun fieldGet(it: Field, type: Any): Any {
         it.isAccessible = true
-        return it.get(dp.typeT)
+        return it.get(type)
     }
 
     private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
-    private fun isKotlinPackage(field: Field) = field.type.packageName.contains("kotlin.")
-    private fun isJavaPackage(field: Field) = field.type.packageName.contains("java.")
+    private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.")
+    private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
     private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> = parentDslParameters.typeT!!::class.java
 
     private fun getFieldsWithListOfCustoms(parentDslParameters: DslParameters): List<Field> {
@@ -58,7 +58,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .filter(::isCustom)
     }
 
-    private fun isCustom(field: Field) = (!(::isList or ::isKotlinPackage or ::isJavaPackage))(field)
+    private fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
 
     private fun buildSqlCreate(dp: DslParameters): String {
         val sqlFieldDefinitionsCommaSeparated = of(dp.typeT)
