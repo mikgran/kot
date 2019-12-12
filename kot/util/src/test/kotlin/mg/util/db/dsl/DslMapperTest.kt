@@ -15,7 +15,7 @@ internal class DslMapperTest {
     private data class Address(var fullAddress: String = "")
     private data class Place(var address: Address = Address(), var rentInCents: Int = 0)
     private data class Floor(var number: Int = 0)
-    private data class Building(var fullAddress: String = "", var address: Address = Address(), var floors: List<Floor> = listOf(Floor(1)))
+    private data class Building(var fullAddress: String = "", var floors: List<Floor> = listOf(Floor(1)))
 
     @Test
     fun testBuildingSqlFromDsl1() {
@@ -58,8 +58,8 @@ internal class DslMapperTest {
 //        assertEquals("CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
 //                "fullAddress VARCHAR(64) NOT NULL);" +
 //                "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-//                "number VARCHAR(64) NOT NULL);" +
-//                "ALTER TABLE $floorUid ADD CONSTRAINT FOREIGN KEY (${buildingUid}id) REFERENCES $buildingUid (id);",
+//                "number MEDIUMINT NOT NULL);" +
+//                "ALTER TABLE $floorUid ADD COLUMN buildingId INT NOT NULL;",
 //                candidate)
     }
 

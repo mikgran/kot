@@ -2,6 +2,8 @@ package mg.util.db.dsl.mysql
 
 import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
+import mg.util.db.AliasBuilder
+import mg.util.db.UidBuilder
 import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.DslParameters
 import mg.util.functional.Opt2.Factory.of
@@ -12,20 +14,48 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
     override fun buildCreate(dp: DslParameters): String {
 
-        // type (f1, f2, f3, custom1, collection<custom2>)
-        // create type (f1, f2, f3), buildForParent(custom1), buildForParent(collection<custom2>)
+        // type (f1, f2, f3, custom1, list<custom2>)
+        // create table type f1, f2, f4
+        // create table custom1 f5
+        // alter table custom1 add column typeRef1
+        // create table listCustom2 f6
+        // alter table listCustom2 add column typeRef2
 
         val customObjects = getFieldsWithCustoms(dp).map { println(fieldGet(it, dp.typeT!!));it }
 
-        val cc = getFieldsWithListOfCustoms(dp).map { println(fieldGet(it, dp.typeT!!)); it }
+        val lists = getFieldsWithListOfCustoms(dp)// .map { println(fieldGet(it, dp.typeT!!)); it }
 
-        // buildSqlCreateWithRefField(dp.typeT as Any, customObjects.first())
-
+        of(lists)
+                .xmap { map { buildSqlCreateForChild(dp, it) } }
 
         return buildSqlCreate(dp)
     }
 
-    private fun fieldGet(it: Field, type: Any): Any {
+    private fun buildSqlCreateForChild(dp: DslParameters, listField: Field): String {
+
+        of(fieldGet(listField, dp.typeT) as List<*>)
+                .filter { it.isNotEmpty() }
+                .xmap { filterNotNull().distinctBy { it::class.java.packageName + it::class.java.simpleName } }
+                .filter { it.size == 1 }
+                .ifMissingThrow { Exception("Multiple type lists not supported") }
+                .xmap { first() }
+                .map {
+                    with (DslParameters()){
+                        typeT = it
+                        uniqueId = UidBuilder.buildUniqueId(it)
+                        uniqueIdAlias = AliasBuilder.build(uniqueId!!)
+                    }
+                }
+
+
+        // ALTER TABLE floors ADD COLUMN buildingId INT NOT NULL;
+        "ALTER TABLE ${dp.uniqueId} "
+
+
+        return ""
+    }
+
+    private fun fieldGet(it: Field, type: Any?): Any {
         it.isAccessible = true
         return it.get(type)
     }
@@ -79,17 +109,4 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .xmap { map(mapper::getTypeString).filter(String::isNotEmpty) }
                 .getOrElse(emptyList())
     }
-
-//    private fun buildSqlCreateWithRefField(any: Any, first: Field) {
-//
-//        val sqlFieldDefinitionsCommaSeparated = of(dp)
-//                .map(::buildSqlFieldDefinitions)
-//                .map { it.joinToString(", ") }
-//                .getOrElseThrow { Exception("Unable to build create") }
-//
-//        val createStringPreFix = "CREATE TABLE IF NOT EXISTS ${dp.uniqueId}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-//        val createStringPostFix = ")"
-//
-//        return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
-//    }
 }
