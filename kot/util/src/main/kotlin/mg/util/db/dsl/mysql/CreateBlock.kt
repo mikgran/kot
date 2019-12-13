@@ -52,17 +52,17 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     private fun buildAlterTableForRefId(childDp: DslParameters, parentDp: DslParameters) =
             "ALTER TABLE ${childDp.uniqueId} ADD COLUMN ${parentDp.uniqueId}refId INT NOT NULL"
 
-    private fun buildDslParameters(it: Any): DslParameters {
+    private fun buildDslParameters(t: Any): DslParameters {
         return DslParameters().apply {
-            typeT = it
-            uniqueId = UidBuilder.buildUniqueId(it)
+            typeT = t
+            uniqueId = UidBuilder.buildUniqueId(t)
             uniqueIdAlias = AliasBuilder.build(uniqueId!!)
         }
     }
 
-    private fun fieldGet(it: Field, type: Any?): Any {
-        it.isAccessible = true
-        return it.get(type)
+    private fun fieldGet(field: Field, type: Any?): Any {
+        field.isAccessible = true
+        return field.get(type)
     }
 
     private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
@@ -79,8 +79,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     }
 
     private fun isSingleTypeList(field: Field, dp: DslParameters): Boolean {
-        field.isAccessible = true
-        return (field.get(dp.typeT) as List<*>)
+        return (fieldGet(field, dp.typeT) as List<*>)
                 .filterNotNull()
                 .distinctBy { i -> "${i::class.java.packageName}.${i::class.java.simpleName}" }
                 .size == 1
