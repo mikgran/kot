@@ -33,7 +33,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .map { buildSqlCreateForChild(dp, it) }
                 .forEach { sqls += it }
 
-        return sqls.joinToString (";")
+        return sqls.joinToString(";")
     }
 
     private fun buildSqlCreateForChild(parentDp: DslParameters, listField: Field): String {
