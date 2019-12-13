@@ -52,15 +52,13 @@ internal class DslMapperTest {
 
         val candidate = DslMapper.map(sql.list())
 
-        println(candidate)
-
         assertNotNull(candidate)
-//        assertEquals("CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-//                "fullAddress VARCHAR(64) NOT NULL);" +
-//                "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-//                "number MEDIUMINT NOT NULL);" +
-//                "ALTER TABLE $floorUid ADD COLUMN buildingId INT NOT NULL;",
-//                candidate)
+        assertEquals("CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "fullAddress VARCHAR(64) NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "number MEDIUMINT NOT NULL);" +
+                "ALTER TABLE $floorUid ADD COLUMN ${buildingUid}refId INT NOT NULL",
+                candidate)
     }
 
     @Test

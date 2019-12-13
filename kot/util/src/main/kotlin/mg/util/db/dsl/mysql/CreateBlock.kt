@@ -21,38 +21,45 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
         // create table listCustom2 f6
         // alter table listCustom2 add column typeRef2
 
-        val customObjects = getFieldsWithCustoms(dp).map { println(fieldGet(it, dp.typeT!!));it }
+        val sqls = mutableListOf<String>()
 
-        val lists = getFieldsWithListOfCustoms(dp)// .map { println(fieldGet(it, dp.typeT!!)); it }
+        sqls += buildSqlCreate(dp)
 
-        of(lists)
-                .xmap { map { buildSqlCreateForChild(dp, it) } }
+        getFieldsWithCustoms(dp)
+                .map { buildSqlCreateForChild(dp, it) }
+                .forEach { sqls += it }
 
-        return buildSqlCreate(dp)
+        getFieldsWithListOfCustoms(dp)
+                .map { buildSqlCreateForChild(dp, it) }
+                .forEach { sqls += it }
+
+        return sqls.joinToString (";")
     }
 
-    private fun buildSqlCreateForChild(dp: DslParameters, listField: Field): String {
+    private fun buildSqlCreateForChild(parentDp: DslParameters, listField: Field): String {
 
-        of(fieldGet(listField, dp.typeT) as List<*>)
-                .filter { it.isNotEmpty() }
-                .xmap { filterNotNull().distinctBy { it::class.java.packageName + it::class.java.simpleName } }
-                .filter { it.size == 1 }
-                .ifMissingThrow { Exception("Multiple type lists not supported") }
-                .xmap { first() }
-                .map {
-                    with (DslParameters()){
-                        typeT = it
-                        uniqueId = UidBuilder.buildUniqueId(it)
-                        uniqueIdAlias = AliasBuilder.build(uniqueId!!)
-                    }
-                }
+        val childDp = of(fieldGet(listField, parentDp.typeT) as List<*>)
+                .xmap { get(0) as Any }
+                .map(::buildDslParameters)
+                .getOrElseThrow { Exception("Unable to get field for $listField and to build DslParameters.") }!!
 
+        val childSqlCreate = buildSqlCreate(childDp)
 
         // ALTER TABLE floors ADD COLUMN buildingId INT NOT NULL;
-        "ALTER TABLE ${dp.uniqueId} "
+        val childAlterTable = buildAlterTableForRefId(childDp, parentDp)
 
+        return "$childSqlCreate;$childAlterTable"
+    }
 
-        return ""
+    private fun buildAlterTableForRefId(childDp: DslParameters, parentDp: DslParameters) =
+            "ALTER TABLE ${childDp.uniqueId} ADD COLUMN ${parentDp.uniqueId}refId INT NOT NULL"
+
+    private fun buildDslParameters(it: Any): DslParameters {
+        return DslParameters().apply {
+            typeT = it
+            uniqueId = UidBuilder.buildUniqueId(it)
+            uniqueIdAlias = AliasBuilder.build(uniqueId!!)
+        }
     }
 
     private fun fieldGet(it: Field, type: Any?): Any {
