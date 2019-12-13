@@ -23,23 +23,20 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
         sqls += buildSqlCreate(dp)
 
-        getFieldsWithCustoms(dp)
-                .map { buildSqlCreateForChild(dp, it) }
-                .forEach { sqls += it }
+        sqls += getFieldsWithCustoms(dp) // TODO 9 FIX BUG, add more test coverage
+                .map { buildSqlCreateForChild(dp, fieldGet(it, dp.typeT)) }
 
-        getFieldsWithListOfCustoms(dp)
-                .map { buildSqlCreateForChild(dp, it) }
-                .forEach { sqls += it }
+        sqls += getFieldsWithListOfCustoms(dp)
+                .map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
 
         return sqls.joinToString(";")
     }
 
-    private fun buildSqlCreateForChild(parentDp: DslParameters, listField: Field): String {
+    private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String {
 
-        val childDp = of(fieldGet(listField, parentDp.typeT) as List<*>)
-                .xmap { get(0) as Any }
+        val childDp = of(t)
                 .map(::buildDslParameters)
-                .getOrElseThrow { Exception("Unable to get field for $listField and to build DslParameters.") }!!
+                .getOrElseThrow { Exception("Unable to get field for $t and to build DslParameters.") }!!
 
         val childSqlCreate = buildSqlCreate(childDp)
 
@@ -68,14 +65,14 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
     private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
     private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.")
     private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
-    private fun typeOfParent(parentDslParameters: DslParameters): Class<out Any> = parentDslParameters.typeT!!::class.java
+    private fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
 
-    private fun getFieldsWithListOfCustoms(parentDslParameters: DslParameters): List<Field> {
-        return typeOfParent(parentDslParameters)
+    private fun getFieldsWithListOfCustoms(dp: DslParameters): List<Field> {
+        return dp.typeT!!::class.java
                 .declaredFields
                 .filterNotNull()
                 .filter(::isList)
-                .filter { isSingleTypeList(it, parentDslParameters) } // multiple type lists not supported atm.
+                .filter { isSingleTypeList(it, dp) } // multiple type lists not supported atm.
     }
 
     private fun isSingleTypeList(field: Field, dp: DslParameters): Boolean {
@@ -85,28 +82,25 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .size == 1
     }
 
-    private fun getFieldsWithCustoms(parentDslParameters: DslParameters): List<Field> {
-        return typeOfParent(parentDslParameters)
+    private fun getFieldsWithCustoms(dp: DslParameters): List<Field> {
+        return dp.typeT!!::class.java
                 .declaredFields
                 .filterNotNull()
                 .filter(::isCustom)
     }
 
-    private fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
-
     private fun buildSqlCreate(dp: DslParameters): String {
-        val sqlFieldDefinitionsCommaSeparated = of(dp.typeT)
+        val fieldsSql = of(dp.typeT)
                 .map(::buildSqlFieldDefinitions)
                 .map { it.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create") }
 
-        val createStringPreFix = "CREATE TABLE IF NOT EXISTS ${dp.uniqueId}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-        val createStringPostFix = ")"
+        val sql = "CREATE TABLE IF NOT EXISTS ${dp.uniqueId}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
 
-        return "$createStringPreFix$sqlFieldDefinitionsCommaSeparated$createStringPostFix"
+        return "$sql$fieldsSql)"
     }
 
-    private fun buildSqlFieldDefinitions(type: Any): List<String> {
+    open fun buildSqlFieldDefinitions(type: Any): List<String> {
         val mapper = MySqlTypeMapper()
         return of(type)
                 .map { it::class.declaredMemberProperties }
