@@ -13,14 +13,12 @@ import kotlin.reflect.full.declaredMemberProperties
 open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>, open val type: T) : BuildingBlock(type) {
 
     override fun buildCreate(dp: DslParameters): String {
-
         // type (f1, f2, f3, custom1, list<custom2>)
         // create table type f1, f2, f4
         // create table custom1 f5
         // alter table custom1 add column typeRef1
         // create table listCustom2 f6
         // alter table listCustom2 add column typeRef2
-
         val sqls = mutableListOf<String>()
 
         sqls += buildSqlCreate(dp)
@@ -77,7 +75,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
                 .declaredFields
                 .filterNotNull()
                 .filter(::isList)
-                .filter { isSingleTypeList(it, parentDslParameters) }
+                .filter { isSingleTypeList(it, parentDslParameters) } // multiple type lists not supported atm.
     }
 
     private fun isSingleTypeList(field: Field, dp: DslParameters): Boolean {
