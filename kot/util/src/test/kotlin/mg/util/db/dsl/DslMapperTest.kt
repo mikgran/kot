@@ -43,7 +43,7 @@ internal class DslMapperTest {
 
     // FIXME 6 multiple table creation
     @Test
-    fun testCreatingANewTableWithSimpleReference() {
+    fun testCreatingANewTableWithListReference() {
 
         val sql = MySql() create Building("some address")
 
@@ -59,6 +59,23 @@ internal class DslMapperTest {
                 "number MEDIUMINT NOT NULL);" +
                 "ALTER TABLE $floorUid ADD COLUMN ${buildingUid}refId INT NOT NULL",
                 candidate)
+    }
+
+    @Test
+    fun testCreatingANewTableWithSimpleReference() {
+
+        val sql = MySql() create Place(Address("somePlace"), 100000)
+
+        val placeUid = UidBuilder.build(Place::class)
+        val addressUid = UidBuilder.build(Address::class)
+        val candidate = DslMapper.map(sql)
+
+        val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
+                "ALTER TABLE $addressUid ADD COLUMN ${placeUid}refId INT NOT NULL"
+
+        assertNotNull(candidate)
+        assertEquals(expected, candidate)
     }
 
     @Test
