@@ -35,10 +35,10 @@ object DslMapper {
     private fun buildCreate(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildCreate(dp) }
 
     private fun build(blocks: MutableList<BuildingBlock>,
-                      transformer: (BuildingBlock, DslParameters) -> String): String {
+                      mapper: (BuildingBlock, DslParameters) -> String): String {
 
         val dp = blocks.first().buildDslParameters()
-        return blocks.map { transformer(it, dp) }
+        return blocks.map { mapper(it, dp) }
                 .fold("") { a, b -> a + b }
     }
 
