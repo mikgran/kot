@@ -157,6 +157,14 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
+    inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> =
+            if (isPresent() && get() is List<*>) {
+                val list = (get() as List<*>)
+                        .filterIsInstance<V>()
+                        .map(mapper)
+                of(list)
+            } else empty()
+
     companion object Factory {
 
         @JvmStatic

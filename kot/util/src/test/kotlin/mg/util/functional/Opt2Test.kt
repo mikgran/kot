@@ -473,6 +473,23 @@ internal class Opt2Test {
                 }
     }
 
+    @Test
+    fun test_lmap() {
+        Opt2.of(listOf(1, 2, 3, 4))
+                .lmap { i: Int -> "A$i" }
+                .apply {
+                    assertEquals("A1,A2,A3,A4", get()?.joinToString(","))
+                }
+
+        Opt2.of(listOf(1, 2, 3, 4))
+                .lmap(::intToString)
+                .apply {
+                    assertEquals("A1,A2,A3,A4", get()?.joinToString(","))
+                }
+    }
+
+    private fun intToString(i: Int): String = "A$i"
+
     private fun getTempValue() = TempValue(YYY)
 
     class TempValue(var a: String?) {
