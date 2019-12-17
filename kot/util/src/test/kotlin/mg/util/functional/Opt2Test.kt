@@ -474,6 +474,23 @@ internal class Opt2Test {
     }
 
     @Test
+    fun test_lfilter() {
+        // % == modulo
+        Opt2.of(listOf(1, 2, 3, 4))
+                .lfilter { i: Int -> i % 2 == 0 }
+                .apply {
+                    assertEquals("2,4", get()?.joinToString(","))
+                }
+
+        Opt2.of(listOf(1, 2, 3, 4, 5, 6, 7, 8))
+                .lfilter<Int> { false }
+                .apply {
+                    assertNotNull(get())
+                    assertTrue(get()?.isEmpty() ?: false)
+                }
+    }
+
+    @Test
     fun test_lmap() {
         Opt2.of(listOf(1, 2, 3, 4))
                 .lmap { i: Int -> "A$i" }

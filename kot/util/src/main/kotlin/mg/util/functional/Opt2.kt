@@ -157,13 +157,13 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
-    inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> =
-            if (isPresent() && get() is List<*>) {
-                val list = (get() as List<*>)
-                        .filterIsInstance<V>()
-                        .map(mapper)
-                of(list)
-            } else empty()
+    inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> = of(toList<V>().map(mapper))
+    inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
+
+    inline fun <reified V : Any> toList(): List<V> = when {
+        isPresent() && get() is List<*> -> (get() as List<*>).filterIsInstance<V>()
+        else -> emptyList()
+    }
 
     companion object Factory {
 
