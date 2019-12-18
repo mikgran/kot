@@ -475,7 +475,7 @@ internal class Opt2Test {
 
     @Test
     fun test_lfilter() {
-        // % == modulo
+
         Opt2.of(listOf(1, 2, 3, 4))
                 .lfilter { i: Int -> i % 2 == 0 }
                 .apply {
