@@ -63,13 +63,13 @@ class DBO(private val mapper: SqlMapper) {
                 .map(mapper::buildCreateTable)
                 .getOrElseThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
 
-        of(getStatement(connection))
-                .map { it.executeUpdate(createTableSql) }
-                .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
+        val listSqls = createTableSql?.split(";") ?: emptyList()
 
-        // of(t).map(::getNonKotlinFields)
-        // .ifPresent { it.forEach { i -> println("nonkotlin field:: $i") } }
-//                  .map { it.forEach { ro -> ensureTable(ro, connection) } }
+        // TODO 11 change to single update when only one create
+        of(getStatement(connection))
+                .mapWith(listSqls) { stmt, sqls -> sqls.map { stmt.addBatch(it) }; stmt }
+                .map { it.executeBatch() }
+                .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
     }
 
     // Collection<String> kotlin classes not included
@@ -77,7 +77,6 @@ class DBO(private val mapper: SqlMapper) {
     // Collection<Simple> custom classes are included
     private fun <T : Any> getNonKotlinFields(t: T): List<Any> {
 
-        // TODO 5 Simple And Collections<Simple> with non "kotlin.package" classes
         val customFields = t::class.java.declaredFields
                 .asList()
                 .map(Field::getType)

@@ -73,12 +73,6 @@ internal class DBOTest {
         queryShowTables(connection)
                 .any { it.equals(multipleCompositionUid, ignoreCase = true) }
                 .apply(::assertTrue)
-        dropCompositionTestTablesIfExists()
-    }
-
-    private fun dropCompositionTestTablesIfExists() {
-        val cleanupList = listOf(Simple(), Composition(), MultipleComposition())
-        cleanupList.forEach { nonThrowingBlock { dbo.drop(it, dbConfig.connection) } }
     }
 
     // TOIMPROVE: test coverage
@@ -149,7 +143,7 @@ internal class DBOTest {
     // @Test
     fun testSaveWithComposition() {
 
-        // TODO 2: use composition for testing
+        // TODO 7: use composition for testing
 
         val b = buildUniqueId(Billing())
         val p = buildUniqueId(Person())
@@ -236,17 +230,30 @@ internal class DBOTest {
         internal fun afterAll() {
 
             val dbConfig = DBConfig.testConfig
-            val list = listOf(Person(), PersonB(), Uuuu(), Billing())
+
+            val tableUids = listOf(Simple(),
+                    Composition(),
+                    MultipleComposition(),
+                    // Person(), shared class between tests
+                    // PersonB(), shared class between tests
+                    Uuuu(),
+                    Billing())
                     .map(::buildUniqueId)
 
-            of(dbConfig.connection)
-                    .map(Connection::createStatement)
-                    .ifPresent { stmt -> list.forEach { uid -> deleteFromUid(stmt, uid) } }
+            forStatement(dbConfig, tableUids) { stmt, uid ->
+                deleteFromUid(stmt, uid)
+                dropTableUid(stmt, uid)
+            }
         }
 
-        private fun deleteFromUid(statement: Statement, uid: String) {
-            nonThrowingBlock { statement.executeUpdate("DELETE FROM $uid") }
+        private fun forStatement(dbConfig: DBConfig, uids: List<String>, mapper: (Statement, String) -> Unit) {
+            of(dbConfig.connection)
+                    .map(Connection::createStatement)
+                    .ifPresent { stmt -> uids.forEach { uid -> mapper(stmt, uid) } }
         }
+
+        private fun deleteFromUid(s: Statement, uid: String) = nonThrowingBlock { s.executeUpdate("DELETE FROM $uid") }
+        private fun dropTableUid(s: Statement, uid: String) = nonThrowingBlock { s.executeUpdate("DROP TABLE IF EXISTS $uid") }
     }
 }
 

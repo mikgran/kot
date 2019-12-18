@@ -41,7 +41,6 @@ internal class DslMapperTest {
         assertEquals("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", candidate)
     }
 
-    // FIXME 6 multiple table creation
     @Test
     fun testCreatingANewTableWithListReference() {
 
@@ -98,7 +97,7 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDslJoin() {
 
-        // FIXME 1: "on a.f = b.f2", needs to be completed
+        // FIXME 10: "on a.f = b.f2", needs to be completed
 
         val sql = MySql() select Place() join Address()
 
