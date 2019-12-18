@@ -98,6 +98,11 @@ class Opt2<T : Any> {
         else -> default
     }
 
+    fun getOrElse(defaultProducer: () -> T) = when {
+        isPresent() -> lazyT
+        else -> defaultProducer()
+    }
+
     fun <R : Any> getAndMap(mapper: (T) -> R): R? = when {
         isPresent() -> mapper(lazyT)
         else -> null
