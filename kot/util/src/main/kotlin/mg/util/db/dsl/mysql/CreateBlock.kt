@@ -23,7 +23,7 @@ open class CreateBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
         sqls += buildSqlCreate(dp)
 
-        sqls += getFieldsWithCustoms(dp) // TODO 9 FIX BUG, add more test coverage
+        sqls += getFieldsWithCustoms(dp) // TOIMPROVE: add more test coverage
                 .map { buildSqlCreateForChild(dp, fieldGet(it, dp.typeT)) }
 
         sqls += getFieldsWithListOfCustoms(dp)
