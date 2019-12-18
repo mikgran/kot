@@ -308,17 +308,39 @@ internal class Opt2Test {
     @Test
     fun test_getOrElse() {
 
-        val opt = Opt2.of(VALUE)
-        val candidate = opt.getOrElse(ANOTHER_STRING)
+        val candidate = Opt2.of(VALUE)
+                .getOrElse(ANOTHER_STRING)
 
-        assertNotNull(candidate)
-        assertEquals(VALUE, candidate)
+        assertEqualsValue(candidate)
 
-        val opt2 = Opt2.of<String>(null)
-        val candidate2 = opt2.getOrElse(ANOTHER_STRING)
+        val candidate2 = Opt2.of<String>(null)
+                .getOrElse(ANOTHER_STRING)
 
+        assertEqualsAnotherString(candidate2)
+    }
+
+    @Test
+    fun test_getOrElseProducer() {
+
+        val candidate = Opt2.of(VALUE)
+                .getOrElse { ANOTHER_STRING }
+
+        assertEqualsValue(candidate)
+
+        val candidate2 = Opt2.of<String>(null)
+                .getOrElse { ANOTHER_STRING }
+
+        assertEqualsAnotherString(candidate2)
+    }
+
+    private fun assertEqualsAnotherString(candidate2: String) {
         assertNotNull(candidate2)
         assertEquals(ANOTHER_STRING, candidate2)
+    }
+
+    private fun assertEqualsValue(candidate: String) {
+        assertNotNull(candidate)
+        assertEquals(VALUE, candidate)
     }
 
     @Test
