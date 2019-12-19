@@ -409,7 +409,7 @@ internal class Opt2Test {
     }
 
     @Test
-    fun testMapWith() {
+    fun test_MapWith() {
 
         var str: String? = "1"
 
@@ -446,7 +446,7 @@ internal class Opt2Test {
     }
 
     @Test
-    fun testMapWith2() {
+    fun test_MapWith2() {
 
         val candidate = Opt2.of("1")
                 .mapWith("2", "3") { a, b, c -> "$a$b$c" }
@@ -463,7 +463,7 @@ internal class Opt2Test {
     }
 
     @Test
-    fun testTReceiver() {
+    fun test_T_Receiver() {
 
         val candidate = Opt2.of(getTempValue())
                 .rcv { set(XXX) }
@@ -513,7 +513,7 @@ internal class Opt2Test {
     }
 
     @Test
-    fun test_lmap() {
+    fun test_l_i_map() {
         Opt2.of(listOf(1, 2, 3, 4))
                 .lmap { i: Int -> "A$i" }
                 .apply {
@@ -521,7 +521,7 @@ internal class Opt2Test {
                 }
 
         Opt2.of(listOf(1, 2, 3, 4))
-                .lmap(::intToString)
+                .lmap(::intToAiString)
                 .apply {
                     assertEquals("A1,A2,A3,A4", get()?.joinToString(","))
                 }
@@ -532,9 +532,15 @@ internal class Opt2Test {
                     assertTrue(isNotEmpty())
                     assertEquals(10, sum())
                 }
+
+        Opt2.of(listOf(1, 2, 3, 4).iterator())
+                .imap(::intToAiString)
+                .apply {
+                    assertEquals("A1,A2,A3,A4", get()?.joinToString(","))
+                }
     }
 
-    private fun intToString(i: Int): String = "A$i"
+    private fun intToAiString(i: Int): String = "A$i"
 
     private fun getTempValue() = TempValue(YYY)
 

@@ -4,13 +4,22 @@ import java.sql.ResultSet
 
 class ResultSetIterator private constructor(private val resultSet: ResultSet) : Iterator<ResultSet>, Iterable<ResultSet> {
 
+    @Synchronized
+    private fun <T> withResultSet(block: (ResultSet) -> T) = block(resultSet)
+
     override fun hasNext(): Boolean {
-        return resultSet.next()
+        return withResultSet {
+            val boolean = it.next()
+            it.previous()
+            boolean
+        }
     }
 
     override fun next(): ResultSet {
-         // TOIMPROVE: find out if there is a better way of doing this
-        return resultSet
+        return withResultSet {
+            it.next()
+            it
+        }
     }
 
     override fun iterator(): Iterator<ResultSet> {
@@ -19,8 +28,10 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
 
     fun <T : Any> map(mapper: (ResultSet) -> T): List<T> {
         val listT = mutableListOf<T>()
-        while (resultSet.next()) {
-            listT += mapper(resultSet)
+        withResultSet { rs ->
+            while (rs.next()) {
+                listT += mapper(rs)
+            }
         }
         return listT.toList()
     }

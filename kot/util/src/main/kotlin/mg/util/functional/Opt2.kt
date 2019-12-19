@@ -162,6 +162,22 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
+    inline fun <reified V : Any, R : Any> imap(mapper: (V) -> R): Opt2<List<R>> = when {
+        isPresent() -> {
+            val mutableList = mutableListOf<R>()
+            val value = get()
+            if (value is Iterator<*>) {
+                for (e in value) {
+                    if (e is V) {
+                        mutableList += mapper(e)
+                    }
+                }
+            }
+            of(mutableList.toList())
+        }
+        else -> empty()
+    }
+
     inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> = of(toList<V>().map(mapper))
     inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
 
