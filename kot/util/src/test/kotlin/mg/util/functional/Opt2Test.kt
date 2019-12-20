@@ -526,7 +526,7 @@ internal class Opt2Test {
                     assertEquals("A1,A2,A3,A4", get()?.joinToString(","))
                 }
 
-        Opt2.of(listOf(1, 2, 3, 4))
+        Opt2.of(listOf(1, 2, 3, 4, "str"))
                 .toList<Int>()
                 .apply {
                     assertTrue(isNotEmpty())
