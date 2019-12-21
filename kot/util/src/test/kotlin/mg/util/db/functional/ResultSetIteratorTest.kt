@@ -17,7 +17,6 @@ import java.sql.ResultSet
 internal class ResultSetIteratorTest {
 
     private val dbConfig = DBConfig(TestConfig())
-    // private val dbConfig = DBConfig(TestConfig())
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
 
     @Test
