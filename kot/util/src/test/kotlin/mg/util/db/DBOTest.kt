@@ -2,7 +2,6 @@ package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.AliasBuilder.build
-import mg.util.db.DBTest.PersonB
 import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
@@ -19,7 +18,7 @@ import java.sql.Statement
 
 internal class DBOTest {
 
-    private var dbConfig = DBConfig.testConfig
+    private var dbConfig = DBConfig(TestConfig())
 
     data class Simple(val ffff: String = "aaaa")
     data class SimpleComp(val gggg: String = "cccc")
@@ -63,9 +62,8 @@ internal class DBOTest {
         assertEquals("Person${(firstName + lastName).hashCode()}", uidCandidate)
     }
 
-    // @Test // TODO 4: fix ensure for different compositions
+    @Test // TODO 4: fix ensure for different compositions
     fun testEnsureTable() {
-//        val simpleUid = build(Simple::class)
         val multipleCompositionUid = build(MultipleComposition::class)
         val connection = of(dbConfig.connection)
 
@@ -76,7 +74,7 @@ internal class DBOTest {
     }
 
     // TOIMPROVE: test coverage
-    // @Test
+    @Test
     fun testSaveMapAndFind() {
 
         testSave()
@@ -85,7 +83,6 @@ internal class DBOTest {
 
         testFind()
     }
-
 
     private fun testMap() {
 
@@ -229,13 +226,15 @@ internal class DBOTest {
         @JvmStatic
         internal fun afterAll() {
 
-            val dbConfig = DBConfig.testConfig
+            val dbConfig = DBConfig(TestConfig())
 
             val tableUids = listOf(Simple(),
                     Composition(),
                     MultipleComposition(),
                     // Person(), shared class between tests
                     // PersonB(), shared class between tests
+                    SimpleComp(),
+                    MultipleComposition(),
                     Uuuu(),
                     Billing())
                     .map(::buildUniqueId)

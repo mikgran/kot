@@ -3,6 +3,7 @@ package mg.util.db.functional
 import mg.util.db.DBConfig
 import mg.util.db.DBO
 import mg.util.db.DBOTest.Person
+import mg.util.db.TestConfig
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.functional.ResultSetIterator.Companion.iof
@@ -15,7 +16,8 @@ import java.sql.ResultSet
 
 internal class ResultSetIteratorTest {
 
-    private val dbConfig = DBConfig.testConfig
+    private val dbConfig = DBConfig(TestConfig())
+    // private val dbConfig = DBConfig(TestConfig())
     private val dbo = DBO(SqlMapperFactory.get("mysql"))
 
     @Test
@@ -34,6 +36,7 @@ internal class ResultSetIteratorTest {
         }
 
         val tableUid = buildUniqueId(Person())
+
         getResultSetIterator(connection, tableUid)
                 .xmap { map { Person(it.getString(2), it.getString(3)) } }
                 .apply {

@@ -6,10 +6,10 @@ import java.util.*
 import java.util.Objects.requireNonNull
 import javax.sql.DataSource
 
-class DBConfig private constructor(config: Config) {
+class DBConfig(config: Config) {
 
     private var properties = Properties()
-        // get() = field
+    // get() = field
     private var dbDriver: String? = null
     private var dbUrl: String? = null
     private var dbUserName: String? = null
@@ -34,14 +34,16 @@ class DBConfig private constructor(config: Config) {
     private var dataSource: DataSource? = null
         get() {
             return when (field) {
-                null -> { field = getDatasource(); field }
+                null -> {
+                    field = getDatasource(); field
+                }
                 else -> field
             }
         }
 
     private fun getDatasource(): DataSource {
         val basicDataSource = BasicDataSource()
-        with (basicDataSource) {
+        with(basicDataSource) {
             driverClassName = dbDriver
             url = dbUrl
             username = dbUserName
@@ -61,8 +63,5 @@ class DBConfig private constructor(config: Config) {
         const val DB_URL = "dbUrl"
         const val DB_DRIVER = "dbDriver"
         const val MAPPER = "mapper"
-
-        val testConfig by lazy { DBConfig(TestConfig()) }
-        val productionConfig by lazy { DBConfig(Config()) }
     }
 }

@@ -65,10 +65,22 @@ class DBO(private val mapper: SqlMapper) {
 
         val listSqls = createTableSql?.split(";") ?: emptyList()
 
-        // TODO 11 change to single update when only one create
+        of(listSqls)
+                .filter { it.isNotEmpty() }
+                .case({ it.size == 1 }, { singleUpdate(connection, it) })
+                .case({ it.size > 1 }, { batchUpdate(connection, it) })
+    }
+
+    private fun batchUpdate(connection: Connection, listSqls: List<String>) {
         of(getStatement(connection))
                 .mapWith(listSqls) { stmt, sqls -> sqls.map { stmt.addBatch(it) }; stmt }
                 .map { it.executeBatch() }
+                .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
+    }
+
+    private fun singleUpdate(connection: Connection, listSqls: List<String>) {
+        of(getStatement(connection))
+                .mapWith(listSqls) { stmt, sqls -> stmt.executeUpdate(sqls[0]) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
     }
 

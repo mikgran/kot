@@ -1,5 +1,6 @@
 package mg.kot.rgen.service
 
+import mg.util.db.Config
 import mg.util.db.DBConfig
 import mg.util.db.persist.DB
 import mg.util.db.persist.Persistable
@@ -16,7 +17,7 @@ class RgenService {
 
     fun service() {
 
-        val dbConfig = DBConfig.productionConfig
+        val dbConfig = DBConfig(Config())
         val db = DB(dbConfig.connection)
 
         val person2 = Person2()
