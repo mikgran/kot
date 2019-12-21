@@ -9,7 +9,6 @@ import javax.sql.DataSource
 class DBConfig(config: Config) {
 
     private var properties = Properties()
-    // get() = field
     private var dbDriver: String? = null
     private var dbUrl: String? = null
     private var dbUserName: String? = null
@@ -35,7 +34,8 @@ class DBConfig(config: Config) {
         get() {
             return when (field) {
                 null -> {
-                    field = getDatasource(); field
+                    field = getDatasource()
+                    field
                 }
                 else -> field
             }
