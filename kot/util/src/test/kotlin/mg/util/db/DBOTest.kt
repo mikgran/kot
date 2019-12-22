@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.AliasBuilder.build
+import mg.util.db.TestsDataClasses.*
 import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
@@ -19,16 +20,6 @@ import java.sql.Statement
 internal class DBOTest {
 
     private var dbConfig = DBConfig(TestConfig())
-
-    data class Simple(val ffff: String = "aaaa")
-    data class SimpleComp(val gggg: String = "cccc")
-    data class Composition(val gggg: String = "bbbb", val hhhh: Simple = Simple("cccc"))
-    data class MultipleComposition(val iiii: Int = 0, val hhhh: Simple = Simple("cccc"), val ssss: List<SimpleComp> = listOf(SimpleComp("1111"), SimpleComp("2222")))
-    data class Person(val firstName: String = "", val lastName: String = "")
-    data class Uuuu(val firstName: String = "", val lastName: String = "")
-
-    // TODO for joined save & find
-    data class Billing(val amount: String = "", val person: Person = Person("", ""))
 
     private val firstName = "firstName"
     private val first1 = "first1"
