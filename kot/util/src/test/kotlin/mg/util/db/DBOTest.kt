@@ -17,6 +17,8 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
 
+// TODO -1 Tests are currently order dependent, fix all tests so that none fail
+// to a change of testing framework
 internal class DBOTest {
 
     private var dbConfig = DBConfig(TestConfig())
