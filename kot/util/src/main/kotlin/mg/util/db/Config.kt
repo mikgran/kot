@@ -5,7 +5,8 @@ import java.util.*
 
 open class Config {
 
-    private var properties: Properties? = null
+    @Synchronized
+    private fun <T> synchronizedWithProperties(block: (Properties?) -> T): T = block(properties)
 
     open fun loadProperties(): Properties {
         return loadProperties(CONFIG_PROPERTIES)
@@ -13,30 +14,36 @@ open class Config {
 
     fun loadProperties(fileName: String): Properties {
 
-        if (properties == null) {
-            properties = Properties()
+        synchronizedWithProperties { p ->
 
-            FileInputStream(fileName).use { inputStream ->
-
-                properties?.load(inputStream)
+            if (!isPropertiesLoaded) {
+                FileInputStream(fileName).use { inputStream ->
+                    p?.load(inputStream)
+                }
+                isPropertiesLoaded = true
             }
         }
-
-        return properties!!
+        return properties
     }
 
+    @Suppress("unused")
     fun refreshProperties(): Properties {
-        properties = null
+        isPropertiesLoaded = false
         return loadProperties()
     }
 
+    @Suppress("unused")
     fun refreshProperties(file: String): Properties {
-        properties = null
+        isPropertiesLoaded = false
         return loadProperties(file)
     }
 
     companion object {
         const val CONFIG_PROPERTIES = "config.properties"
+
+        private var isPropertiesLoaded = false
+        private var properties = Properties()
+
     }
 }
 
