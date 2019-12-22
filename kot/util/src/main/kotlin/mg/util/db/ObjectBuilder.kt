@@ -30,13 +30,12 @@ class ObjectBuilder {
     }
 
     private fun <T : Any> narrowDownConstructorForT(results: ResultSet?, t: T): Wrap<Constructor<T>?> {
-        val constructor = Opt2.of(results)
+        return Opt2.of(results)
                 .map(ResultSet::getMetaData)
                 .map(::getConstructorData)
                 .mapWith(t) { data, type -> narrowDown(type::class.constructors, data) }
                 .filter { it.t != null }
                 .getOrElseThrow { Exception("Unable to narrow down a constructor for object T") }!!
-        return constructor
     }
 
     private fun <T : Any> createT(constructor: Wrap<Constructor<T>?>, parametersList: MutableList<Any>, typeT: T) : T {
