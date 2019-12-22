@@ -12,27 +12,52 @@ import kotlin.reflect.jvm.javaType
 @Suppress("UNCHECKED_CAST")
 class ObjectBuilder {
 
-    data class ConstructorData(val type: Any, val name: String)
+    private data class ConstructorData(val type: Any, val name: String)
 
-    fun <T : Any> buildListOfT(results: ResultSet?, t: T): MutableList<T> {
+    fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
 
+        val constructorForT = narrowDownConstructorForT(results, typeT)
+
+        val listT = mutableListOf<T>()
+        do {
+            val parametersListForT = getParameters(results)
+
+            listT += createT(constructorForT, parametersListForT, typeT)
+
+        } while (true == results?.next())
+
+        return listT
+    }
+
+    private fun <T : Any> narrowDownConstructorForT(results: ResultSet?, t: T): Wrap<Constructor<T>?> {
         val constructor = Opt2.of(results)
                 .map(ResultSet::getMetaData)
                 .map(::getConstructorData)
                 .mapWith(t) { data, type -> narrowDown(type::class.constructors, data) }
                 .filter { it.t != null }
                 .getOrElseThrow { Exception("Unable to narrow down a constructor for object T") }!!
-
-        val listT = mutableListOf<T>()
-        do {
-            val parameters = getParameters(results)
-
-            buildAndAddTypeToList(constructor.t, parameters, listT, t)
-
-        } while (true == results?.next())
-
-        return listT
+        return constructor
     }
+
+    private fun <T : Any> createT(constructor: Wrap<Constructor<T>?>, parametersList: MutableList<Any>, typeT: T) : T {
+        return Opt2.of<Constructor<*>>(constructor.t)
+                .mapWith(parametersList.toTypedArray()) { cons, params -> cons.newInstance(*params) } // spread operator
+                .ifMissingThrow { Exception("Unable to instantiate ${typeT::class}") }
+                .get() as T
+    }
+
+    private fun getParameters(results: ResultSet?): MutableList<Any> {
+        val parametersList = mutableListOf<Any>()
+        (1..getColumnCount(results))
+                .filter { isColumnNameNotId(results, it) }
+                .forEach {
+                    parametersList += results?.getString(it) as Any // TOIMPROVE: constructor parameter names from the type?
+                }
+        return parametersList
+    }
+
+    private fun isColumnNameNotId(results: ResultSet?, it: Int) = results?.metaData?.getColumnName(it) != "id"
+    private fun getColumnCount(results: ResultSet?) = results?.metaData?.columnCount ?: 1
 
     private fun <T : Any> narrowDown(constr: Collection<KFunction<T>>,
                                      rscd: MutableList<ConstructorData>): Wrap<Constructor<T>?> {
@@ -57,32 +82,14 @@ class ObjectBuilder {
     private fun getConstructorData(resultSetMetadata: ResultSetMetaData): MutableList<ConstructorData> {
         val list = mutableListOf<ConstructorData>()
         (1..resultSetMetadata.columnCount).forEach { i ->
-            if (!resultSetMetadata.getColumnName(i).contains(DB_ID_FIELD)) {
+            if (resultSetMetadata.getColumnName(i) != DB_ID_FIELD) {
                 list += ConstructorData(resultSetMetadata.getColumnClassName(i), resultSetMetadata.getColumnName(i))
             }
         }
         return list
     }
 
-    private fun <T : Any> buildAndAddTypeToList(constructor: Constructor<*>?, parameters: Array<Any>, listT: MutableList<T>, t: T) {
-        Opt2.of(constructor)
-                .map { it.newInstance(*parameters) } // spread operator
-                .ifPresent { listT += it as T }
-                .ifMissingThrow { Exception("Unable to instantiate ${t::class}") }
-    }
-
-    private fun getParameters(results: ResultSet?): Array<Any> {
-        val parameters = mutableListOf<Any>()
-        (1..(results?.metaData?.columnCount ?: 1)).forEach { i ->
-
-            if (results?.metaData?.getColumnName(i) != "id") {
-                parameters += results?.getString(i) as Any // TOIMPROVE: constructor parameter names from the type?
-            }
-        }
-        return parameters.toTypedArray()
-    }
-
-    companion object {
+    private companion object {
         const val DB_ID_FIELD = "id"
     }
 }
