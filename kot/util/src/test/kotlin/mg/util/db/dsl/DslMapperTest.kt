@@ -3,6 +3,7 @@ package mg.util.db.dsl
 import mg.util.common.Common.hasContent
 import mg.util.db.AliasBuilder
 import mg.util.db.DBTest.PersonB
+import mg.util.db.TestDataClasses
 import mg.util.db.UidBuilder
 import mg.util.db.UidBuilder.buildUniqueId
 import org.junit.jupiter.api.Assertions.*
@@ -11,11 +12,6 @@ import mg.util.db.dsl.mysql.Sql as MySql
 import mg.util.db.dsl.oracle.Sql as SqlOracle
 
 internal class DslMapperTest {
-
-    private data class Address(var fullAddress: String = "")
-    private data class Place(var address: Address = Address(), var rentInCents: Int = 0)
-    private data class Floor(var number: Int = 0)
-    private data class Building(var fullAddress: String = "", var floors: List<Floor> = listOf(Floor(1)))
 
     @Test
     fun testBuildingSqlFromDsl1() {
@@ -44,10 +40,10 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithListReference() {
 
-        val sql = MySql() create Building("some address")
+        val sql = MySql() create TestDataClasses.Building("some address")
 
-        val buildingUid = UidBuilder.build(Building::class)
-        val floorUid = UidBuilder.build(Floor::class)
+        val buildingUid = UidBuilder.build(TestDataClasses.Building::class)
+        val floorUid = UidBuilder.build(TestDataClasses.Floor::class)
 
         val candidate = DslMapper.map(sql.list())
 
@@ -63,10 +59,10 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithSimpleReference() {
 
-        val sql = MySql() create Place(Address("somePlace"), 100000)
+        val sql = MySql() create TestDataClasses.Place(TestDataClasses.Address("somePlace"), 100000)
 
-        val placeUid = UidBuilder.build(Place::class)
-        val addressUid = UidBuilder.build(Address::class)
+        val placeUid = UidBuilder.build(TestDataClasses.Place::class)
+        val addressUid = UidBuilder.build(TestDataClasses.Address::class)
         val candidate = DslMapper.map(sql)
 
         val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
@@ -99,12 +95,12 @@ internal class DslMapperTest {
 
         // FIXME 10: "on a.f = b.f2", needs to be completed
 
-        val sql = MySql() select Place() join Address()
+        val sql = MySql() select TestDataClasses.Place() join TestDataClasses.Address()
 
         val candidate = DslMapper.map(sql.list())
 
-        val p2 = buildUniqueId(Place())
-        val a2 = buildUniqueId(Address())
+        val p2 = buildUniqueId(TestDataClasses.Place())
+        val a2 = buildUniqueId(TestDataClasses.Address())
         val p = AliasBuilder.build(p2)
         val a = AliasBuilder.build(a2)
 

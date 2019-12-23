@@ -2,7 +2,7 @@ package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.AliasBuilder.build
-import mg.util.db.TestsDataClasses.*
+import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory

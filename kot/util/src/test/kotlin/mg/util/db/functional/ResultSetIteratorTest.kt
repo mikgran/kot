@@ -2,7 +2,7 @@ package mg.util.db.functional
 
 import mg.util.db.DBConfig
 import mg.util.db.DBO
-import mg.util.db.TestsDataClasses.Person
+import mg.util.db.TestDataClasses.Person
 import mg.util.db.TestConfig
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory

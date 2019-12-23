@@ -2,7 +2,7 @@ package mg.util.db.dsl
 
 import mg.util.db.AliasBuilder
 import mg.util.db.DBO
-import mg.util.db.TestsDataClasses.Person
+import mg.util.db.TestDataClasses.Person
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.mysql.Sql
 import org.junit.jupiter.api.Assertions.*

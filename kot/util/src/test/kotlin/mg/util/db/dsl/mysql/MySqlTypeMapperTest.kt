@@ -1,7 +1,7 @@
 package mg.util.db.dsl.mysql
 
 import mg.util.db.DBO
-import mg.util.db.TestsDataClasses.Person
+import mg.util.db.TestDataClasses.Person
 import mg.util.db.Metadata
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.UidBuilder.buildUniqueId
