@@ -58,15 +58,10 @@ class DBO(private val mapper: SqlMapper) {
 
     fun <T : Any> ensureTable(t: T, connection: Connection) {
 
-        val listSqls = of(t)
-                .map(::buildMetadata)
+        of(t).map(::buildMetadata)
                 .map(mapper::buildCreateTable)
                 .map { it.split(";") }
                 .ifMissingThrow { Exception(UNABLE_TO_BUILD_CREATE_TABLE) }
-                .getOrElse { emptyList() }
-
-        of(listSqls)
-                .filter { it.isNotEmpty() }
                 .case({ it.size == 1 }, { singleUpdate(connection, it) })
                 .case({ it.size > 1 }, { batchUpdate(connection, it) })
     }
