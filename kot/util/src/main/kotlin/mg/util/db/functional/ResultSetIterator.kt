@@ -30,9 +30,9 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
 
     fun <T : Any> map(mapper: (ResultSet) -> T): List<T> {
         val listT = mutableListOf<T>()
-        synchronizedWithResultSet { rs ->
-            while (rs.next()) {
-                listT += mapper(rs)
+        synchronizedWithResultSet {
+            while (it.next()) {
+                listT += mapper(it)
             }
         }
         return listT.toList()
