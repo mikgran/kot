@@ -8,12 +8,12 @@ import javax.sql.DataSource
 
 class DBConfig(config: Config) {
 
-    private var properties = Properties()
-    private var dbDriver: String? = null
-    private var dbUrl: String? = null
-    private var dbUserName: String? = null
-    private var dbPassword: String? = null
-    var mapper: String? = null
+    private var properties: Properties
+    private var dbDriver: String
+    private var dbUrl: String
+    private var dbUserName: String
+    private var dbPassword: String
+    var mapper: String
 
     init {
         // TOIMPROVE: CLEANUP: use kotlin requireNotNull / require ?
@@ -31,15 +31,10 @@ class DBConfig(config: Config) {
     @get:Synchronized
     @set:Synchronized
     private var dataSource: DataSource? = null
-        get() {
-            return when (field) {
-                null -> {
-                    field = getDatasource()
-                    field
-                }
-                else -> field
-            }
-        }
+        get() = if (field == null) {
+                field = getDatasource()
+                field
+            } else field
 
     private fun getDatasource(): DataSource {
         val basicDataSource = BasicDataSource()
