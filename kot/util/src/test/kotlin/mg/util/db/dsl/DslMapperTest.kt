@@ -2,7 +2,7 @@ package mg.util.db.dsl
 
 import mg.util.common.Common.hasContent
 import mg.util.db.AliasBuilder
-import mg.util.db.DBTest.PersonB
+import mg.util.db.TestDataClasses.PersonB
 import mg.util.db.TestDataClasses
 import mg.util.db.UidBuilder
 import mg.util.db.UidBuilder.buildUniqueId
@@ -126,4 +126,18 @@ internal class DslMapperTest {
         assertEquals("SELECT $p.firstName, $p.lastName FROM $uid AS $p WHERE $p.firstName = 'name'", candidate)
     }
 
+    @Test
+    fun testDslV2() {
+
+        // MySql() select PersonB() where PersonB::firstName eq "name"
+
+        val tt1: SQL2.Select.Where.Eq = SQL2 select PersonB() where PersonB::firstName eq "name"
+
+        val tt2: SQL2.Update = SQL2 update PersonB()
+
+
+
+
+
+    }
 }

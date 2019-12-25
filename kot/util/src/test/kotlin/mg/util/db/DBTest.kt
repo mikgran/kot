@@ -1,6 +1,7 @@
 package mg.util.db
 
 import mg.util.common.Common.nonThrowingBlock
+import mg.util.db.TestDataClasses.PersonB
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.functional.ResultSetIterator.Companion.iof
@@ -12,8 +13,6 @@ import org.junit.jupiter.api.Test
 import java.sql.Connection
 
 internal class DBTest {
-
-    data class PersonB(val firstName: String = "", val lastName: String = "")
 
     private var dbConfig = DBConfig(Config())
     private val fName = "firstName"

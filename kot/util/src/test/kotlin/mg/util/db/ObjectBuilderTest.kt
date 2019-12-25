@@ -1,6 +1,6 @@
 package mg.util.db
 
-import mg.util.db.DBTest.PersonB
+import mg.util.db.TestDataClasses.PersonB
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.functional.Opt2

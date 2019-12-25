@@ -1,6 +1,6 @@
 package mg.util.db.dsl.mysql
 
-import mg.util.db.DBTest.PersonB
+import mg.util.db.TestDataClasses.PersonB
 import mg.util.db.dsl.BuildingBlock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

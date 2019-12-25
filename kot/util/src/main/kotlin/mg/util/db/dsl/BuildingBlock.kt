@@ -2,13 +2,12 @@ package mg.util.db.dsl
 
 import mg.util.common.Common
 import mg.util.db.*
-import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 
 abstract class BuildingBlock(val t: Any) {
-    abstract val blocks: MutableList<BuildingBlock>
-    fun list() = blocks
-    internal fun simpleName() = this::class.simpleName
+
+    open val blocks: MutableList<BuildingBlock> = mutableListOf()
+
     open fun buildCreate(dp: DslParameters): String = ""
     open fun buildDrop(dp: DslParameters): String = ""
     open fun buildInsert(dp: DslParameters): String = ""
@@ -16,7 +15,8 @@ abstract class BuildingBlock(val t: Any) {
     open fun buildUpdate(dp: DslParameters): String = ""
     open fun buildSelect(dp: DslParameters): String = "" // do as last always
     open fun buildFields(dp: DslParameters): String = "" // do as first always
-
+    fun list() = blocks
+    internal fun simpleName() = this::class.simpleName
     // buildDelete
     // buildTruncate
 
@@ -41,4 +41,46 @@ abstract class BuildingBlock(val t: Any) {
     }
 
 
+    private data class SqlData<T: SQL2>(val s: String = "" )
+    protected fun <T : SQL2> mset(t: T) {
+        when(t) {
+            is SQL2.Select -> {}
+        }
+    }
 }
+
+
+sealed class SQL2(t: Any) : BuildingBlock(t) {
+
+    companion object {
+        infix fun select(t: Any) = Select(t)
+        infix fun update(t: Any) = Update(t)
+    }
+
+    // val sql = MySql() update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
+    // val sql = MySql() select PersonB() where PersonB::firstName eq "name"
+
+    class Select(t: Any) : SQL2(t) {
+        infix fun where(t: Any) = Where(t)
+
+        class Where(t: Any) : SQL2(t) {
+
+            infix fun eq(t: Any) = Eq(t)
+
+            class Eq(t: Any) : SQL2(t)
+        }
+    }
+
+    class Update(t: Any) : SQL2(t) {
+        infix fun set(t: Any) = Set(t)
+
+        class Set(t: Any) {
+        }
+
+        class Where(t: Any) : SQL2(t) {
+        }
+    }
+
+
+}
+

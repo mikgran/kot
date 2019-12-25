@@ -57,7 +57,6 @@ class DBO(private val mapper: SqlMapper) {
     }
 
     fun <T : Any> ensureTable(t: T, connection: Connection) {
-
         of(t).map(::buildMetadata)
                 .map(mapper::buildCreateTable)
                 .map { it.split(";") }
