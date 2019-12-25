@@ -39,46 +39,72 @@ abstract class BuildingBlock(val t: Any) {
         list.add(block)
         return block
     }
-
-
-    private data class SqlData<T: SQL2>(val s: String = "" )
-    protected fun <T : SQL2> mset(t: T) {
-        when(t) {
-            is SQL2.Select -> {}
-        }
-    }
 }
 
+data class SelectInfo<T : Any>(
+        var select: T? = null,
+        var joins: MutableList<T> = mutableListOf(),
+        var wheres: MutableList<T> = mutableListOf()
+)
 
 sealed class SQL2(t: Any) : BuildingBlock(t) {
 
-    companion object {
-        infix fun select(t: Any) = Select(t)
-        infix fun update(t: Any) = Update(t)
+    protected fun <T : Any> add(type: T): T {
+        when (type) {
+            is Select -> {} // selectInfo.select = type
+            is Select.Join.Where,
+            is Select.Join.Where.Eq -> {}
+            is Select.Where,
+            is Select.Where.Eq -> {} // selectInfo.wheres.add(type)
+            is Update -> {}
+        }
+        return type
     }
 
-    // val sql = MySql() update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
-    // val sql = MySql() select PersonB() where PersonB::firstName eq "name"
+    companion object {
+        infix fun select(t: Any) = Select(t) // .also { it.add(it) }
+        infix fun update(t: Any) = Update(t) // .also { it.add(it) }
+    }
+
+    // val sql = SQL2 select Person() where Person::firstName eq "name"
+    private val a = "SELECT p.firstName, p.lastName FROM Person AS p WHERE p.firstName = 'name'"
 
     class Select(t: Any) : SQL2(t) {
-        infix fun where(t: Any) = Where(t)
 
+        infix fun join(t: Any) = add(Join(t))
+        class Join(t: Any) : SQL2(t) {
+
+            infix fun where(t: Any) = add(Select.Where(t))
+            class Where(t: Any) : SQL2(t) {
+
+                infix fun eq(t: Any) = add(Eq(t))
+                class Eq(t: Any) : SQL2(t) {
+
+                    infix fun and(t: Any) = add(Select.Where(t))
+                }
+            }
+        }
+
+        infix fun where(t: Any) = add(Where(t))
         class Where(t: Any) : SQL2(t) {
 
-            infix fun eq(t: Any) = Eq(t)
+            infix fun eq(t: Any) = add(Eq(t))
+            class Eq(t: Any) : SQL2(t) {
 
-            class Eq(t: Any) : SQL2(t)
+                infix fun and(t: Any) = add(Where(t))
+            }
         }
     }
 
     class Update(t: Any) : SQL2(t) {
-        infix fun set(t: Any) = Set(t)
+        infix fun set(t: Any) = add(Set(t))
+        class Set(t: Any) : SQL2(t) {
 
-        class Set(t: Any) {
+            infix fun where(t: Any) = add(Where(t))
+            class Where(t: Any) : SQL2(t) {
+            }
         }
 
-        class Where(t: Any) : SQL2(t) {
-        }
     }
 
 

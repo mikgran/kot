@@ -8,6 +8,10 @@ import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.dsl.mysql.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
+import mg.util.db.persist.Persistable
+import mg.util.db.persist.annotation.ForeignKey
+import mg.util.db.persist.annotation.Id
+import mg.util.db.persist.annotation.VarChar
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.AfterAll
@@ -109,6 +113,8 @@ internal class DBOTest {
     }
 
     private fun testSave() {
+
+        DB().save(testPerson2)
 
         dbo.ensureTable(testPerson2, dbConfig.connection)
         dbo.save(testPerson2, dbConfig.connection)

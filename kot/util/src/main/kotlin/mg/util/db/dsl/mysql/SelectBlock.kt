@@ -20,6 +20,8 @@ open class SelectBlock<T : Any>(override val blocks: MutableList<BuildingBlock>,
 
     override fun buildSelect(dp: DslParameters): String {
 
+
+
         val builder = of(StringBuilder())
                 .rcv {
                     append("SELECT ") // SELECT p.firstName, p.lastName FROM Persons p

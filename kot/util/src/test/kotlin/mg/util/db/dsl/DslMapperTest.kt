@@ -2,12 +2,15 @@ package mg.util.db.dsl
 
 import mg.util.common.Common.hasContent
 import mg.util.db.AliasBuilder
-import mg.util.db.TestDataClasses.PersonB
 import mg.util.db.TestDataClasses
+import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
 import mg.util.db.UidBuilder.buildUniqueId
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import kotlin.reflect.KClass
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.typeOf
 import mg.util.db.dsl.mysql.Sql as MySql
 import mg.util.db.dsl.oracle.Sql as SqlOracle
 
@@ -40,10 +43,10 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithListReference() {
 
-        val sql = MySql() create TestDataClasses.Building("some address")
+        val sql = MySql() create Building("some address")
 
-        val buildingUid = UidBuilder.build(TestDataClasses.Building::class)
-        val floorUid = UidBuilder.build(TestDataClasses.Floor::class)
+        val buildingUid = UidBuilder.build(Building::class)
+        val floorUid = UidBuilder.build(Floor::class)
 
         val candidate = DslMapper.map(sql.list())
 
@@ -59,10 +62,10 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithSimpleReference() {
 
-        val sql = MySql() create TestDataClasses.Place(TestDataClasses.Address("somePlace"), 100000)
+        val sql = MySql() create Place(Address("somePlace"), 100000)
 
-        val placeUid = UidBuilder.build(TestDataClasses.Place::class)
-        val addressUid = UidBuilder.build(TestDataClasses.Address::class)
+        val placeUid = UidBuilder.build(Place::class)
+        val addressUid = UidBuilder.build(Address::class)
         val candidate = DslMapper.map(sql)
 
         val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
@@ -95,12 +98,12 @@ internal class DslMapperTest {
 
         // FIXME 10: "on a.f = b.f2", needs to be completed
 
-        val sql = MySql() select TestDataClasses.Place() join TestDataClasses.Address()
+        val sql = MySql() select Place() join Address()
 
         val candidate = DslMapper.map(sql.list())
 
-        val p2 = buildUniqueId(TestDataClasses.Place())
-        val a2 = buildUniqueId(TestDataClasses.Address())
+        val p2 = buildUniqueId(Place())
+        val a2 = buildUniqueId(Address())
         val p = AliasBuilder.build(p2)
         val a = AliasBuilder.build(a2)
 
@@ -129,15 +132,10 @@ internal class DslMapperTest {
     @Test
     fun testDslV2() {
 
-        // MySql() select PersonB() where PersonB::firstName eq "name"
+        val ttt = SQL2 select PersonB() where PersonB::firstName eq "name"
 
-        val tt1: SQL2.Select.Where.Eq = SQL2 select PersonB() where PersonB::firstName eq "name"
-
-        val tt2: SQL2.Update = SQL2 update PersonB()
-
-
-
-
+        SQL2 select PersonB() join Address() where PersonB::firstName eq "name"
 
     }
+
 }
