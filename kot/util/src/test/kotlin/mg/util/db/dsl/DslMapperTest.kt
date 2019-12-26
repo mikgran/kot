@@ -134,7 +134,9 @@ internal class DslMapperTest {
 
         val ttt = SQL2 select PersonB() where PersonB::firstName eq "name"
 
-        SQL2 select PersonB() join Address() where PersonB::firstName eq "name"
+        val sss = SQL2 select PersonB() join Address() where PersonB::firstName eq "name"
+
+        sss.printSi()
 
     }
 
