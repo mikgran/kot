@@ -60,6 +60,7 @@ sealed class SQL2(t: Any) : BuildingBlock(t) {
 
         when (type) {
             is Select -> si?.select = type
+            is Select.Join -> si?.joins?.add(type)
             is Select.Join.Where,
             is Select.Join.Where.Eq -> si?.wheres?.add(type)
             is Select.Where,
