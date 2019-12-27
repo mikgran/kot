@@ -83,13 +83,13 @@ sealed class SQL2(t: Any) : BuildingBlock(t) {
         infix fun join(t: Any) = add(Join(t))
         class Join(t: Any) : SQL2(t) {
 
-            infix fun where(t: Any) = add(Select.Where(t))
+            infix fun where(t: Any) = add(Where(t))
             class Where(t: Any) : SQL2(t) {
 
                 infix fun eq(t: Any) = add(Eq(t))
                 class Eq(t: Any) : SQL2(t) {
 
-                    infix fun and(t: Any) = add(Select.Where(t))
+                    infix fun and(t: Any) = add(Where(t))
                 }
             }
         }
@@ -111,6 +111,12 @@ sealed class SQL2(t: Any) : BuildingBlock(t) {
 
             infix fun where(t: Any) = add(Where(t))
             class Where(t: Any) : SQL2(t) {
+
+                infix fun eq(t: Any) = add(Eq(t))
+                class Eq(t: Any) : SQL2(t) {
+
+                    infix fun and(t: Any) = add(Where(t))
+                }
             }
         }
 
