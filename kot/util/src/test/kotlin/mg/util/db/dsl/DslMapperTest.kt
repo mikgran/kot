@@ -132,11 +132,15 @@ internal class DslMapperTest {
     @Test
     fun testDslV2() {
 
-        val ttt = SQL2 select PersonB() where PersonB::firstName eq "name"
+        val sss = SQL2 select PersonB() where PersonB::firstName eq "name"
 
-        val sss = SQL2 select PersonB() join Address() where PersonB::firstName eq "name"
+        val candidate = DslMapper.map(sss)
 
-        sss.printSi()
+        val uid = buildUniqueId(PersonB())
+        val p = AliasBuilder.build(uid)
+
+        assertHasContent(candidate)
+        assertEquals("SELECT $p.firstName, $p.lastName FROM $uid AS $p WHERE $p.firstName = 'name'", candidate)
 
     }
 

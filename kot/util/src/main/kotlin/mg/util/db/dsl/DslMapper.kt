@@ -8,6 +8,30 @@ import mg.util.functional.Opt2.Factory.of
 // include methods for data migration
 object DslMapper {
 
+    fun map(dsl: SQL2): String {
+        return of(dsl)
+                .map(::buildSql2)
+                .getOrElseThrow { Exception("map: Unable to build sql for dsl: $dsl") }!!
+    }
+
+    private fun buildSql2(sql: SQL2): String {
+
+        val info = sql.parameters()
+
+        return when (info.action!!) {
+            is SQL2.Select -> ""
+            is SQL2.Select.Join -> ""
+            is SQL2.Select.Join.Where,
+            is SQL2.Select.Join.Where.Eq,
+            is SQL2.Select.Where,
+            is SQL2.Select.Where.Eq -> ""
+            is SQL2.Update -> ""
+            is SQL2.Update.Set -> ""
+            is SQL2.Update.Set.Where -> ""
+            is SQL2.Update.Set.Where.Eq -> ""
+        }
+    }
+
     fun map(block: BuildingBlock): String = map(block.list())
 
     fun map(blockList: MutableList<BuildingBlock>): String {

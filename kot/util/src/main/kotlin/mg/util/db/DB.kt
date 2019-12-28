@@ -11,7 +11,7 @@ import java.sql.Connection
 class DB {
 
     private val dbConfig = DBConfig(Config())
-    private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper ?: "mysql"))
+    private val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
 
     fun <T : Any> save(type: T) {
         val connection = getConnection()

@@ -41,38 +41,39 @@ abstract class BuildingBlock(val t: Any) {
     }
 }
 
-data class Info(
-        var select: SQL2.Select? = null,
-        var update: SQL2.Update? = null,
-        var joins: MutableList<SQL2> = mutableListOf(),
-        var wheres: MutableList<SQL2> = mutableListOf()
-)
-
 sealed class SQL2(t: Any) : BuildingBlock(t) {
 
-    fun printSi() = println(si)
+    data class Parameters(
+            var action: SQL2? = null,
+            val joins: MutableList<SQL2> = mutableListOf(),
+            val wheres: MutableList<SQL2> = mutableListOf()
+    )
 
-    protected var si: Info? = null
+    fun parameters() = parameters!!
+
+    protected var parameters: Parameters? = null
 
     protected fun <T : SQL2> add(type: T): T {
 
-        type.si = this.si
+        if (type != this) {
+            type.parameters = this.parameters
+        }
 
         when (type) {
-            is Select -> si?.select = type
-            is Select.Join -> si?.joins?.add(type)
+            is Select -> parameters?.action = type
+            is Select.Join -> parameters?.joins?.add(type)
             is Select.Join.Where,
-            is Select.Join.Where.Eq -> si?.wheres?.add(type)
+            is Select.Join.Where.Eq,
             is Select.Where,
-            is Select.Where.Eq -> si?.wheres?.add(type)
-            is Update -> si?.update = type
+            is Select.Where.Eq -> parameters?.wheres?.add(type)
+            is Update -> parameters?.action = type
         }
         return type
     }
 
     companion object {
-        infix fun select(t: Any) = Select(t).also { it.si = Info(); it.add(it) }
-        infix fun update(t: Any) = Update(t).also { it.si = Info(); it.add(it) }
+        infix fun select(t: Any) = Select(t).also { it.parameters = Parameters(); it.add(it) }
+        infix fun update(t: Any) = Update(t).also { it.parameters = Parameters(); it.add(it) }
     }
 
     // val sql = SQL2 select Person() where Person::firstName eq "name"
