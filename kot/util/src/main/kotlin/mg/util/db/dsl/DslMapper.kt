@@ -29,7 +29,7 @@ open class DslMapper {
         val info = sql.parameters()
 
         return when (info.action!!) {
-            is SQL2.Select -> ""
+            is SQL2.Select -> buildSelect2(info)
             is SQL2.Select.Join -> ""
             is SQL2.Select.Join.Where,
             is SQL2.Select.Join.Where.Eq,
@@ -41,6 +41,11 @@ open class DslMapper {
             is SQL2.Update.Set.Where.Eq -> ""
             is SQL2.Update.delete -> ""
         }
+    }
+
+    private fun buildSelect2(info: SQL2.Parameters): String {
+
+        return ""
     }
 
     fun map(block: BuildingBlock): String = map(block.list())

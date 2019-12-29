@@ -2,26 +2,24 @@ package mg.util.db.dsl
 
 import mg.util.common.Common.hasContent
 import mg.util.db.AliasBuilder
-import mg.util.db.TestDataClasses
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
 import mg.util.db.UidBuilder.buildUniqueId
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import kotlin.reflect.KClass
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.typeOf
 import mg.util.db.dsl.mysql.Sql as MySql
 import mg.util.db.dsl.oracle.Sql as SqlOracle
 
 internal class DslMapperTest {
+
+    private val mapper = DslMapperFactory.get()
 
     @Test
     fun testBuildingSqlFromDsl1() {
 
         val sql = MySql() select PersonB() where PersonB::firstName eq "name"
 
-        val candidate = DslMapper().map(sql.list())
+        val candidate = mapper.map(sql.list())
 
         val p = AliasBuilder.build(buildUniqueId(PersonB()))
 
@@ -35,7 +33,7 @@ internal class DslMapperTest {
         val sql = MySql() create PersonB()
 
         val uid = UidBuilder.build(PersonB::class)
-        val candidate = DslMapper().map(sql.list())
+        val candidate = mapper.map(sql.list())
 
         assertEquals("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", candidate)
     }
@@ -48,7 +46,7 @@ internal class DslMapperTest {
         val buildingUid = UidBuilder.build(Building::class)
         val floorUid = UidBuilder.build(Floor::class)
 
-        val candidate = DslMapper().map(sql.list())
+        val candidate = mapper.map(sql.list())
 
         assertNotNull(candidate)
         assertEquals("CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
@@ -66,7 +64,7 @@ internal class DslMapperTest {
 
         val placeUid = UidBuilder.build(Place::class)
         val addressUid = UidBuilder.build(Address::class)
-        val candidate = DslMapper().map(sql)
+        val candidate = mapper.map(sql)
 
         val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
@@ -84,7 +82,7 @@ internal class DslMapperTest {
 
         val uid = UidBuilder.build(PersonB::class)
 
-        val candidate = DslMapper().map(sql.list())
+        val candidate = mapper.map(sql.list())
 
         val expected = "UPDATE $uid SET firstName = 'newFirstName', lastName = 'newLastName'" +
                 " WHERE firstName = 'firstName'"
@@ -100,7 +98,7 @@ internal class DslMapperTest {
 
         val sql = MySql() select Place() join Address()
 
-        val candidate = DslMapper().map(sql.list())
+        val candidate = mapper.map(sql.list())
 
         val p2 = buildUniqueId(Place())
         val a2 = buildUniqueId(Address())
@@ -120,7 +118,7 @@ internal class DslMapperTest {
 
         val sql = SqlOracle() select PersonB() where PersonB::firstName eq "name"
 
-        val candidate = DslMapper().map(sql.list())
+        val candidate = mapper.map(sql.list())
 
         val uid = buildUniqueId(PersonB())
         val p = AliasBuilder.build(uid)
@@ -129,12 +127,12 @@ internal class DslMapperTest {
         assertEquals("SELECT $p.firstName, $p.lastName FROM $uid AS $p WHERE $p.firstName = 'name'", candidate)
     }
 
-    // @Test
+    @Test
     fun testDslV2() {
 
         val sss = SQL2 select PersonB() where PersonB::firstName eq "name"
-
-        val candidate = DslMapper().map(sss)
+        
+        val candidate = mapper.map(sss)
 
         val uid = buildUniqueId(PersonB())
         val p = AliasBuilder.build(uid)

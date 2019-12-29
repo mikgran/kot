@@ -2,11 +2,12 @@ package mg.util.db.dsl
 
 object DslMapperFactory {
 
-    fun mapperFor(name: String? = "mysql"): DslMapper {
+    fun get(name: String? = "mysql"): DslMapper {
         return when (name) {
-            "mysql" -> MySqlDslMapper()
+            "mysql",
+            "mariadb" -> MySqlDslMapper()
             "oracle" -> OracleDslMapper()
-            else -> throw Exception("No such implementation")
+            else -> throw Exception("No such implementation: $name")
         }
 
     }
