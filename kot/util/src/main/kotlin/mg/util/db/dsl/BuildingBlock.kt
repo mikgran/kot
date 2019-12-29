@@ -121,6 +121,9 @@ sealed class SQL2(t: Any) : BuildingBlock(t) {
             }
         }
 
+        class delete(t: Any) : SQL2(t)
+
+
     }
 
 

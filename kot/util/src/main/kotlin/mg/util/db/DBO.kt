@@ -119,7 +119,7 @@ class DBO(private val mapper: SqlMapper) {
                 .map { it.type }
                 .get()
 
-        val sql = DslMapper.map(list)
+        val sql = DslMapper().map(list)
 
         @Suppress("UNCHECKED_CAST")
         return of(getStatement(connection))

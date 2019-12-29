@@ -6,7 +6,17 @@ import mg.util.functional.Opt2.Factory.of
 // DDL, DML
 // CREATE, SELECT, UPDATE, DELETE, ALTER, RENAME, TRUNCATE(remove all rows from table), DROP
 // include methods for data migration
-object DslMapper {
+open class DslMapper {
+
+    // MySqlMapper.map(dsl: SQL) TODO -5 rename later
+    // OracleMapper.map(dsl: SQl)
+    // generic: DslMapper // TODO -6 generalize later
+    // DslMapper::.buildSql(dsl: SQL)
+    // val mapper: DslMapper = DslMapperFactory.dslMapper(name: String? = "MySql")
+    // OracleMapper() : DslMapper
+    // MySqlMapper() : DslMapper
+    // DB2Mapper() : DslMapper
+    // TODO: 12 add all MySql mapping functions
 
     fun map(dsl: SQL2): String {
         return of(dsl)
@@ -29,6 +39,7 @@ object DslMapper {
             is SQL2.Update.Set -> ""
             is SQL2.Update.Set.Where -> ""
             is SQL2.Update.Set.Where.Eq -> ""
+            is SQL2.Update.delete -> ""
         }
     }
 
@@ -81,3 +92,6 @@ object DslMapper {
                 .fold("") { a, b -> a + b }
     }
 }
+
+class MySqlDslMapper : DslMapper()
+class OracleDslMapper : DslMapper()
