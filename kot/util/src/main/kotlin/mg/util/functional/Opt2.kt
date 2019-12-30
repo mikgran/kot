@@ -24,7 +24,7 @@ class Opt2<T : Any> {
 
     fun get() = value
 
-    fun <R : Any> map(mapper: (T) -> R): Opt2<R> = when {
+    fun <R : Any> map(mapper: (T) -> R?): Opt2<R> = when {
         isPresent() -> of(mapper(lazyT))
         else -> empty()
     }
