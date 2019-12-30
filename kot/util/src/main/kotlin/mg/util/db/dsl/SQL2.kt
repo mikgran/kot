@@ -1,5 +1,7 @@
 package mg.util.db.dsl
 
+// A Simple data holding class that holds a list
+// of parameters for Dsl to Sql building.
 sealed class SQL2(val t: Any) {
 
     data class Parameters(

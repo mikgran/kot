@@ -9,7 +9,5 @@ object DslMapperFactory {
             "oracle" -> OracleDslMapper()
             else -> throw Exception("No such implementation: $name")
         }
-
     }
-
 }
