@@ -2,9 +2,9 @@ package mg.util.db.dsl
 
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
+import mg.util.db.dsl.SQL2.Parameters
 import mg.util.db.dsl.mysql.*
 import mg.util.functional.Opt2.Factory.of
-import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
 // DDL, DML
@@ -32,9 +32,19 @@ open class DslMapper {
 
         val info = sql.parameters()
 
-        return when (val action = info.action) {
-            is SQL2.Select -> buildSelectFragment(info, action)
-            is SQL2.Select.Join -> ""
+        // buildFieldFragments(info)
+        // buildTableFragments(info)
+
+        buildFragment(info.action, info)
+
+        return ""
+    }
+
+
+    private fun buildFragment(sql: SQL2?, info: Parameters) {
+        return when (sql) {
+            is SQL2.Select -> buildSelect(info, sql)
+            is SQL2.Select.Join -> buildJoinFieldFragments(info, sql)
             is SQL2.Select.Join.Where,
             is SQL2.Select.Join.Where.Eq,
             is SQL2.Select.Where,
@@ -44,55 +54,34 @@ open class DslMapper {
             is SQL2.Update.Set.Where -> ""
             is SQL2.Update.Set.Where.Eq -> ""
             is SQL2.Update.delete -> ""
-            else -> throw Exception("Action not supported: $action")
+            else -> throw Exception("Action not supported: $sql")
         }
     }
 
-    private fun buildSelectFragment(info: SQL2.Parameters, select: SQL2.Select?): String {
+    private fun buildSelect(info: Parameters, select: SQL2.Select?): {
 
-        val uid = of(select)
-                .map { it.t }
-                .map { it::class.java.simpleName }
-                .map { UidBuilder.buildUniqueId(it) }
-
-        val alias = of(uid)
-                .map { AliasBuilder.build(it) }
-
+        val (uid, alias) = buildUidAndAlias(select)
         // "SELECT $p.address, $p.rentInCents, $a.fullAddress FROM $p2 $p JOIN $a2 $a"
 
-        val fields = of(info.joins)
-                .lmap(this::buildTypeFields)
-
-        val tables = of(info.joins)
-                .mapWith(uid, alias) { joins, actionUid, actionAlias ->
-                    var tables = "$actionUid $actionAlias "
-                    val mappedJoins = joins.map { sql2: SQL2 ->
-                        val (typeUid, typeAlias) = getUidAndAlias(sql2)
-                        "$typeUid $typeAlias"
-                    }
-                    XXX
-                    (listOf(tables) + mappedJoins).joinToString(",")
-                }
-
-        return "SELECT $fields FROM $tables"
+        return = "SELECT ${info.fieldFragments.joinToString(",")} FROM ${info.tableFragments.joinToString(",")}"
     }
 
-    private fun buildTypeFields(sql2: SQL2): String {
-        val (_, alias) = getUidAndAlias(sql2)
-        return sql2.t::class.declaredMemberProperties
-                .joinToString(",") { p: KProperty1<out Any, Any?> ->
-                    "${alias}.${p.name}"
-                }
+    private fun buildJoinFieldFragments(info: Parameters, joinSql: SQL2): String {
+        val (_, alias) = buildUidAndAlias(joinSql)
+        joinSql.t::class.declaredMemberProperties
+                .map { "${alias}.${it.name}" }
+                .apply { info.fieldFragments += this }
+        return ""
     }
 
-    private fun getUidAndAlias(sql2: SQL2): Pair<String, String> {
-        val uid = UidBuilder.buildUniqueId(sql2.t)
+    private fun buildUidAndAlias(sql2: SQL2?): Pair<String, String> {
+        val uid = UidBuilder.buildUniqueId(sql2?.t ?: "")
         val alias = AliasBuilder.build(uid)
         return uid to alias
     }
 
     //
-    // Old functionality:
+    // Old functionality
     //
     fun map(block: BuildingBlock): String = map(block.list())
 
