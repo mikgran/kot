@@ -127,7 +127,7 @@ internal class DslMapperTest {
         assertEquals("SELECT $p.firstName, $p.lastName FROM $uid AS $p WHERE $p.firstName = 'name'", candidate)
     }
 
-    // @Test
+    @Test
     fun testDslV2() {
 
         val sss = SQL2 select PersonB() where PersonB::firstName eq "name"

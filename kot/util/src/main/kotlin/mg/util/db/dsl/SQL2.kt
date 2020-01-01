@@ -9,7 +9,8 @@ sealed class SQL2(val t: Any) {
             val joins: MutableList<SQL2> = mutableListOf(),
             val wheres: MutableList<SQL2> = mutableListOf(),
             val fieldFragments: MutableList<String> = mutableListOf(),
-            val tableFragments: MutableList<String> = mutableListOf()
+            val tableFragments: MutableList<String> = mutableListOf(),
+            val whereFragments: MutableList<String> = mutableListOf()
     )
 
     fun parameters() = parameters!!

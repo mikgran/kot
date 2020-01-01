@@ -5,6 +5,7 @@ import mg.util.db.UidBuilder
 import mg.util.db.dsl.SQL2.Parameters
 import mg.util.db.dsl.mysql.*
 import mg.util.functional.Opt2.Factory.of
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
 // DDL, DML
@@ -32,46 +33,51 @@ open class DslMapper {
 
         val info = sql.parameters()
 
-        // buildFieldFragments(info)
-        // buildTableFragments(info)
+        info.joins.forEach { buildFragment(info, it) }
+        info.wheres.forEach { buildFragment(info, it) }
 
-        buildFragment(info.action, info)
-
-        return ""
+        return buildFragment(info, info.action)
     }
 
-
-    private fun buildFragment(sql: SQL2?, info: Parameters) {
+    private fun buildFragment(info: Parameters, sql: SQL2?): String {
         return when (sql) {
             is SQL2.Select -> buildSelect(info, sql)
-            is SQL2.Select.Join -> buildJoinFieldFragments(info, sql)
+            is SQL2.Select.Join -> buildJoinFieldFragments(sql)
             is SQL2.Select.Join.Where,
+            is SQL2.Select.Where -> buildWhereFieldFragment(sql as SQL2.Select.Where)
             is SQL2.Select.Join.Where.Eq,
-            is SQL2.Select.Where,
             is SQL2.Select.Where.Eq -> ""
             is SQL2.Update -> ""
             is SQL2.Update.Set -> ""
             is SQL2.Update.Set.Where -> ""
             is SQL2.Update.Set.Where.Eq -> ""
             is SQL2.Update.delete -> ""
-            else -> throw Exception("Action not supported: $sql")
+            null -> throw Exception("Action not supported: null")
         }
     }
 
-    private fun buildSelect(info: Parameters, select: SQL2.Select?): {
-
-        val (uid, alias) = buildUidAndAlias(select)
-        // "SELECT $p.address, $p.rentInCents, $a.fullAddress FROM $p2 $p JOIN $a2 $a"
-
-        return = "SELECT ${info.fieldFragments.joinToString(",")} FROM ${info.tableFragments.joinToString(",")}"
+    private fun buildWhereFieldFragment(sql: SQL2.Select.Where): String {
+        val uidt = UidBuilder.buildUniqueId(sql.t.javaClass.kotlin)
+        return of(sql.t)
+                .mapTo(KProperty1::class)
+                .mapWith(uidt) { kp, uid -> "${uid}.${kp.name}" }
+                .toString()
     }
 
-    private fun buildJoinFieldFragments(info: Parameters, joinSql: SQL2): String {
-        val (_, alias) = buildUidAndAlias(joinSql)
-        joinSql.t::class.declaredMemberProperties
-                .map { "${alias}.${it.name}" }
-                .apply { info.fieldFragments += this }
-        return ""
+    private fun buildSelect(info: Parameters, select: SQL2.Select?): String {
+        info.tableFragments += buildTableFragment(select as SQL2)
+        info.fieldFragments += buildJoinFieldFragments(select as SQL2)
+        return "SELECT ${info.fieldFragments.joinToString(",")} FROM ${info.tableFragments.joinToString(",")}"
+    }
+
+    private fun buildTableFragment(sql: SQL2): String {
+        val (uid, alias) = buildUidAndAlias(sql)
+        return "$uid $alias"
+    }
+
+    private fun buildJoinFieldFragments(sql: SQL2): String {
+        val (_, alias) = buildUidAndAlias(sql)
+        return sql.t::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name}" }
     }
 
     private fun buildUidAndAlias(sql2: SQL2?): Pair<String, String> {
