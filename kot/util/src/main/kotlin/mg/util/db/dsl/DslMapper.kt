@@ -5,6 +5,7 @@ import mg.util.db.UidBuilder
 import mg.util.db.dsl.SQL2.Parameters
 import mg.util.db.dsl.mysql.*
 import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.rcv
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -42,16 +43,18 @@ open class DslMapper {
     private fun buildFragment(info: Parameters, sql: SQL2?): String {
         return when (sql) {
             is SQL2.Select -> buildSelect(info, sql)
-            is SQL2.Select.Join -> buildJoinFieldFragments(sql)
+            is SQL2.Select.Join -> buildJoinFieldFragment(sql).apply { info.fieldFragments += this }
             is SQL2.Select.Join.Where,
-            is SQL2.Select.Where -> buildWhereFieldFragment(sql as SQL2.Select.Where)
+            is SQL2.Update.Set.Where,
+            is SQL2.Select.Where ->
+                buildWhereFieldFragment(sql as SQL2.Select.Where)
+                        .apply { info.whereFragments += this }
             is SQL2.Select.Join.Where.Eq,
+            is SQL2.Update.Set.Where.Eq,
             is SQL2.Select.Where.Eq -> ""
             is SQL2.Update -> ""
             is SQL2.Update.Set -> ""
-            is SQL2.Update.Set.Where -> ""
-            is SQL2.Update.Set.Where.Eq -> ""
-            is SQL2.Update.delete -> ""
+            is SQL2.Delete -> ""
             null -> throw Exception("Action not supported: null")
         }
     }
@@ -66,16 +69,23 @@ open class DslMapper {
 
     private fun buildSelect(info: Parameters, select: SQL2.Select?): String {
         info.tableFragments += buildTableFragment(select as SQL2)
-        info.fieldFragments += buildJoinFieldFragments(select as SQL2)
-        return "SELECT ${info.fieldFragments.joinToString(",")} FROM ${info.tableFragments.joinToString(",")}"
+        info.fieldFragments += buildJoinFieldFragment(select as SQL2)
+
+        return StringBuilder().apply {
+            append("SELECT ${info.fieldFragments.joinToString(",")}")
+            append(" FROM ${info.tableFragments.joinToString(",")}")
+            if (info.whereFragments.isNotEmpty()) {
+                append(" WHERE ${info.whereFragments.joinToString(" AND ")}")
+            }
+        }.toString()
     }
 
     private fun buildTableFragment(sql: SQL2): String {
         val (uid, alias) = buildUidAndAlias(sql)
-        return "$uid $alias"
+        return "$uid AS $alias"
     }
 
-    private fun buildJoinFieldFragments(sql: SQL2): String {
+    private fun buildJoinFieldFragment(sql: SQL2): String {
         val (_, alias) = buildUidAndAlias(sql)
         return sql.t::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name}" }
     }

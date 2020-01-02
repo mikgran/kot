@@ -28,9 +28,13 @@ sealed class SQL2(val t: Any) {
             is Select.Join -> parameters?.joins?.add(type)
             is Select.Join.Where,
             is Select.Join.Where.Eq,
+            is Update.Set.Where,
+            is Update.Set.Where.Eq,
             is Select.Where,
             is Select.Where.Eq -> parameters?.wheres?.add(type)
             is Update -> parameters?.action = type
+            is Update.Set -> {}
+            is Delete -> parameters?.action = type // TODO: -15 coverage
         }
         return type
     }
@@ -85,10 +89,10 @@ sealed class SQL2(val t: Any) {
             }
         }
 
-        class delete(t: Any) : SQL2(t)
+
 
 
     }
 
-
+    class Delete(t: Any) : SQL2(t)
 }
