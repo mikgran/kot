@@ -5,13 +5,21 @@ import mg.util.common.PredicateComposition.Companion.and
 import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.PredicateComposition.Companion.rangeTo
+import mg.util.db.AliasBuilder
+import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import kotlin.reflect.KClass
 
 internal class FunctionCompositionTest {
 
     @Test
     fun test_FunctionAndPredicateComposition() {
+
+        // workaround for function composition "can not infer T"
+        // val buildUid: (KClass<out Any>) -> String = UidBuilder::build
+        // val buildAlias: (String) -> String = AliasBuilder::build
+        // val buildTAlias = buildUid + buildAlias
 
         fun same(value: Int): Int = value
         fun twice(value: Int): Int = value * 2

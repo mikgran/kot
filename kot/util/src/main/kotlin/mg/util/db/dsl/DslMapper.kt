@@ -8,6 +8,7 @@ import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.javaField
 
 // DDL, DML
 // CREATE, SELECT, UPDATE, DELETE, ALTER, RENAME, TRUNCATE(remove all rows from table), DROP
@@ -43,15 +44,13 @@ open class DslMapper {
     private fun buildFragment(info: Parameters, sql: SQL2?): String {
         return when (sql) {
             is SQL2.Select -> buildSelect(info, sql)
-            is SQL2.Select.Join -> buildJoinFieldFragment(sql).apply { info.fieldFragments += this }
+            is SQL2.Select.Join -> buildJoinFieldFragment(sql).also { info.fieldFragments += it }
+            is SQL2.Select.Where,
             is SQL2.Select.Join.Where,
-            is SQL2.Update.Set.Where,
-            is SQL2.Select.Where ->
-                buildWhereFieldFragment(sql as SQL2.Select.Where)
-                        .apply { info.whereFragments += this }
+            is SQL2.Update.Set.Where -> buildWhereFieldFragment(sql).also { info.whereFragments += it }
+            is SQL2.Select.Where.Eq,
             is SQL2.Select.Join.Where.Eq,
-            is SQL2.Update.Set.Where.Eq,
-            is SQL2.Select.Where.Eq -> ""
+            is SQL2.Update.Set.Where.Eq -> buildEqFragment(sql).also { info.whereFragments += it }
             is SQL2.Update -> ""
             is SQL2.Update.Set -> ""
             is SQL2.Delete -> ""
@@ -59,25 +58,37 @@ open class DslMapper {
         }
     }
 
-    private fun buildWhereFieldFragment(sql: SQL2.Select.Where): String {
-        val uidt = UidBuilder.buildUniqueId(sql.t.javaClass.kotlin)
-        return of(sql.t)
-                .mapTo(KProperty1::class)
-                .mapWith(uidt) { kp, uid -> "${uid}.${kp.name}" }
+    private fun buildEqFragment(sql: SQL2): String = of(sql.t).map { " = '$it'" }.toString()
+
+    private fun buildWhereFieldFragment(sql: SQL2): String {
+
+        val kProperty1 = of(sql.t).mapTo(KProperty1::class)
+
+        val alias = kProperty1
+                .map { it.javaField?.declaringClass?.kotlin }
+                .map(UidBuilder::build)
+                .map(AliasBuilder::build)
+
+        return kProperty1
+                .mapWith(alias) { p, a -> "${a}.${p.name}" }
                 .toString()
     }
 
     private fun buildSelect(info: Parameters, select: SQL2.Select?): String {
-        info.tableFragments += buildTableFragment(select as SQL2)
-        info.fieldFragments += buildJoinFieldFragment(select as SQL2)
-
-        return StringBuilder().apply {
-            append("SELECT ${info.fieldFragments.joinToString(",")}")
-            append(" FROM ${info.tableFragments.joinToString(",")}")
-            if (info.whereFragments.isNotEmpty()) {
-                append(" WHERE ${info.whereFragments.joinToString(" AND ")}")
-            }
-        }.toString()
+        info.tableFragments.add(0, buildTableFragment(select as SQL2))
+        info.fieldFragments.add(0, buildJoinFieldFragment(select as SQL2))
+        val whereStr = " WHERE "
+        val whereFragmentsSize = info.whereFragments.size
+        val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
+        return of(StringBuilder())
+                .rcv {
+                    append("SELECT ${info.fieldFragments.joinToString(",")}")
+                    append(" FROM ${info.tableFragments.joinToString(",")}")
+                }
+                .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + info.whereFragments.joinToString("")) })
+                .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + info.whereFragments.joinToString(" AND")) })
+                .result()
+                .toString()
     }
 
     private fun buildTableFragment(sql: SQL2): String {
