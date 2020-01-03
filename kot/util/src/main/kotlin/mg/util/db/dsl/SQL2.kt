@@ -24,7 +24,10 @@ sealed class SQL2(val t: Any) {
         }
 
         when (type) {
-            is Select -> parameters?.action = type
+            is Delete,
+            is Create,
+            is Select,
+            is Update -> parameters?.action = type
             is Select.Join -> parameters?.joins?.add(type)
             is Select.Join.Where,
             is Select.Join.Where.Eq,
@@ -32,9 +35,8 @@ sealed class SQL2(val t: Any) {
             is Update.Set.Where.Eq,
             is Select.Where,
             is Select.Where.Eq -> parameters?.wheres?.add(type)
-            is Update -> parameters?.action = type
             is Update.Set -> {}
-            is Delete -> parameters?.action = type // TODO: -15 coverage
+            // TODO: -15 coverage
         }
         return type
     }
@@ -42,6 +44,7 @@ sealed class SQL2(val t: Any) {
     companion object {
         infix fun select(t: Any) = Select(t).also { it.parameters = Parameters(); it.add(it) }
         infix fun update(t: Any) = Update(t).also { it.parameters = Parameters(); it.add(it) }
+        infix fun create(t: Any) = Create(t).also { it.parameters = Parameters(); it.add(it) }
     }
 
     // val sql = SQL2 select Person() where Person::firstName eq "name"
@@ -89,10 +92,8 @@ sealed class SQL2(val t: Any) {
             }
         }
 
-
-
-
     }
 
+    class Create(t: Any) : SQL2(t)
     class Delete(t: Any) : SQL2(t)
 }

@@ -54,8 +54,13 @@ open class DslMapper {
             is SQL2.Update -> ""
             is SQL2.Update.Set -> ""
             is SQL2.Delete -> ""
+            is SQL2.Create -> buildCreate(info, sql)
             null -> throw Exception("Action not supported: null")
         }
+    }
+
+    private fun buildCreate(info: Parameters, sql: SQL2): String {
+        return MySqlCreateBuilder().buildCreate(info, sql)
     }
 
     private fun buildEqFragment(sql: SQL2): String = of(sql.t).map { " = '$it'" }.toString()

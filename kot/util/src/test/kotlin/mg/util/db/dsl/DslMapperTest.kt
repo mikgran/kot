@@ -15,25 +15,12 @@ internal class DslMapperTest {
     private val mapper = DslMapperFactory.get()
 
     @Test
-    fun testBuildingSqlFromDsl1() {
+    fun testCreatingANewTable() {
 
-        val sql = MySql() select PersonB() where PersonB::firstName eq "name"
-
-        val candidate = mapper.map(sql.list())
-
-        val p = AliasBuilder.build(buildUniqueId(PersonB()))
-
-        assertHasContent(candidate)
-        assertEquals("SELECT $p.firstName, $p.lastName FROM PersonB608543900 $p WHERE $p.firstName = 'name'", candidate)
-    }
-
-    @Test
-    fun testCreatingANewTable1() {
-
-        val sql = MySql() create PersonB()
+        val sql = SQL2 create PersonB()
 
         val uid = UidBuilder.build(PersonB::class)
-        val candidate = mapper.map(sql.list())
+        val candidate = mapper.map(sql)
 
         assertEquals("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", candidate)
     }
@@ -128,7 +115,7 @@ internal class DslMapperTest {
     }
 
     @Test
-    fun testDslV2() {
+    fun testDsl_() {
 
         val sss = SQL2 select PersonB() where PersonB::firstName eq "name"
         
