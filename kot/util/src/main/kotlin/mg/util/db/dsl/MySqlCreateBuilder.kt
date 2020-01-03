@@ -12,7 +12,7 @@ import kotlin.reflect.full.declaredMemberProperties
 
 open class MySqlCreateBuilder {
 
-    fun buildCreate(info: Parameters, sql2: SQL2): String {
+    fun buildCreate(@Suppress("UNUSED_PARAMETER") info: Parameters, sql2: SQL2): String {
         // type (f1, f2, f3, custom1, list<custom2>)
         // create table type f1, f2, f4
         // create table custom1 f5
