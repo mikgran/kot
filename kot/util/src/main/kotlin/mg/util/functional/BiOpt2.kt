@@ -11,8 +11,8 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
     @Suppress("unused")
     fun original() = left
     fun result() = right
-
-    fun 
+    fun rightElseLeft() = if (right.isPresent()) right else left
+    fun resultElseOrig() = rightElseLeft()
 
     fun <R : Any, V : Any> match(ref: R,
                                  predicate: (R) -> Boolean,
