@@ -118,4 +118,57 @@ internal class BiOpt2Test {
             biOpt.getRightOrElseThrow { Exception() }
         }
     }
+
+    @Test
+    fun testRightElseLeft() {
+
+        val biOpt = BiOpt2.of<String, String>("a", null)
+                .apply {
+                    assertNotNull(left())
+                    assertNotNull(right())
+                    assertNotNull(left().get())
+                    assertNull(right().get())
+                }
+
+        biOpt.resultElseOrig()
+                .also {
+                    assertEquals("a", it.get())
+                }
+
+        val biOpt2 = BiOpt2.of("a", "b")
+                .apply {
+                    assertNotNull(left())
+                    assertNotNull(right())
+                    assertEquals("a", left().get())
+                    assertEquals("b", right().get())
+                }
+
+        biOpt2.rightElseLeft()
+                .also {
+                    assertNotNull(it)
+                    assertEquals("b", it.get())
+                }
+    }
+
+    @Test
+    fun testToRightToLeft() {
+
+        BiOpt2.of<String, String>("a", null)
+                .toRight()
+                .apply {
+                    assertNotNull(left())
+                    assertNotNull(right())
+                    assertEquals("a", left().get())
+                    assertEquals("a", right().get())
+                }
+
+        BiOpt2.of("a", "b")
+                .toLeft()
+                .apply {
+                    assertNotNull(left())
+                    assertNotNull(right())
+                    assertEquals("b", left().get())
+                    assertEquals("b", right().get())
+                }
+    }
 }

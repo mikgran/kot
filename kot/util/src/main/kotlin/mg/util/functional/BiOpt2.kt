@@ -10,6 +10,7 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
 
     @Suppress("unused")
     fun original() = left
+
     fun result() = right
     fun rightElseLeft() = if (right.isPresent()) right else left
     fun resultElseOrig() = rightElseLeft()
@@ -55,6 +56,24 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
     fun getRightOrElseThrow(exceptionProducer: () -> Throwable): V? = when {
         right.isPresent() -> right.get()
         else -> throw exceptionProducer()
+    }
+
+    fun toRight(): BiOpt2<T, T> {
+        return when {
+            left.isPresent() -> of(left(), left())
+            else -> empty()
+        }
+    }
+
+    fun toLeft(): BiOpt2<V, V> {
+        return when {
+            right().isPresent() -> of(right(), right())
+            else -> empty()
+        }
+    }
+
+    override fun toString(): String {
+        return "($left, $right)"
     }
 
     companion object Factory {
