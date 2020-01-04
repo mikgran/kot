@@ -27,24 +27,24 @@ open class DslMapper {
 
     fun map(dsl: SQL2): String {
         return of(dsl)
-                .map(::buildSql2)
+                .map(::build)
                 .getOrElseThrow { Exception("map: Unable to build sql for dsl: $dsl") }!!
     }
 
-    private fun buildSql2(sql: SQL2): String {
+    private fun build(sql: SQL2): String {
 
         val info = sql.parameters()
 
-        info.joins.forEach { buildFragment(info, it) }
-        info.wheres.forEach { buildFragment(info, it) }
+        info.joins.forEach { build(info, it) }
+        info.wheres.forEach { build(info, it) }
 
-        return buildFragment(info, info.action)
+        return build(info, info.action)
     }
 
-    private fun buildFragment(info: Parameters, sql: SQL2?): String {
+    private fun build(info: Parameters, sql: SQL2?): String {
         return when (sql) {
             is SQL2.Select -> buildSelect(info, sql)
-            is SQL2.Select.Join -> buildJoinFieldFragment(sql).also { info.fieldFragments += it }
+            is SQL2.Select.Join -> buildAndAddJoinFieldAndTableFragments(info, sql)
             is SQL2.Select.Where,
             is SQL2.Select.Join.Where,
             is SQL2.Update.Set.Where -> buildWhereFieldFragment(sql).also { info.whereFragments += it }
@@ -57,6 +57,12 @@ open class DslMapper {
             is SQL2.Create -> buildCreate(info, sql)
             null -> throw Exception("Action not supported: null")
         }
+    }
+
+    private fun buildAndAddJoinFieldAndTableFragments(info: Parameters, sql: SQL2.Select.Join): String {
+        info.fieldFragments += buildFieldFragment(sql)
+        info.tableFragments += buildTableFragment(sql)
+        return ""
     }
 
     private fun buildCreate(info: Parameters, sql: SQL2): String {
@@ -81,7 +87,7 @@ open class DslMapper {
 
     private fun buildSelect(info: Parameters, select: SQL2.Select?): String {
         info.tableFragments.add(0, buildTableFragment(select as SQL2))
-        info.fieldFragments.add(0, buildJoinFieldFragment(select as SQL2))
+        info.fieldFragments.add(0, buildFieldFragment(select as SQL2))
         val whereStr = " WHERE "
         val whereFragmentsSize = info.whereFragments.size
         val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
@@ -93,6 +99,8 @@ open class DslMapper {
                 .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + info.whereFragments.joinToString("")) })
                 .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + info.whereFragments.joinToString(" AND")) })
                 .result()
+                .case({ info.joins.isNotEmpty() }, { it.append(info.joins) })
+                .result()
                 .toString()
     }
 
@@ -101,7 +109,7 @@ open class DslMapper {
         return "$uid AS $alias"
     }
 
-    private fun buildJoinFieldFragment(sql: SQL2): String {
+    private fun buildFieldFragment(sql: SQL2): String {
         val (_, alias) = buildUidAndAlias(sql)
         return sql.t::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name}" }
     }

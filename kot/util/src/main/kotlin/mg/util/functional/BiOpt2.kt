@@ -12,6 +12,8 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
     fun original() = left
     fun result() = right
 
+    fun 
+
     fun <R : Any, V : Any> match(ref: R,
                                  predicate: (R) -> Boolean,
                                  mapper: (R) -> V): BiOpt2<T, V> {

@@ -28,12 +28,12 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithListReference() {
 
-        val sql = MySql() create Building("some address")
+        val sql = SQL2 create Building("some address")
 
         val buildingUid = UidBuilder.build(Building::class)
         val floorUid = UidBuilder.build(Floor::class)
 
-        val candidate = mapper.map(sql.list())
+        val candidate = mapper.map(sql)
 
         assertNotNull(candidate)
         assertEquals("CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
@@ -47,7 +47,7 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithSimpleReference() {
 
-        val sql = MySql() create Place(Address("somePlace"), 100000)
+        val sql = SQL2 create Place(Address("somePlace"), 100000)
 
         val placeUid = UidBuilder.build(Place::class)
         val addressUid = UidBuilder.build(Address::class)
@@ -83,9 +83,9 @@ internal class DslMapperTest {
 
         // FIXME 10: "on a.f = b.f2", needs to be completed
 
-        val sql = MySql() select Place() join Address()
+        val sql = SQL2 select Place() join Address()
 
-        val candidate = mapper.map(sql.list())
+        val candidate = mapper.map(sql)
 
         val p2 = buildUniqueId(Place())
         val a2 = buildUniqueId(Address())
@@ -115,10 +115,10 @@ internal class DslMapperTest {
     }
 
     @Test
-    fun testDsl_() {
+    fun testDsl1() {
 
         val sss = SQL2 select PersonB() where PersonB::firstName eq "name"
-        
+
         val candidate = mapper.map(sss)
 
         val uid = buildUniqueId(PersonB())
