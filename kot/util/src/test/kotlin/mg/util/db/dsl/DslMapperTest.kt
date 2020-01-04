@@ -124,7 +124,7 @@ internal class DslMapperTest {
         val p = AliasBuilder.build(uid)
 
         assertHasContent(candidate)
-        assertEquals("SELECT $p.firstName, $p.lastName FROM $uid AS $p WHERE $p.firstName = 'name'", candidate)
+        assertEquals("SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'name'", candidate)
     }
 
 }

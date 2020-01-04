@@ -61,7 +61,7 @@ open class DslMapper {
 
     private fun buildAndAddJoinFieldAndTableFragments(info: Parameters, sql: SQL2.Select.Join): String {
         info.fieldFragments += buildFieldFragment(sql)
-        info.tableFragments += buildTableFragment(sql)
+        info.joinFragments += buildTableFragment(sql)
         return ""
     }
 
@@ -93,8 +93,8 @@ open class DslMapper {
         val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
         return of(StringBuilder())
                 .rcv {
-                    append("SELECT ${info.fieldFragments.joinToString(",")}")
-                    append(" FROM ${info.tableFragments.joinToString(",")}")
+                    append("SELECT ${info.fieldFragments.joinToString(", ")}")
+                    append(" FROM ${info.tableFragments.joinToString(", ")}")
                 }
                 .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + info.whereFragments.joinToString("")); it })
                 .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + info.whereFragments.joinToString(" AND")); it })
@@ -102,15 +102,17 @@ open class DslMapper {
                 .result()
                 .ifPresent {
                     if (info.joins.isNotEmpty()) {
-                        it.append(info.joins.joinToString(""))
+                        it.append(" JOIN ")
+                        it.append(info.joinFragments.joinToString(", "))
                     }
                 }
+                .get()
                 .toString()
     }
 
     private fun buildTableFragment(sql: SQL2): String {
         val (uid, alias) = buildUidAndAlias(sql)
-        return "$uid AS $alias"
+        return "$uid $alias"
     }
 
     private fun buildFieldFragment(sql: SQL2): String {

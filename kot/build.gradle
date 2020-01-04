@@ -16,6 +16,8 @@ allprojects {
 
     group = 'mg.kot'
     version = '1.0-SNAPSHOT'
+
+    ext.failedTests = []
 }
 
 subprojects {
@@ -40,7 +42,7 @@ subprojects {
     }
 
     repositories {
-        flatDir { dir rootProject.file( 'libs' ) }
+        flatDir { dir rootProject.file('libs') }
         // mavenLocal()
         maven { url "http://repo.maven.apache.org/maven2" }
     }
@@ -54,6 +56,15 @@ subprojects {
 
     test {
         useJUnitPlatform()
+
+        afterTest { TestDescriptor descriptor, TestResult result ->
+
+            if (result.resultType == TestResult.ResultType.FAILURE) {
+                def failedTestStr = "${descriptor.className}.${descriptor.name}"
+                def length = failedTestStr.length()
+                failedTests << failedTestStr.substring(0, length - 2)
+            }
+        }
 
         testLogging {
             events TestLogEvent.FAILED,
@@ -75,6 +86,14 @@ subprojects {
                         "${result.successfulTestCount} succeeded, " +
                         "${result.failedTestCount} failed, " +
                         "${result.skippedTestCount} skipped"
+
+                if (!failedTests.empty) {
+                    print "Failed tests: gradle test --tests="
+                    failedTests.each { failedTest ->
+                        println failedTest.toString()
+                    }
+                    println ""
+                }
             }
         }
     }
