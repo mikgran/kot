@@ -42,6 +42,11 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
                 .getOrElse(this)
     }
 
+    fun caseDefault(mapper: (T) -> V) : BiOpt2<T, V> = when {
+        left.isPresent() -> of(left(), Opt2.of(mapper(left.get() as T)))
+        else -> this
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun filter(filterFunction: (T) -> Boolean): BiOpt2<T, V> = when {
         left.isPresent() && filterFunction(left.get() as T) -> this

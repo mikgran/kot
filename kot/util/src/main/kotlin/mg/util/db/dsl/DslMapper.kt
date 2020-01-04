@@ -98,7 +98,7 @@ open class DslMapper {
                 }
                 .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + info.whereFragments.joinToString("")); it })
                 .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + info.whereFragments.joinToString(" AND")); it })
-                .case({ true }, { it })
+                .caseDefault { it }
                 .result()
                 .ifPresent {
                     if (info.joins.isNotEmpty()) {
