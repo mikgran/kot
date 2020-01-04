@@ -96,11 +96,15 @@ open class DslMapper {
                     append("SELECT ${info.fieldFragments.joinToString(",")}")
                     append(" FROM ${info.tableFragments.joinToString(",")}")
                 }
-                .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + info.whereFragments.joinToString("")) })
-                .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + info.whereFragments.joinToString(" AND")) })
+                .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + info.whereFragments.joinToString("")); it })
+                .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + info.whereFragments.joinToString(" AND")); it })
+                .case({ true }, { it })
                 .result()
-                .case({ info.joins.isNotEmpty() }, { it.append(info.joins) })
-                .result()
+                .ifPresent {
+                    if (info.joins.isNotEmpty()) {
+                        it.append(info.joins.joinToString(""))
+                    }
+                }
                 .toString()
     }
 
@@ -158,7 +162,7 @@ open class DslMapper {
     }
 
     // Select, Where, Value
-    // Select, Where, Value, Join, JoinValue, Join, JoinValue
+// Select, Where, Value, Join, JoinValue, Join, JoinValue
     private fun buildSelectNew(blocks: MutableList<BuildingBlock>): String {
 
         val dp = blocks.first().buildDslParameters()

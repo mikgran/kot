@@ -4,7 +4,6 @@ import mg.util.common.Common.hasContent
 import mg.util.db.AliasBuilder
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
-import mg.util.db.UidBuilder.buildUniqueId
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import mg.util.db.dsl.mysql.Sql as MySql
@@ -87,8 +86,8 @@ internal class DslMapperTest {
 
         val candidate = mapper.map(sql)
 
-        val p2 = buildUniqueId(Place())
-        val a2 = buildUniqueId(Address())
+        val p2 = UidBuilder.buildUniqueId(Place())
+        val a2 = UidBuilder.buildUniqueId(Address())
         val p = AliasBuilder.build(p2)
         val a = AliasBuilder.build(a2)
 
@@ -107,7 +106,7 @@ internal class DslMapperTest {
 
         val candidate = mapper.map(sql.list())
 
-        val uid = buildUniqueId(PersonB())
+        val uid = UidBuilder.buildUniqueId(PersonB())
         val p = AliasBuilder.build(uid)
 
         assertHasContent(candidate)
@@ -117,11 +116,11 @@ internal class DslMapperTest {
     @Test
     fun testDsl1() {
 
-        val sss = SQL2 select PersonB() where PersonB::firstName eq "name"
+        val sql = SQL2 select PersonB() where PersonB::firstName eq "name"
 
-        val candidate = mapper.map(sss)
+        val candidate = mapper.map(sql)
 
-        val uid = buildUniqueId(PersonB())
+        val uid = UidBuilder.buildUniqueId(PersonB())
         val p = AliasBuilder.build(uid)
 
         assertHasContent(candidate)
