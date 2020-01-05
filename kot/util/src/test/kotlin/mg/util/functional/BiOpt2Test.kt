@@ -171,4 +171,42 @@ internal class BiOpt2Test {
                     assertEquals("b", right().get())
                 }
     }
+
+    @Test
+    fun testCaseDefault() {
+
+        BiOpt2.of<String, String>("a", null)
+                .case({ it == "a" }, { it + "2" })
+                .caseDefault { it }
+                .also {
+                    assertNotNull(it)
+                    assertNotNull(it.left())
+                    assertNotNull(it.right())
+                    assertEquals("a", it.left().get())
+                    assertEquals("a2", it.right().get())
+                }
+
+        BiOpt2.of<String, String>("a", null)
+                .case({ it == "c" }, { it + "2" })
+                .caseDefault { it + "3" }
+                .also {
+                    assertNotNull(it)
+                    assertNotNull(it.left())
+                    assertNotNull(it.right())
+                    assertEquals("a", it.left().get())
+                    assertEquals("a3", it.right().get())
+                }
+
+        BiOpt2.of<String, String>(null, null)
+                .case({ it == "a" }, { "${it}2" })
+                .caseDefault { "b" } // can't map nothing
+                .also {
+                    assertNotNull(it)
+                    assertNotNull(it.left())
+                    assertNotNull(it.right())
+                    assertNull(it.left().get())
+                    assertNull(it.right().get())
+                }
+    }
+
 }

@@ -43,7 +43,7 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
     }
 
     fun caseDefault(mapper: (T) -> V) : BiOpt2<T, V> = when {
-        left.isPresent() -> of(left(), Opt2.of(mapper(left.get() as T)))
+        left.isPresent() && !right.isPresent() -> of(left(), Opt2.of(mapper(left.get() as T)))
         else -> this
     }
 
