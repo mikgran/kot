@@ -2,19 +2,19 @@ apply plugin: 'java'
 
 dependencies {
 
-    compile 'mg.util:util:1.0-SNAPSHOT'
+    implementation 'mg.util:util:1.0-SNAPSHOT'
 
-    compile project(':mg.kot.util')
+    implementation project(':mg.kot.util')
 
-    compile 'org.glassfish.jersey.containers:jersey-container-jetty-http:2.25'
-    compile 'org.eclipse.jetty:jetty-util:9.4.13.v20181111'
-    compile 'org.glassfish.jersey.core:jersey-server:2.25'
-    compile 'org.glassfish.jersey.containers:jersey-container-servlet-core:2.25'
-    compile 'org.eclipse.jetty:jetty-servlet:9.4.13.v20181111'
-    compile 'org.eclipse.jetty:jetty-server:9.4.13.v20181111'
-    compile 'javax.xml.bind:jaxb-api:2.1'
-//    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-//    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    implementation 'org.glassfish.jersey.containers:jersey-container-jetty-http:2.25'
+    implementation 'org.eclipse.jetty:jetty-util:9.4.13.v20181111'
+    implementation 'org.glassfish.jersey.core:jersey-server:2.25'
+    implementation 'org.glassfish.jersey.containers:jersey-container-servlet-core:2.25'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.13.v20181111'
+    implementation 'org.eclipse.jetty:jetty-server:9.4.13.v20181111'
+    implementation 'javax.xml.bind:jaxb-api:2.1'
+//    implementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+//    implementation 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
 
 group = 'mg.kot'
