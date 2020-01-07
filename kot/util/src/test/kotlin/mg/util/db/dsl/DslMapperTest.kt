@@ -64,17 +64,19 @@ internal class DslMapperTest {
     fun testUpdate() {
 
         // UPDATE personb12345 SET field1 = new-value1, field2 = new-value2
-        val sql = MySql() update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
-
+        val sql = SQL2 update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
+        
         val uid = UidBuilder.build(PersonB::class)
 
-        val candidate = mapper.map(sql.list())
+        val candidate = mapper.map(sql)
 
         val expected = "UPDATE $uid SET firstName = 'newFirstName', lastName = 'newLastName'" +
                 " WHERE firstName = 'firstName'"
 
         assertNotNull(candidate)
         assertEquals(expected, candidate)
+
+
     }
 
     @Test
@@ -125,6 +127,9 @@ internal class DslMapperTest {
 
         assertHasContent(candidate)
         assertEquals("SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'name'", candidate)
+
+        // TOIMPROVE: test coverage
+        // TODO: 50  SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName AND = 'newFirstName' ANDp.lastName AND = 'newLastName'
     }
 
 }

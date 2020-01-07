@@ -7,10 +7,12 @@ sealed class SQL2(val t: Any) {
     data class Parameters(
             var action: SQL2? = null,
             val joins: MutableList<SQL2> = mutableListOf(),
+            val updates: MutableList<SQL2> = mutableListOf(),
             val wheres: MutableList<SQL2> = mutableListOf(),
             val fieldFragments: MutableList<String> = mutableListOf(),
             val tableFragments: MutableList<String> = mutableListOf(),
             val joinFragments: MutableList<String> = mutableListOf(),
+            val updateFragments: MutableList<String> = mutableListOf(),
             val whereFragments: MutableList<String> = mutableListOf()
     )
 
@@ -32,11 +34,12 @@ sealed class SQL2(val t: Any) {
             is Select.Join -> parameters?.joins?.add(type)
             is Select.Join.Where,
             is Select.Join.Where.Eq,
-            is Update.Set.Where,
-            is Update.Set.Where.Eq,
+            is Update.Set.Eq,
+            is Update.Set.Eq.Where,
             is Select.Where,
             is Select.Where.Eq -> parameters?.wheres?.add(type)
-            is Update.Set -> {}
+            is Update.Set -> parameters?.updates?.add(type)
+
             // TODO: -15 coverage
         }
         return type
@@ -63,6 +66,11 @@ sealed class SQL2(val t: Any) {
                 class Eq(t: Any) : SQL2(t) {
 
                     infix fun and(t: Any) = add(Where(t))
+                    class Where(t: Any) : SQL2(t) {
+
+                        infix fun eq(t: Any) = add(Eq(t))
+                        class Eq(t: Any) : SQL2(t)
+                    }
                 }
             }
         }
@@ -79,20 +87,36 @@ sealed class SQL2(val t: Any) {
     }
 
     class Update(t: Any) : SQL2(t) {
+
         infix fun set(t: Any) = add(Set(t))
         class Set(t: Any) : SQL2(t) {
 
-            infix fun where(t: Any) = add(Where(t))
-            class Where(t: Any) : SQL2(t) {
+            infix fun eq(t: Any) = add(Eq(t))
+            class Eq(t: Any) : SQL2(t) {
 
-                infix fun eq(t: Any) = add(Eq(t))
-                class Eq(t: Any) : SQL2(t) {
+                infix fun where(t: Any) = add(Where(t))
+                class Where(t: Any) : SQL2(t) {
 
-                    infix fun and(t: Any) = add(Where(t))
+                    infix fun eq(t: Any) = add(Eq(t))
+                    class Eq(t: Any) : SQL2(t)
+                }
+
+                infix fun and(t: Any) = add(And(t))
+                class And(t: Any) : SQL2(t) {
+
+                    infix fun eq(t: Any) = add(Eq(t))
+                    class Eq(t: Any) : SQL2(t) {
+
+                        infix fun where(t: Any) = add(Where(t))
+                        class Where(t: Any) : SQL2(t) {
+
+                            infix fun eq(t: Any) = add(Eq(t))
+                            class Eq(t: Any) : SQL2(t)
+                        }
+                    }
                 }
             }
         }
-
     }
 
     class Create(t: Any) : SQL2(t)

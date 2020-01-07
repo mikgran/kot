@@ -33,30 +33,47 @@ open class DslMapper {
 
     private fun build(sql: SQL2): String {
 
-        val info = sql.parameters()
+        val parameters = sql.parameters()
 
-        info.joins.forEach { build(info, it) }
-        info.wheres.forEach { build(info, it) }
+        parameters.joins.forEach { build(parameters, it) }
+        parameters.wheres.forEach { build(parameters, it) }
 
-        return build(info, info.action)
+        return build(parameters, parameters.action)
     }
 
-    private fun build(info: Parameters, sql: SQL2?): String {
+    private fun build(parameters: Parameters, sql: SQL2?): String {
         return when (sql) {
-            is SQL2.Select -> buildSelect(info, sql)
-            is SQL2.Select.Join -> buildAndAddJoinFieldAndTableFragments(info, sql)
+            is SQL2.Select -> buildSelect(parameters, sql)
+            is SQL2.Select.Join -> buildAndAddJoinFieldAndTableFragments(parameters, sql)
             is SQL2.Select.Where,
             is SQL2.Select.Join.Where,
-            is SQL2.Update.Set.Where -> buildWhereFieldFragment(sql).also { info.whereFragments += it }
+            is SQL2.Select.Join.Where.Eq.Where,
+            is SQL2.Select.Join.Where.Eq.Where.Eq -> buildWhereFieldFragment(sql).also { parameters.whereFragments += it }
             is SQL2.Select.Where.Eq,
-            is SQL2.Select.Join.Where.Eq,
-            is SQL2.Update.Set.Where.Eq -> buildEqFragment(sql).also { info.whereFragments += it }
-            is SQL2.Update -> ""
-            is SQL2.Update.Set -> ""
+            is SQL2.Select.Join.Where.Eq -> buildEqFragment(sql).also { parameters.whereFragments += it }
             is SQL2.Delete -> ""
-            is SQL2.Create -> buildCreate(info, sql)
+            is SQL2.Create -> buildCreate(parameters, sql)
+            is SQL2.Update -> buildUpdate(parameters, sql)
+            is SQL2.Update.Set,
+            is SQL2.Update.Set.Eq.And,
+            is SQL2.Update.Set.Eq.Where -> buildUpdateFieldFragment(parameters, sql)
+            is SQL2.Update.Set.Eq,
+            is SQL2.Update.Set.Eq.And.Eq,
+            is SQL2.Update.Set.Eq.Where.Eq,
+            is SQL2.Update.Set.Eq.And.Eq.Where.Eq,
+            is SQL2.Update.Set.Eq.And.Eq.Where -> buildEqFragment(sql).also { parameters.updateFragments += it }
             null -> throw Exception("Action not supported: null")
         }
+    }
+
+    private fun buildUpdateFieldFragment(parameters: Parameters, sql: SQL2): String {
+
+        return ""
+    }
+
+    private fun buildUpdate(p: Parameters, sql: SQL2): String {
+
+        return ""
     }
 
     private fun buildAndAddJoinFieldAndTableFragments(info: Parameters, sql: SQL2.Select.Join): String {
@@ -85,25 +102,26 @@ open class DslMapper {
                 .toString()
     }
 
-    private fun buildSelect(info: Parameters, select: SQL2.Select?): String {
-        info.tableFragments.add(0, buildTableFragment(select as SQL2))
-        info.fieldFragments.add(0, buildFieldFragment(select as SQL2))
+    private fun buildSelect(param: Parameters, select: SQL2.Select?): String {
+        param.tableFragments.add(0, buildTableFragment(select as SQL2))
+        param.fieldFragments.add(0, buildFieldFragment(select as SQL2))
+
         val whereStr = " WHERE "
-        val whereFragmentsSize = info.whereFragments.size
+        val whereFragmentsSize = param.whereFragments.size
         val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
         return of(StringBuilder())
                 .rcv {
-                    append("SELECT ${info.fieldFragments.joinToString(", ")}")
-                    append(" FROM ${info.tableFragments.joinToString(", ")}")
+                    append("SELECT ${param.fieldFragments.joinToString(", ")}")
+                    append(" FROM ${param.tableFragments.joinToString(", ")}")
                 }
-                .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + info.whereFragments.joinToString("")); it })
-                .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + info.whereFragments.joinToString(" AND")); it })
+                .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + param.whereFragments.joinToString("")); it })
+                .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + (param.whereFragments.chunked(2).joinToString(" AND ") { (i, j) -> "$i$j" })); it })
                 .caseDefault { it }
                 .result()
                 .ifPresent {
-                    if (info.joins.isNotEmpty()) {
+                    if (param.joins.isNotEmpty()) {
                         it.append(" JOIN ")
-                        it.append(info.joinFragments.joinToString(", "))
+                        it.append(param.joinFragments.joinToString(", "))
                     }
                 }
                 .get()
