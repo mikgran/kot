@@ -48,9 +48,9 @@ open class MySqlCreateBuilder {
     }
 
     private fun buildAlterTableForRefId(childDp: DslParameters, parentDp: DslParameters) =
-            "ALTER TABLE ${childDp.uniqueId} ADD COLUMN ${parentDp.uniqueId}refId INT NOT NULL"
+            "ALTER TABLE ${childDp.uniqueId} ADD COLUMN ${parentDp.uniqueId}refId INT NOT NULL" // MEDIUMINT ?
 
-    protected fun buildDslParameters(t: Any): DslParameters {
+    private fun buildDslParameters(t: Any): DslParameters {
         return DslParameters().apply {
             typeT = t
             uniqueId = UidBuilder.buildUniqueId(t)
