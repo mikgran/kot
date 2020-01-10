@@ -1,6 +1,8 @@
-package mg.util.db
+package mg.util.db.config
 
 import mg.util.Common
+import mg.util.db.config.Config
+import mg.util.db.config.DBConfig
 import java.util.*
 
 class TestConfig : Config() {

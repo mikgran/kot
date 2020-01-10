@@ -2,6 +2,8 @@ package mg.util.db
 
 import mg.util.db.TestDataClasses.PersonB
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.config.DBConfig
+import mg.util.db.config.TestConfig
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.Assertions.assertTrue

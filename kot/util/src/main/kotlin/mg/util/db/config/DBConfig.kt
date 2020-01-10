@@ -1,4 +1,4 @@
-package mg.util.db
+package mg.util.db.config
 
 import org.apache.commons.dbcp.BasicDataSource
 import java.sql.Connection

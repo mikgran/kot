@@ -1,7 +1,7 @@
 package mg.kot.rgen.service
 
-import mg.util.db.Config
-import mg.util.db.DBConfig
+import mg.util.db.config.Config
+import mg.util.db.config.DBConfig
 import mg.util.db.persist.DB
 import mg.util.db.persist.Persistable
 import mg.util.db.persist.annotation.Id

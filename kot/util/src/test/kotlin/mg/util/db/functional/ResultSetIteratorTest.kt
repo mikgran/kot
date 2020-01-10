@@ -1,9 +1,9 @@
 package mg.util.db.functional
 
-import mg.util.db.DBConfig
+import mg.util.db.config.DBConfig
 import mg.util.db.DBO
 import mg.util.db.TestDataClasses.Person
-import mg.util.db.TestConfig
+import mg.util.db.config.TestConfig
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.functional.ResultSetIterator.Companion.iof

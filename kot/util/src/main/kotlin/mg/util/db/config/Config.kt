@@ -1,4 +1,4 @@
-package mg.util.db
+package mg.util.db.config
 
 import java.io.FileInputStream
 import java.util.*

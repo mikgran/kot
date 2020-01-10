@@ -5,13 +5,11 @@ import mg.util.db.AliasBuilder.build
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.config.DBConfig
+import mg.util.db.config.TestConfig
 import mg.util.db.dsl.SqlMapperFactory
 import mg.util.db.dsl.mysql.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
-import mg.util.db.persist.Persistable
-import mg.util.db.persist.annotation.ForeignKey
-import mg.util.db.persist.annotation.Id
-import mg.util.db.persist.annotation.VarChar
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.AfterAll
