@@ -96,9 +96,7 @@ open class MySqlCreateBuilder {
                 .map { it.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create") }
 
-        val sql = "CREATE TABLE IF NOT EXISTS ${dp.uniqueId}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-
-        return "$sql$fieldsSql)"
+        return "CREATE TABLE IF NOT EXISTS ${dp.uniqueId}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, $fieldsSql)"
     }
 
     open fun buildSqlFieldDefinitions(type: Any): List<String> {
