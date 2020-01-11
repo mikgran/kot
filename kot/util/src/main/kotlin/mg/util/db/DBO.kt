@@ -2,7 +2,6 @@ package mg.util.db
 
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.BuildingBlock
-import mg.util.db.dsl.DslMapper
 import mg.util.db.dsl.DslMapperFactory
 import mg.util.db.dsl.SqlMapper
 import mg.util.db.dsl.mysql.SelectBlock
@@ -15,6 +14,7 @@ import java.util.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.memberProperties
 
+// TODO: -17 remove old building block usage and replace with DslMapper calls
 // a simple Object-Relational-Mapping class
 class DBO(private val mapper: SqlMapper) {
 
