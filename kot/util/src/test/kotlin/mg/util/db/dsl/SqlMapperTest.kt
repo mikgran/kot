@@ -19,7 +19,7 @@ internal class SqlMapperTest {
     @Test
     fun testCreateTable() {
 
-        val createTableSqlCandidate = SqlMapper(Sql()).buildCreateTable(personMetadata)
+        val createTableSqlCandidate = SqlMapper(Sql(), MYSQL).buildCreateTable(personMetadata)
 
         assertNotNull(createTableSqlCandidate)
         assertEquals("CREATE TABLE IF NOT EXISTS ${personMetadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
@@ -30,7 +30,7 @@ internal class SqlMapperTest {
     @Test
     fun testBuildInsert() {
 
-        val insertCandidate = SqlMapper(Sql()).buildInsert(personMetadata)
+        val insertCandidate = SqlMapper(Sql(), MYSQL).buildInsert(personMetadata)
 
         val expectedInsert = "INSERT INTO ${personMetadata.uid} (firstName, lastName) VALUES ('testname1', 'testname2')"
 
@@ -41,7 +41,7 @@ internal class SqlMapperTest {
     @Test
     fun testFinding() {
 
-        val findCandidate = SqlMapper(Sql()).buildFind(personMetadata)
+        val findCandidate = SqlMapper(Sql(), MYSQL).buildFind(personMetadata)
 
         val expectedFind = "SELECT $personAlias.firstName, $personAlias.lastName FROM $personUid $personAlias"
 
@@ -52,11 +52,17 @@ internal class SqlMapperTest {
     @Test
     fun testDrop() {
 
-        val dropCandidate = SqlMapper(Sql()).buildDrop(personMetadata)
+        val dropCandidate = SqlMapper(Sql(), MYSQL).buildDrop(personMetadata)
 
         val expectedDrop = "DROP TABLE IF EXISTS $personUid"
 
         assertNotNull(dropCandidate)
         assertEquals(expectedDrop, dropCandidate)
+    }
+
+    companion object {
+        private const val MYSQL = "mysql"
+        @Suppress("unused")
+        private const val ORACLE = "oracle"
     }
 }

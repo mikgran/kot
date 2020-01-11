@@ -5,9 +5,12 @@ import mg.util.db.dsl.oracle.Sql as OracleSql
 
 object SqlMapperFactory {
 
+    private const val MYSQL = "mysql"
+    private const val ORACLE = "oracle"
+
     fun get(type: String?): SqlMapper = when (type) {
-        "mysql" -> SqlMapper(MySql())
-        "oracle" -> SqlMapper(OracleSql())
-        else -> SqlMapper(MySql())
+        MYSQL -> SqlMapper(MySql(), MYSQL)
+        ORACLE -> SqlMapper(OracleSql(), ORACLE)
+        else -> SqlMapper(MySql(), MYSQL)
     }
 }
