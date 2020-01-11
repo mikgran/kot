@@ -6,7 +6,6 @@ import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import mg.util.db.dsl.mysql.Sql as MySql
 import mg.util.db.dsl.oracle.Sql as SqlOracle
 
 internal class DslMapperTest {

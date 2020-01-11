@@ -44,7 +44,7 @@ class Person2(
 ) : Persistable() {
 
     @Override
-    override fun toString() : String {
+    override fun toString(): String {
         return "(id: '$id', firstName: '$firstName', lastName: '$lastName')"
     }
 }
