@@ -37,43 +37,58 @@ open class DslMapper {
 
         parameters.joins.forEach { build(parameters, it) }
         parameters.wheres.forEach { build(parameters, it) }
+        parameters.updates.forEach { build(parameters, it) }
 
         return build(parameters, parameters.action)
     }
 
-    private fun build(parameters: Parameters, sql: SQL2?): String {
+    private fun build(p: Parameters, sql: SQL2?): String {
         return when (sql) {
-            is SQL2.Select -> buildSelect(parameters, sql)
-            is SQL2.Select.Join -> buildAndAddJoinFieldAndTableFragments(parameters, sql)
+            is SQL2.Select -> buildSelect(p, sql)
+            is SQL2.Select.Join -> buildAndAddJoinFieldAndTableFragments(p, sql)
             is SQL2.Select.Where,
             is SQL2.Select.Join.Where,
             is SQL2.Select.Join.Where.Eq.Where,
-            is SQL2.Select.Join.Where.Eq.Where.Eq -> buildWhereFieldFragment(sql).also { parameters.whereFragments += it }
+            is SQL2.Select.Join.Where.Eq.Where.Eq -> buildWhereFieldFragment(sql).also { p.whereFragments += it }
             is SQL2.Select.Where.Eq,
-            is SQL2.Select.Join.Where.Eq -> buildEqFragment(sql).also { parameters.whereFragments += it }
+            is SQL2.Select.Join.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
             is SQL2.Delete -> ""
-            is SQL2.Create -> buildCreate(parameters, sql)
-            is SQL2.Update -> buildUpdate(parameters, sql)
+            is SQL2.Create -> buildCreate(p, sql)
+            is SQL2.Update -> buildUpdate(p, sql)
             is SQL2.Update.Set,
-            is SQL2.Update.Set.Eq.And,
-            is SQL2.Update.Set.Eq.Where -> buildUpdateFieldFragment(parameters, sql)
+            is SQL2.Update.Set.Eq.And -> buildUpdateFieldFragments(p, sql).also { p.updateFragments += it }
+            is SQL2.Update.Set.Eq.Where,
+            is SQL2.Update.Set.Eq.And.Eq.Where -> buildUpdateFieldFragments(p, sql).also { p.whereFragments += it }
             is SQL2.Update.Set.Eq,
-            is SQL2.Update.Set.Eq.And.Eq,
+            is SQL2.Update.Set.Eq.And.Eq -> buildEqFragment(sql).also { p.updateFragments += it }
             is SQL2.Update.Set.Eq.Where.Eq,
-            is SQL2.Update.Set.Eq.And.Eq.Where.Eq,
-            is SQL2.Update.Set.Eq.And.Eq.Where -> buildEqFragment(sql).also { parameters.updateFragments += it }
+            is SQL2.Update.Set.Eq.And.Eq.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
             null -> throw Exception("Action not supported: null")
         }
     }
 
-    private fun buildUpdateFieldFragment(parameters: Parameters, sql: SQL2): String {
-
-        return ""
-    }
+    private fun buildUpdateFieldFragments(p: Parameters, sql: SQL2): String =
+            of(sql.t).mapTo(KProperty1::class)
+                    .map { it.name }
+                    .get()
+                    .toString()
 
     private fun buildUpdate(p: Parameters, sql: SQL2): String {
 
-        return ""
+        // "UPDATE $uid SET firstName = 'newFirstName', lastName = 'newLastName' WHERE firstName = 'firstName'"
+        val builder = of(StringBuilder())
+                .rcv {
+                    append("UPDATE ")
+                    append(UidBuilder.buildUniqueId(sql.t))
+                    append(" SET ")
+                    append(p.updateFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" })
+                    if (p.whereFragments.isNotEmpty()) {
+                        append(" WHERE ")
+                        append(p.whereFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" })
+                    }
+                }
+
+        return builder.get().toString()
     }
 
     private fun buildAndAddJoinFieldAndTableFragments(info: Parameters, sql: SQL2.Select.Join): String {

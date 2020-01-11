@@ -34,12 +34,16 @@ sealed class SQL2(val t: Any) {
             is Select.Join -> parameters?.joins?.add(type)
             is Select.Join.Where,
             is Select.Join.Where.Eq,
-            is Update.Set.Eq,
-            is Update.Set.Eq.Where,
             is Select.Where,
-            is Select.Where.Eq -> parameters?.wheres?.add(type)
-            is Update.Set -> parameters?.updates?.add(type)
-
+            is Select.Where.Eq,
+            is Update.Set.Eq.Where,
+            is Update.Set.Eq.Where.Eq,
+            is Update.Set.Eq.And.Eq.Where,
+            is Update.Set.Eq.And.Eq.Where.Eq -> parameters?.wheres?.add(type)
+            is Update.Set,
+            is Update.Set.Eq,
+            is Update.Set.Eq.And,
+            is Update.Set.Eq.And.Eq -> parameters?.updates?.add(type)
             // TODO: -15 coverage
         }
         return type
