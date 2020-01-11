@@ -89,7 +89,7 @@ subprojects {
                         "${result.skippedTestCount} skipped"
 
                 if (!failedTests.empty) {
-                    print "Failed tests: gradle test --tests="
+                    print "Failed tests: \ngradle test --tests="
                     failedTests.each { failedTest ->
                         println failedTest.toString()
                     }
