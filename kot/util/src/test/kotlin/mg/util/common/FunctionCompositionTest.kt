@@ -5,11 +5,8 @@ import mg.util.common.PredicateComposition.Companion.and
 import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.PredicateComposition.Companion.rangeTo
-import mg.util.db.AliasBuilder
-import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import kotlin.reflect.KClass
 
 internal class FunctionCompositionTest {
 
