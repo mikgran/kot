@@ -16,11 +16,6 @@ import kotlin.reflect.jvm.javaField
 // include methods for data migration
 open class DslMapper {
 
-    // MySqlMapper.map(dsl: SQL) TODO -5 rename later
-    // OracleMapper.map(dsl: SQl)
-    // generic: DslMapper // TODO -6 generalize later
-    // DslMapper::.buildSql(dsl: SQL)
-    // val mapper: DslMapper = DslMapperFactory.dslMapper(name: String? = "MySql")
     // OracleMapper() : DslMapper
     // MySqlMapper() : DslMapper
     // DB2Mapper() : DslMapper
@@ -34,13 +29,13 @@ open class DslMapper {
 
     private fun build(sql: Sql): String {
 
-        val parameters = sql.parameters()
+        val p = sql.parameters()
 
-        parameters.joins.forEach { build(parameters, it) }
-        parameters.wheres.forEach { build(parameters, it) }
-        parameters.updates.forEach { build(parameters, it) }
+        p.joins.forEach { build(p, it) }
+        p.wheres.forEach { build(p, it) }
+        p.updates.forEach { build(p, it) }
 
-        return build(parameters, parameters.action)
+        return build(p, p.action)
     }
 
     private fun build(p: Parameters, sql: Sql?): String {
@@ -70,7 +65,7 @@ open class DslMapper {
         }
     }
 
-    private fun buildInsert(p: Parameters, sql: Sql): String {
+    private fun buildInsert(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
 
         val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(sql.t)} ("
         val padding2 = ") VALUES ("
