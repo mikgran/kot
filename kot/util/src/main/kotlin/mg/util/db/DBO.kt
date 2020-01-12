@@ -6,7 +6,6 @@ import mg.util.db.dsl.DslMapperFactory
 import mg.util.db.dsl.SqlMapper
 import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
-import java.lang.reflect.Field
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -77,36 +76,6 @@ class DBO(private val mapper: SqlMapper) {
         of(getStatement(connection))
                 .mapWith(listSqls) { stmt, sqls -> stmt.executeUpdate(sqls[0]) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
-    }
-
-    // Collection<String> kotlin classes not included
-    // Collection<Any> is not included
-    // Collection<Simple> custom classes are included
-    private fun <T : Any> getNonKotlinFields(t: T): List<Any> {
-
-        val customFields = t::class.java.declaredFields
-                .asList()
-                .map(Field::getType)
-                .filter { !it.packageName.startsWith("kotlin") }
-
-        val customFieldsOfCollections = t::class.java.declaredFields
-                .asList()
-                .map(Field::getType)
-                .filter { it is List<*> }
-                .map { it as List<*> }
-
-        customFieldsOfCollections
-                .filter(::isNotCollectionTypeKotlin)
-
-        return customFields
-    }
-
-    private fun isNotCollectionTypeKotlin(list: List<*>): Boolean = !isCollectionTypeKotlin(list)
-    private fun isCollectionTypeKotlin(list: List<*>): Boolean {
-        if (list.isNotEmpty()) {
-            return list[0]!!::class.java.packageName.startsWith("kotlin")
-        }
-        return false
     }
 
     fun findBy(block: BuildingBlock, connection: Connection): List<Any> {
