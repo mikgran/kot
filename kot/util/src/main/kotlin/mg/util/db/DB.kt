@@ -23,9 +23,6 @@ class DB {
 
     fun <T : Any> find(type: T): List<T> = dbo.find(type, getConnection())
 
-    @Suppress("unused")
-    fun findBy(block: BuildingBlock): List<Any> = dbo.findBy(block, getConnection())
-
     private fun getConnection(): Connection {
         return of(dbConfig)
                 .map(DBConfig::connection)

@@ -1,11 +1,9 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.SQL2.Parameters
 import mg.util.db.dsl.mysql.*
-import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.KCallable
@@ -193,7 +191,7 @@ open class DslMapper {
 // Old functionality
 //
 // private
-    fun map(block: BuildingBlock): String = map(block.list())
+    // fun map(block: BuildingBlock): String = map(block.list())
 
     fun map(blockList: MutableList<BuildingBlock>): String {
         return of(blockList)

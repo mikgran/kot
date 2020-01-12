@@ -100,21 +100,6 @@ internal class DslMapperTest {
         assertTrue(hasContent(candidate), "no mapped content")
     }
 
-    // TODO -100 test coverage
-    // @Test
-    fun testOracleSqlSelect() {
-
-        val sql = SqlOracle() select PersonB() where PersonB::firstName eq "name"
-
-        val candidate = mapper.map(sql.list())
-
-        val uid = UidBuilder.buildUniqueId(PersonB())
-        val p = AliasBuilder.build(uid)
-
-        assertHasContent(candidate)
-        assertEquals("SELECT $p.firstName, $p.lastName FROM $uid AS $p WHERE $p.firstName = 'name'", candidate)
-    }
-
     @Test
     fun testDsl1() {
 

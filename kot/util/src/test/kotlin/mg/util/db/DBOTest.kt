@@ -198,23 +198,6 @@ internal class DBOTest {
                 .map { it.getString(1) }
     }
 
-    @Test
-    fun testDslSelect2() {
-
-        val name = "name"
-        val bbb = "bbb"
-
-        dbo.ensureTable(Uuuu(), dbConfig.connection)
-        dbo.save(Uuuu(name, bbb), dbConfig.connection)
-
-        val sql = Sql() select Uuuu() where Uuuu::firstName eq name and Uuuu::lastName eq bbb
-
-        val list = dbo.findBy(sql, dbConfig.connection)
-
-        assertTrue(list.isNotEmpty())
-        assertTrue(list.contains(Uuuu(name, bbb)))
-    }
-
     @Suppress("unused")
     companion object {
 

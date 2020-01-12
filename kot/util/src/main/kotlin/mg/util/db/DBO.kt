@@ -1,10 +1,7 @@
 package mg.util.db
 
 import mg.util.db.UidBuilder.buildUniqueId
-import mg.util.db.dsl.BuildingBlock
-import mg.util.db.dsl.DslMapperFactory
 import mg.util.db.dsl.SqlMapper
-import mg.util.db.dsl.mysql.SelectBlock
 import mg.util.functional.Opt2.Factory.of
 import java.sql.Connection
 import java.sql.ResultSet
@@ -76,28 +73,6 @@ class DBO(private val mapper: SqlMapper) {
         of(getStatement(connection))
                 .mapWith(listSqls) { stmt, sqls -> stmt.executeUpdate(sqls[0]) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
-    }
-
-    fun findBy(block: BuildingBlock, connection: Connection): List<Any> {
-
-        val list = block.list()
-
-        val type = of(list)
-                .filter { it.isNotEmpty() }
-                .map { it[0] }
-                .mapTo(SelectBlock::class)
-                .map { it.type }
-                .get()
-
-        val sql = DslMapperFactory.get().map(list)
-
-        @Suppress("UNCHECKED_CAST")
-        return of(getStatement(connection))
-                .mapWith(sql) { c, s -> c.executeQuery(s) }
-                .filter(ResultSet::next)
-                .mapWith(type) { rs, t -> ObjectBuilder().buildListOfT(rs, t) }
-                .getOrElse(mutableListOf())
-                .toList()
     }
 
     fun <T : Any> find(t: T, connection: Connection): List<T> {
