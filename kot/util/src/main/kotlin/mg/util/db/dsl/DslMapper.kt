@@ -1,13 +1,17 @@
 package mg.util.db.dsl
 
+import mg.util.common.Common
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.SQL2.Parameters
 import mg.util.db.dsl.mysql.*
+import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
+import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
 // DDL, DML
@@ -54,6 +58,8 @@ open class DslMapper {
             is SQL2.Select.Join.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
             is SQL2.Delete -> ""
             is SQL2.Create -> buildCreate(p, sql)
+            is SQL2.Insert -> buildInsert(p, sql)
+            is SQL2.Drop -> buildDrop(p, sql)
             is SQL2.Update -> buildUpdate(p, sql)
             is SQL2.Update.Set,
             is SQL2.Update.Set.Eq.And -> buildUpdateFieldFragments(p, sql).also { p.updateFragments += it }
@@ -67,7 +73,31 @@ open class DslMapper {
         }
     }
 
-    private fun buildUpdateFieldFragments(p: Parameters, sql: SQL2): String =
+    private fun buildInsert(p: Parameters, sql: SQL2): String {
+
+        val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(sql.t)} ("
+        val padding2 = ") VALUES ("
+        val padding3 = ")"
+
+        val properties = of(sql.t)
+                .map { it::class.memberProperties.toCollection(ArrayList()) }
+
+        val fieldsCommaSeparated = of(properties)
+                .map { it.joinToString(", ") { p -> p.name } }
+
+        val fieldsValuesCommaSeparated = of(properties)
+                .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, sql.t)}'" } }
+
+        return "$padding1$fieldsCommaSeparated$padding2$fieldsValuesCommaSeparated$padding3"
+    }
+
+    private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
+
+    private fun buildDrop(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: SQL2): String {
+        return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(sql.t)}"
+    }
+
+    private fun buildUpdateFieldFragments(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: SQL2): String =
             of(sql.t).mapTo(KProperty1::class)
                     .map { it.name }
                     .get()
@@ -159,9 +189,10 @@ open class DslMapper {
         return uid to alias
     }
 
-    //
-    // Old functionality
-    //
+//
+// Old functionality
+//
+// private
     fun map(block: BuildingBlock): String = map(block.list())
 
     fun map(blockList: MutableList<BuildingBlock>): String {

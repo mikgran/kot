@@ -27,8 +27,10 @@ sealed class SQL2(val t: Any) {
         }
 
         when (type) {
-            is Delete,
             is Create,
+            is Insert,
+            is Drop,
+            is Delete,
             is Select,
             is Update -> parameters?.action = type
             is Select.Join -> parameters?.joins?.add(type)
@@ -53,6 +55,8 @@ sealed class SQL2(val t: Any) {
         infix fun select(t: Any) = Select(t).also { it.parameters = Parameters(); it.add(it) }
         infix fun update(t: Any) = Update(t).also { it.parameters = Parameters(); it.add(it) }
         infix fun create(t: Any) = Create(t).also { it.parameters = Parameters(); it.add(it) }
+        infix fun drop(t: Any) = Drop(t).also { it.parameters = Parameters(); it.add(it) }
+        infix fun insert(t: Any) = Insert(t).also { it.parameters = Parameters(); it.add(it) }
     }
 
     // val sql = SQL2 select Person() where Person::firstName eq "name"
@@ -124,5 +128,7 @@ sealed class SQL2(val t: Any) {
     }
 
     class Create(t: Any) : SQL2(t)
+    class Insert(t: Any) : SQL2(t)
+    class Drop(t: Any) : SQL2(t)
     class Delete(t: Any) : SQL2(t)
 }

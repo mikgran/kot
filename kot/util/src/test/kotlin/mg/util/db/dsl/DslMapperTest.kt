@@ -100,7 +100,8 @@ internal class DslMapperTest {
         assertTrue(hasContent(candidate), "no mapped content")
     }
 
-    @Test
+    // TODO -100 test coverage
+    // @Test
     fun testOracleSqlSelect() {
 
         val sql = SqlOracle() select PersonB() where PersonB::firstName eq "name"
