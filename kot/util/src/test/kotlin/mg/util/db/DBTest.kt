@@ -5,7 +5,7 @@ import mg.util.db.TestDataClasses.PersonB
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.Config
 import mg.util.db.config.DBConfig
-import mg.util.db.dsl.SqlMapperFactory
+import mg.util.db.dsl.SqlMapper
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
@@ -78,7 +78,7 @@ internal class DBTest {
 
             val person = PersonB("first1", "last2")
             val dbConfig = DBConfig(Config())
-            val dbo = DBO(SqlMapperFactory.get(dbConfig.mapper))
+            val dbo = DBO(SqlMapper(dbConfig.mapper))
             val uidTableName = dbo.buildMetadata(person).uid
             val sqlCommandsList = listOf("DELETE FROM $uidTableName", "DROP TABLE $uidTableName")
 

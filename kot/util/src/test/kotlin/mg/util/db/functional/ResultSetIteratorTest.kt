@@ -1,11 +1,11 @@
 package mg.util.db.functional
 
-import mg.util.db.config.DBConfig
 import mg.util.db.DBO
 import mg.util.db.TestDataClasses.Person
-import mg.util.db.config.TestConfig
 import mg.util.db.UidBuilder.buildUniqueId
-import mg.util.db.dsl.SqlMapperFactory
+import mg.util.db.config.DBConfig
+import mg.util.db.config.TestConfig
+import mg.util.db.dsl.SqlMapper
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
@@ -17,7 +17,7 @@ import java.sql.ResultSet
 internal class ResultSetIteratorTest {
 
     private val dbConfig = DBConfig(TestConfig())
-    private val dbo = DBO(SqlMapperFactory.get("mysql"))
+    private val dbo = DBO(SqlMapper("mysql"))
 
     @Test
     fun testIteratingResultSet() {

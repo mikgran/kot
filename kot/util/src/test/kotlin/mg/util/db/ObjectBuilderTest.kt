@@ -4,14 +4,14 @@ import mg.util.db.TestDataClasses.PersonB
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
-import mg.util.db.dsl.SqlMapperFactory
+import mg.util.db.dsl.SqlMapper
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class ObjectBuilderTest {
 
-    private val dbo = DBO(SqlMapperFactory.get("mysql"))
+    private val dbo = DBO(SqlMapper("mysql"))
     private val dbConfig = DBConfig(TestConfig())
 
     @Test

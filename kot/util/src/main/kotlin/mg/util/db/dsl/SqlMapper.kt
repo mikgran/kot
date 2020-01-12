@@ -3,7 +3,7 @@ package mg.util.db.dsl
 import mg.util.db.Metadata
 
 // A collection of hard bolted Dsl to sql string conversions.
-class SqlMapper(internal val sql: Sql, internal val mapper: String) {
+class SqlMapper(internal val mapper: String) {
 
     // TODO: -16 currently both old and new functionality supported
     private val dslMapper = DslMapperFactory.get(mapper)

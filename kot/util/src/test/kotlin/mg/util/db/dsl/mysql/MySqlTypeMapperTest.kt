@@ -1,10 +1,10 @@
 package mg.util.db.dsl.mysql
 
 import mg.util.db.DBO
-import mg.util.db.TestDataClasses.Person
 import mg.util.db.Metadata
-import mg.util.db.dsl.SqlMapperFactory
+import mg.util.db.TestDataClasses.Person
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.dsl.SqlMapper
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -13,7 +13,7 @@ import kotlin.reflect.full.declaredMemberProperties
 internal class MySqlTypeMapperTest {
 
     private val person = Person("testname1", "testname2")
-    private val dbo = DBO(SqlMapperFactory.get("mysql"))
+    private val dbo = DBO(SqlMapper("mysql"))
 
     data class Yyyyy(val a: Int = 0)
     data class Qqqqq(val b: String = "", val c: Yyyyy = Yyyyy())
