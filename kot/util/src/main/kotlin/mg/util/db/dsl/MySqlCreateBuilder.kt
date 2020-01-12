@@ -4,16 +4,16 @@ import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
-import mg.util.db.dsl.SQL2.Parameters
+import mg.util.db.dsl.Sql.Parameters
 import mg.util.functional.Opt2
 import java.lang.reflect.Field
 import kotlin.reflect.full.declaredMemberProperties
 
 open class MySqlCreateBuilder {
 
-    fun buildCreate(@Suppress("UNUSED_PARAMETER") info: Parameters, sql2: SQL2): String {
+    fun buildCreate(@Suppress("UNUSED_PARAMETER") info: Parameters, sql: Sql): String {
 
-        val dp = buildDslParameters(sql2.t)
+        val dp = buildDslParameters(sql.t)
         val sqls = mutableListOf<String>()
 
         sqls += buildSqlCreate(dp)

@@ -2,13 +2,13 @@ package mg.util.db.dsl
 
 // A Simple data holding class that holds a list
 // of parameters for Dsl to Sql building.
-sealed class SQL2(val t: Any) {
+sealed class Sql(val t: Any) {
 
     data class Parameters(
-            var action: SQL2? = null,
-            val joins: MutableList<SQL2> = mutableListOf(),
-            val updates: MutableList<SQL2> = mutableListOf(),
-            val wheres: MutableList<SQL2> = mutableListOf(),
+            var action: Sql? = null,
+            val joins: MutableList<Sql> = mutableListOf(),
+            val updates: MutableList<Sql> = mutableListOf(),
+            val wheres: MutableList<Sql> = mutableListOf(),
             val fieldFragments: MutableList<String> = mutableListOf(),
             val tableFragments: MutableList<String> = mutableListOf(),
             val joinFragments: MutableList<String> = mutableListOf(),
@@ -20,7 +20,7 @@ sealed class SQL2(val t: Any) {
 
     protected var parameters: Parameters? = null
 
-    protected fun <T : SQL2> add(type: T): T {
+    protected fun <T : Sql> add(type: T): T {
 
         if (type != this) {
             type.parameters = this.parameters
@@ -62,64 +62,64 @@ sealed class SQL2(val t: Any) {
     // val sql = SQL2 select Person() where Person::firstName eq "name"
     // private val a = "SELECT p.firstName, p.lastName FROM Person AS p WHERE p.firstName = 'name'"
 
-    class Select(t: Any) : SQL2(t) {
+    class Select(t: Any) : Sql(t) {
 
         infix fun join(t: Any) = add(Join(t))
-        class Join(t: Any) : SQL2(t) {
+        class Join(t: Any) : Sql(t) {
 
             infix fun where(t: Any) = add(Where(t))
-            class Where(t: Any) : SQL2(t) {
+            class Where(t: Any) : Sql(t) {
 
                 infix fun eq(t: Any) = add(Eq(t))
-                class Eq(t: Any) : SQL2(t) {
+                class Eq(t: Any) : Sql(t) {
 
                     infix fun and(t: Any) = add(Where(t))
-                    class Where(t: Any) : SQL2(t) {
+                    class Where(t: Any) : Sql(t) {
 
                         infix fun eq(t: Any) = add(Eq(t))
-                        class Eq(t: Any) : SQL2(t)
+                        class Eq(t: Any) : Sql(t)
                     }
                 }
             }
         }
 
         infix fun where(t: Any) = add(Where(t))
-        class Where(t: Any) : SQL2(t) {
+        class Where(t: Any) : Sql(t) {
 
             infix fun eq(t: Any) = add(Eq(t))
-            class Eq(t: Any) : SQL2(t) {
+            class Eq(t: Any) : Sql(t) {
 
                 infix fun and(t: Any) = add(Where(t))
             }
         }
     }
 
-    class Update(t: Any) : SQL2(t) {
+    class Update(t: Any) : Sql(t) {
 
         infix fun set(t: Any) = add(Set(t))
-        class Set(t: Any) : SQL2(t) {
+        class Set(t: Any) : Sql(t) {
 
             infix fun eq(t: Any) = add(Eq(t))
-            class Eq(t: Any) : SQL2(t) {
+            class Eq(t: Any) : Sql(t) {
 
                 infix fun where(t: Any) = add(Where(t))
-                class Where(t: Any) : SQL2(t) {
+                class Where(t: Any) : Sql(t) {
 
                     infix fun eq(t: Any) = add(Eq(t))
-                    class Eq(t: Any) : SQL2(t)
+                    class Eq(t: Any) : Sql(t)
                 }
 
                 infix fun and(t: Any) = add(And(t))
-                class And(t: Any) : SQL2(t) {
+                class And(t: Any) : Sql(t) {
 
                     infix fun eq(t: Any) = add(Eq(t))
-                    class Eq(t: Any) : SQL2(t) {
+                    class Eq(t: Any) : Sql(t) {
 
                         infix fun where(t: Any) = add(Where(t))
-                        class Where(t: Any) : SQL2(t) {
+                        class Where(t: Any) : Sql(t) {
 
                             infix fun eq(t: Any) = add(Eq(t))
-                            class Eq(t: Any) : SQL2(t)
+                            class Eq(t: Any) : Sql(t)
                         }
                     }
                 }
@@ -127,8 +127,8 @@ sealed class SQL2(val t: Any) {
         }
     }
 
-    class Create(t: Any) : SQL2(t)
-    class Insert(t: Any) : SQL2(t)
-    class Drop(t: Any) : SQL2(t)
-    class Delete(t: Any) : SQL2(t)
+    class Create(t: Any) : Sql(t)
+    class Insert(t: Any) : Sql(t)
+    class Drop(t: Any) : Sql(t)
+    class Delete(t: Any) : Sql(t)
 }

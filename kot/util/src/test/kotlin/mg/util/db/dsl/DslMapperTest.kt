@@ -14,7 +14,7 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTable() {
 
-        val sql = SQL2 create PersonB()
+        val sql = Sql create PersonB()
 
         val uid = UidBuilder.build(PersonB::class)
         val candidate = mapper.map(sql)
@@ -25,7 +25,7 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithListReference() {
 
-        val sql = SQL2 create Building("some address")
+        val sql = Sql create Building("some address")
 
         val buildingUid = UidBuilder.build(Building::class)
         val floorUid = UidBuilder.build(Floor::class)
@@ -44,7 +44,7 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithSimpleReference() {
 
-        val sql = SQL2 create Place(Address("somePlace"), 100000)
+        val sql = Sql create Place(Address("somePlace"), 100000)
 
         val placeUid = UidBuilder.build(Place::class)
         val addressUid = UidBuilder.build(Address::class)
@@ -62,7 +62,7 @@ internal class DslMapperTest {
     fun testUpdate() {
 
         // UPDATE personb12345 SET field1 = new-value1, field2 = new-value2
-        val sql = SQL2 update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
+        val sql = Sql update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
         
         val uid = UidBuilder.build(PersonB::class)
 
@@ -82,7 +82,7 @@ internal class DslMapperTest {
 
         // FIXME 10: "on a.f = b.f2", needs to be completed
 
-        val sql = SQL2 select Place() join Address()
+        val sql = Sql select Place() join Address()
 
         val candidate = mapper.map(sql)
 
@@ -102,7 +102,7 @@ internal class DslMapperTest {
     @Test
     fun testDsl1() {
 
-        val sql = SQL2 select PersonB() where PersonB::firstName eq "name"
+        val sql = Sql select PersonB() where PersonB::firstName eq "name"
 
         val candidate = mapper.map(sql)
 
