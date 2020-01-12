@@ -3,7 +3,6 @@ package mg.util.db.dsl
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.SQL2.Parameters
-import mg.util.db.dsl.mysql.*
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import kotlin.reflect.KCallable
@@ -187,58 +186,6 @@ open class DslMapper {
         return uid to alias
     }
 
-//
-// Old functionality
-//
-// private
-    // fun map(block: BuildingBlock): String = map(block.list())
-
-    fun map(blockList: MutableList<BuildingBlock>): String {
-        return of(blockList)
-                .filter { it.isNotEmpty() }
-                .ifMissingThrow { Exception("map: List of blocks was empty") }
-                .map(::buildSql)
-                .getOrElseThrow { Exception("map: Unable to build sql for list $blockList") } ?: ""
-    }
-
-    private fun buildSql(blocks: MutableList<BuildingBlock>): String {
-        return when (blocks[0]) {
-            is SelectBlock<*> -> buildSelectNew(blocks)
-            is CreateBlock<*> -> buildCreate(blocks)
-            is DropBlock<*> -> buildDrop(blocks)
-            is InsertBlock<*> -> buildInsert(blocks)
-            is UpdateBlock<*> -> buildUpdate(blocks)
-            else -> throw Exception("Class ${blocks[0]::class} not yet implemented")
-        }
-    }
-
-    private fun buildUpdate(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildDelete(dp) }
-    private fun buildInsert(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildInsert(dp) }
-    private fun buildDrop(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildDrop(dp) }
-    private fun buildCreate(blocks: MutableList<BuildingBlock>): String = build(blocks) { b, dp -> b.buildCreate(dp) }
-
-    private fun build(blocks: MutableList<BuildingBlock>,
-                      mapper: (BuildingBlock, DslParameters) -> String): String {
-
-        val dp = blocks.first().buildDslParameters()
-        return blocks.map { mapper(it, dp) }
-                .fold("") { a, b -> a + b }
-    }
-
-    // Select, Where, Value
-// Select, Where, Value, Join, JoinValue, Join, JoinValue
-    private fun buildSelectNew(blocks: MutableList<BuildingBlock>): String {
-
-        val dp = blocks.first().buildDslParameters()
-        dp.fields = blocks
-                .map { it.buildFields(dp) }
-                .filter { it.isNotEmpty() }
-                .joinToString(", ")
-
-        return blocks
-                .map { it.buildSelect(dp) }
-                .fold("") { a, b -> a + b }
-    }
 }
 
 class MySqlDslMapper : DslMapper()

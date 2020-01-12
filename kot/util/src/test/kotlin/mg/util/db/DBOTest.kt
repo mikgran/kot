@@ -8,7 +8,6 @@ import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
 import mg.util.db.dsl.SqlMapper
-import mg.util.db.dsl.mysql.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of

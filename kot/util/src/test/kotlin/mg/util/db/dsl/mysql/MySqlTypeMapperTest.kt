@@ -4,6 +4,7 @@ import mg.util.db.DBO
 import mg.util.db.Metadata
 import mg.util.db.TestDataClasses.Person
 import mg.util.db.UidBuilder.buildUniqueId
+import mg.util.db.dsl.MySqlTypeMapper
 import mg.util.db.dsl.SqlMapper
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.Assertions.*

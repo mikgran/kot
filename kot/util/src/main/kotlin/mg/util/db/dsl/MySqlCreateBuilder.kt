@@ -5,7 +5,6 @@ import mg.util.common.PredicateComposition.Companion.or
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.SQL2.Parameters
-import mg.util.db.dsl.mysql.MySqlTypeMapper
 import mg.util.functional.Opt2
 import java.lang.reflect.Field
 import kotlin.reflect.full.declaredMemberProperties

@@ -2,7 +2,6 @@ package mg.util.db
 
 import mg.util.db.config.Config
 import mg.util.db.config.DBConfig
-import mg.util.db.dsl.BuildingBlock
 import mg.util.db.dsl.SqlMapper
 import mg.util.functional.Opt2.Factory.of
 import java.sql.Connection
