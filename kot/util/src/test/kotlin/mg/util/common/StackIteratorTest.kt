@@ -8,6 +8,7 @@ internal class StackIteratorTest {
 
     @Test
     fun testHasNext() {
+        // TOIMPROVE: test coverage
     }
 
 
