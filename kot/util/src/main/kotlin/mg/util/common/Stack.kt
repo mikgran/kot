@@ -6,7 +6,7 @@ class Stack<T> {
     fun isEmpty() = elements.isEmpty()
     fun count() = elements.size
     fun push(item: T) = elements.add(item)
-    fun addTo(item: T, index: Int) = elements.add(index, item)
+    fun add(item: T, index: Int) = elements.add(index, item)
     fun pop(): T? {
         val item = elements.lastOrNull()
         if (!isEmpty()) {
