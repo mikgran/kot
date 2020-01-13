@@ -1,5 +1,6 @@
 package mg.util.db.dsl
 
+import mg.util.common.stackIterator
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.Sql.Parameters
@@ -34,6 +35,9 @@ open class DslMapper {
         p.joins.forEach { build(p, it) }
         p.wheres.forEach { build(p, it) }
         p.updates.forEach { build(p, it) }
+
+//        val iterator = p.joins.stackIterator() + p.wheres + p.joins
+//        iterator.forEach { build(p, it) }
 
         return build(p, p.action)
     }

@@ -73,6 +73,23 @@ internal class StackTest {
         assertEquals(A, stack.pop())
     }
 
+    @Test
+    fun testPeekNotNull() {
+
+        val list = listOf(A)
+        val stack = Stack<String>()
+
+        stack.push(list)
+
+        assertEquals(A, stack.peekNotNull())
+
+        stack.pop()
+
+        assertThrows(NoSuchElementException::class.java) {
+            stack.peekNotNull()
+        }
+    }
+
     companion object {
         private const val A = "a"
         private const val A2 = A + A
