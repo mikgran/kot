@@ -10,25 +10,29 @@ class StackIterator<T> : Iterator<T> {
     }
 
     override fun next(): T {
-
         val t = stack.peekNotNull().next()
 
-        if (stack.peek()?.hasNext() == false) {
+        if (!stack.isEmpty() && !stack.peekNotNull().hasNext()) {
             stack.pop()
         }
-
         return t
     }
 
-    infix operator fun plus(t: Iterator<T>): StackIterator<T> {
-        stack.push(t)
-        return this
-    }
-
-    infix operator fun plus(t: Collection<T>): StackIterator<T> {
-        stack.addTo(t.iterator(), 0)
+    operator fun plus(iterator: Iterator<T>): StackIterator<T> {
+        if (iterator.hasNext()) {
+            stack.add(iterator, 0)
+        }
         return this
     }
 }
 
-fun <T> Collection<T>.stackIterator(): StackIterator<T> = StackIterator<T>().also { it + this.iterator() }
+fun <T> Collection<T>.stackIterator() = StackIterator<T>().also { it + this.iterator() }
+
+operator fun <T> Iterator<T>.plus(iterator: Iterator<T>): StackIterator<T> =
+        when {
+            this is StackIterator<T> -> this.plus(iterator)
+            iterator is StackIterator<T> -> iterator.plus(this)
+            else -> StackIterator<T>().also { it.plus(this); it.plus(iterator) }
+        }
+
+
