@@ -67,7 +67,7 @@ sealed class Sql(val t: Any) {
         infix fun join(t: Any) = add(Join(t))
         class Join(t: Any) : Sql(t) {
 
-            infix fun where(t: Any) = add(Where(t))
+            infix fun where(t: Any) = add(Where(t)) // TODO: 49 test unused functions
             class Where(t: Any) : Sql(t) {
 
                 infix fun eq(t: Any) = add(Eq(t))

@@ -7,6 +7,7 @@ import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
+// TOIMPROVE: test coverage
 internal class DslMapperTest {
 
     private val mapper = DslMapperFactory.get()
@@ -37,7 +38,7 @@ internal class DslMapperTest {
                 "fullAddress VARCHAR(64) NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
                 "number MEDIUMINT NOT NULL);" +
-                "ALTER TABLE $floorUid ADD COLUMN ${buildingUid}refId INT NOT NULL",
+                "ALTER TABLE $floorUid ADD COLUMN ${buildingUid}refId MEDIUMINT(9) NOT NULL",
                 candidate)
     }
 
@@ -52,7 +53,7 @@ internal class DslMapperTest {
 
         val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
-                "ALTER TABLE $addressUid ADD COLUMN ${placeUid}refId INT NOT NULL"
+                "ALTER TABLE $addressUid ADD COLUMN ${placeUid}refId MEDIUMINT(9) NOT NULL"
 
         assertNotNull(candidate)
         assertEquals(expected, candidate)
@@ -80,19 +81,20 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDslJoin() {
 
-        // FIXME 10: "on a.f = b.f2", needs to be completed
+        // TODO 50: "on a.f = b.f2", needs to be completed
 
         val sql = Sql select Place() join Address()
 
         val candidate = mapper.map(sql)
 
-        val p2 = UidBuilder.buildUniqueId(Place())
-        val a2 = UidBuilder.buildUniqueId(Address())
-        val p = AliasBuilder.build(p2)
-        val a = AliasBuilder.build(a2)
+        val (uidPlace, p) = buildUidAndAlias(Place())
+        val (uidAddress, a) = buildUidAndAlias(Address())
+        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
+                " FROM $uidPlace $p JOIN $uidAddress $a" +
+                " ON $p.id = $a.placeRefId"
 
         assertHasContent(candidate)
-        assertEquals("SELECT $p.address, $p.rentInCents, $a.fullAddress FROM $p2 $p JOIN $a2 $a", candidate)
+        assertEquals(expected, candidate)
     }
 
     private fun assertHasContent(candidate: String) {
@@ -111,8 +113,6 @@ internal class DslMapperTest {
 
         assertHasContent(candidate)
         assertEquals(expected, candidate)
-
-        // TOIMPROVE: test coverage
     }
 
     @Test

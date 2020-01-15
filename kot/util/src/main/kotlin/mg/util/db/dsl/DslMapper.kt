@@ -36,33 +36,40 @@ open class DslMapper {
                 p.wheres.iterator() +
                 p.updates.iterator())
                 .forEach { build(p, it) }
-        
+
         return build(p, p.action)
     }
 
     private fun build(p: Parameters, sql: Sql?): String {
         return when (sql) {
+            is Sql.Create -> buildCreate(p, sql)
+            is Sql.Drop -> buildDrop(p, sql)
             is Sql.Select -> buildSelect(p, sql)
-            is Sql.Select.Join -> buildAndAddJoinFieldAndTableFragments(p, sql)
+            is Sql.Insert -> buildInsert(p, sql)
+            is Sql.Update -> buildUpdate(p, sql)
+            is Sql.Delete -> TODO()
+            is Sql.Select.Join ->
+                buildAndAddJoinFieldAndTableFragments(p, sql)
             is Sql.Select.Where,
             is Sql.Select.Join.Where,
-            is Sql.Select.Join.Where.Eq.Where,
-            is Sql.Select.Join.Where.Eq.Where.Eq -> buildWhereFieldFragment(sql).also { p.whereFragments += it }
+            is Sql.Select.Join.Where.Eq.Where ->
+                buildWhereFieldFragment(sql).also { p.whereFragments += it }
             is Sql.Select.Where.Eq,
-            is Sql.Select.Join.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
-            is Sql.Delete -> ""
-            is Sql.Create -> buildCreate(p, sql)
-            is Sql.Insert -> buildInsert(p, sql)
-            is Sql.Drop -> buildDrop(p, sql)
-            is Sql.Update -> buildUpdate(p, sql)
+            is Sql.Select.Join.Where.Eq,
+            is Sql.Select.Join.Where.Eq.Where.Eq ->
+                buildEqFragment(sql).also { p.whereFragments += it }
             is Sql.Update.Set,
-            is Sql.Update.Set.Eq.And -> buildUpdateFieldFragments(p, sql).also { p.updateFragments += it }
+            is Sql.Update.Set.Eq.And ->
+                buildUpdateFieldFragments(p, sql).also { p.updateFragments += it }
             is Sql.Update.Set.Eq.Where,
-            is Sql.Update.Set.Eq.And.Eq.Where -> buildUpdateFieldFragments(p, sql).also { p.whereFragments += it }
+            is Sql.Update.Set.Eq.And.Eq.Where ->
+                buildUpdateFieldFragments(p, sql).also { p.whereFragments += it }
             is Sql.Update.Set.Eq,
-            is Sql.Update.Set.Eq.And.Eq -> buildEqFragment(sql).also { p.updateFragments += it }
+            is Sql.Update.Set.Eq.And.Eq ->
+                buildEqFragment(sql).also { p.updateFragments += it }
             is Sql.Update.Set.Eq.Where.Eq,
-            is Sql.Update.Set.Eq.And.Eq.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
+            is Sql.Update.Set.Eq.And.Eq.Where.Eq ->
+                buildEqFragment(sql).also { p.whereFragments += it }
             null -> throw Exception("Action not supported: null")
         }
     }
