@@ -89,9 +89,10 @@ subprojects {
                         "${result.skippedTestCount} skipped"
 
                 if (!failedTests.empty) {
-                    print "Failed tests: \ngradle test --tests="
-                    failedTests.each { failedTest ->
-                        println failedTest.toString()
+                    def prefix = "gradle test --tests="
+                    print "Failed tests: \n"
+                    failedTests.each { Object failedTest ->
+                        println prefix + failedTest.toString()
                     }
                     println ""
                 }
