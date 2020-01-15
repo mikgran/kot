@@ -63,7 +63,7 @@ internal class DslMapperTest {
 
         // UPDATE personb12345 SET field1 = new-value1, field2 = new-value2
         val sql = Sql update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
-        
+
         val uid = UidBuilder.build(PersonB::class)
 
         val candidate = mapper.map(sql)
@@ -104,16 +104,35 @@ internal class DslMapperTest {
 
         val sql = Sql select PersonB() where PersonB::firstName eq "name"
 
+        val (uid, p) = buildUidAndAlias(PersonB())
+        val expected = "SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'name'"
+
         val candidate = mapper.map(sql)
 
-        val uid = UidBuilder.buildUniqueId(PersonB())
-        val p = AliasBuilder.build(uid)
-
         assertHasContent(candidate)
-        assertEquals("SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'name'", candidate)
+        assertEquals(expected, candidate)
 
         // TOIMPROVE: test coverage
-        // TODO: 50  SELECT p.firstName, p.lastName FROM PersonB608543900 p WHERE p.firstName AND = 'newFirstName' ANDp.lastName AND = 'newLastName'
+    }
+
+    @Test
+    fun testDsl2() {
+
+        val sql = Sql select PersonB() where PersonB::firstName eq "first" and PersonB::lastName eq "last"
+
+        val (uid, p) = buildUidAndAlias(PersonB())
+        val expected = "SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'first' AND $p.lastName = 'last'"
+
+        val candidate = mapper.map(sql)
+
+        assertHasContent(candidate)
+        assertEquals(expected, candidate)
+    }
+
+    private fun <T : Any> buildUidAndAlias(t: T): Pair<String, String> {
+        val uid = UidBuilder.buildUniqueId(t)
+        val p = AliasBuilder.build(uid)
+        return uid to p
     }
 
 }
