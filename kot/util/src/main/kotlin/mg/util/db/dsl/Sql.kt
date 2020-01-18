@@ -70,9 +70,11 @@ sealed class Sql(val t: Any) {
 
             infix fun on(t: Any) = add(On(t))
             class On(t: Any) : Sql(t) {
+
                 infix fun eq(t: Any) = add(Eq(t))
                 class Eq(t: Any) : Sql(t) {
 
+                    infix fun join(t: Any) = add(Join(t)) // loop back to Sql.Select.Join
                 }
             }
 

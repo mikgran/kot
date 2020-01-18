@@ -184,18 +184,12 @@ open class DslMapper {
         // SELECT p.address, p.rentInCents, a.fullAddress
         // FROM Place536353721 p
         // JOIN Address2002641509 a ON p.id = a.placeRefId
-        // {1, 2}, {2, 3}, {3, 4}, {4, 5}
-
         // TODO 100: Replace windowed list handling with hashMap of links handling
-        data class Address(var fullAddress: String = "")
-        data class Place(var address: Address = Address(), var rentInCents: Int = 0)
-        data class PlaceDescriptor(val description: String = "", val placeRefId: Int = 0)
-
-        val tree = hashMapOf<Any, Any>(
-                Place::class to Address::class, // JOIN Address12345 a ON p.id = a.place12345refId
-                Place::class to PlaceDescriptor::placeRefId // JOIN PlaceDescriptor p2 ON p.id = p2.placeRefId
-        )
-        tree.forEach { (t, u) -> println("${t::class} -> ${u::class}") }
+//        val tree = hashMapOf<Any, Any>(
+//                Place::class to Address::class, // JOIN Address12345 a ON p.id = a.place12345refId
+//                Place::class to PlaceDescriptor::placeRefId // JOIN PlaceDescriptor p2 ON p.id = p2.placeRefId
+//        )
+//        tree.forEach { (t, u) -> println("${t::class} -> ${u::class}") }
 
         p.joinTypes.add(0, root.t)
         return of(p.joinTypes)
