@@ -83,7 +83,16 @@ internal class DslMapperTest {
 
         // TODO 50: "on a.f = b.f2", needs to be completed
 
-        val sql = Sql select Place() join Address()
+        Sql select Place()
+
+        val sql = Sql select Place() join Address() // TOIMPROVE: design: Place auto link to Address, but allow artificial links?
+        // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
+        // JOIN Address123565 a ON p.id = a.Place1234556refid
+
+        Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
+        // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
+        // JOIN Address123565 a ON p.id = a.Place1234556refid
+        // JOIN PlaceDescriptor123456 p2 ON p.id = p2.placeRefId
 
         val candidate = mapper.map(sql)
 
@@ -91,7 +100,7 @@ internal class DslMapperTest {
         val (uidAddress, a) = buildUidAndAlias(Address())
         val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
                 " FROM $uidPlace $p JOIN $uidAddress $a" +
-                " ON $p.id = $a.placeRefId"
+                " ON $p.id = $a.${uidPlace}refid"
 
         assertHasContent(candidate)
         assertEquals(expected, candidate)

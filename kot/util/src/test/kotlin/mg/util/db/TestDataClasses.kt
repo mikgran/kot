@@ -10,6 +10,7 @@ class TestDataClasses {
     data class Billing(val amount: String = "", val person: Person = Person("", ""))
     data class Address(var fullAddress: String = "")
     data class Place(var address: Address = Address(), var rentInCents: Int = 0)
+    data class PlaceDescriptor(val description: String = "", val placeRefId: Int = 0)
     data class Floor(var number: Int = 0)
     data class Building(var fullAddress: String = "", var floors: List<Floor> = listOf(Floor(1)))
     data class PersonB(val firstName: String = "", val lastName: String = "")

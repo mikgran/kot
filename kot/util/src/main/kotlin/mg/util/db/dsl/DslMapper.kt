@@ -71,6 +71,8 @@ open class DslMapper {
             is Sql.Update.Set.Eq.And.Eq.Where.Eq ->
                 buildEqFragment(sql).also { p.whereFragments += it }
             null -> throw Exception("Action not supported: null")
+            is Sql.Select.Join.On -> TODO()
+            is Sql.Select.Join.On.Eq -> TODO()
         }
     }
 
@@ -122,14 +124,15 @@ open class DslMapper {
         return builder.get().toString()
     }
 
-    private fun buildAndAddJoinFieldAndTableFragments(info: Parameters, sql: Sql.Select.Join): String {
-        info.fieldFragments += buildFieldFragment(sql)
-        info.joinFragments += buildTableFragment(sql)
+    private fun buildAndAddJoinFieldAndTableFragments(p: Parameters, sql: Sql.Select.Join): String {
+        p.fieldFragments.add(buildFieldFragment(sql))
+        p.joinFragments.add(buildTableFragment(sql))
+        p.joinTypes.add(sql.t)
         return ""
     }
 
-    private fun buildCreate(info: Parameters, sql: Sql): String {
-        return MySqlCreateBuilder().buildCreate(info, sql)
+    private fun buildCreate(p: Parameters, sql: Sql): String {
+        return MySqlCreateBuilder().buildCreate(p, sql)
     }
 
     private fun buildEqFragment(sql: Sql): String = of(sql.t).map { " = '$it'" }.toString()
@@ -148,30 +151,64 @@ open class DslMapper {
                 .toString()
     }
 
-    private fun buildSelect(param: Parameters, select: Sql.Select?): String {
-        param.tableFragments.add(0, buildTableFragment(select as Sql))
-        param.fieldFragments.add(0, buildFieldFragment(select as Sql))
+    private fun buildSelect(p: Parameters, select: Sql.Select?): String {
+        p.tableFragments.add(0, buildTableFragment(select as Sql))
+        p.fieldFragments.add(0, buildFieldFragment(select as Sql))
+        val joinFragments = buildJoinOnFragment(p, select)
 
         val whereStr = " WHERE "
-        val whereFragmentsSize = param.whereFragments.size
+        val whereFragmentsSize = p.whereFragments.size
         val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
         return of(StringBuilder())
                 .rcv {
-                    append("SELECT ${param.fieldFragments.joinToString(", ")}")
-                    append(" FROM ${param.tableFragments.joinToString(", ")}")
+                    append("SELECT ${p.fieldFragments.joinToString(", ")}")
+                    append(" FROM ${p.tableFragments.joinToString(", ")}")
                 }
-                .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + param.whereFragments.joinToString("")); it })
-                .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + (param.whereFragments.chunked(2).joinToString(" AND ") { (i, j) -> "$i$j" })); it })
+                .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + p.whereFragments.joinToString("")); it })
+                .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + (p.whereFragments.chunked(2).joinToString(" AND ") { (i, j) -> "$i$j" })); it })
                 .caseDefault { it }
                 .result()
                 .ifPresent {
-                    if (param.joins.isNotEmpty()) {
-                        it.append(" JOIN ")
-                        it.append(param.joinFragments.joinToString(", "))
+                    if (p.joins.isNotEmpty()) {
+//                        it.append(" JOIN ")
+//                        it.append(p.joinFragments.joinToString(", "))
+                        it.append(joinFragments)
                     }
                 }
                 .get()
                 .toString()
+    }
+
+    private fun buildJoinOnFragment(p: Parameters, root: Sql.Select): String {
+
+        // SELECT p.address, p.rentInCents, a.fullAddress
+        // FROM Place536353721 p
+        // JOIN Address2002641509 a ON p.id = a.placeRefId
+        // {1, 2}, {2, 3}, {3, 4}, {4, 5}
+
+        // TODO 100: Replace windowed list handling with hashMap of links handling
+        data class Address(var fullAddress: String = "")
+        data class Place(var address: Address = Address(), var rentInCents: Int = 0)
+        data class PlaceDescriptor(val description: String = "", val placeRefId: Int = 0)
+
+        val tree = hashMapOf<Any, Any>(
+                Place::class to Address::class, // JOIN Address12345 a ON p.id = a.place12345refId
+                Place::class to PlaceDescriptor::placeRefId // JOIN PlaceDescriptor p2 ON p.id = p2.placeRefId
+        )
+        tree.forEach { (t, u) -> println("${t::class} -> ${u::class}") }
+
+        p.joinTypes.add(0, root.t)
+        return of(p.joinTypes)
+                .filter { it.size >= 2 && it.size % 2 == 0 }
+                .xmap {
+                    windowed(size = 2, step = 1, partialWindows = false) { (i, j) ->
+                        val (uidI, aliasI) = buildUidAndAlias(i)
+                        val (uidJ, aliasJ) = buildUidAndAlias(j)
+                        "$uidJ $aliasJ ON ${aliasI}.id = ${aliasJ}.${uidI}refid"
+                    }.joinToString("")
+                }
+                .map { " JOIN $it" }
+                .getOrElse("")
     }
 
     private fun buildTableFragment(sql: Sql): String {
@@ -184,8 +221,9 @@ open class DslMapper {
         return sql.t::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name}" }
     }
 
-    private fun buildUidAndAlias(sql: Sql?): Pair<String, String> {
-        val uid = UidBuilder.buildUniqueId(sql?.t ?: "")
+    private fun buildUidAndAlias(sql: Sql): Pair<String, String> = buildUidAndAlias(sql.t)
+    private fun <T : Any> buildUidAndAlias(t: T): Pair<String, String> {
+        val uid = UidBuilder.buildUniqueId(t)
         val alias = AliasBuilder.build(uid)
         return uid to alias
     }

@@ -13,7 +13,8 @@ sealed class Sql(val t: Any) {
             val tableFragments: MutableList<String> = mutableListOf(),
             val joinFragments: MutableList<String> = mutableListOf(),
             val updateFragments: MutableList<String> = mutableListOf(),
-            val whereFragments: MutableList<String> = mutableListOf()
+            val whereFragments: MutableList<String> = mutableListOf(),
+            val joinTypes: MutableList<Any> = mutableListOf()
     )
 
     fun parameters() = parameters!!
@@ -67,7 +68,15 @@ sealed class Sql(val t: Any) {
         infix fun join(t: Any) = add(Join(t))
         class Join(t: Any) : Sql(t) {
 
-            infix fun where(t: Any) = add(Where(t)) // TODO: 49 test unused functions
+            infix fun on(t: Any) = add(On(t))
+            class On(t: Any) : Sql(t) {
+                infix fun eq(t: Any) = add(Eq(t))
+                class Eq(t: Any) : Sql(t) {
+
+                }
+            }
+
+            infix fun where(t: Any) = add(Where(t)) // TODO: 49 test all unused functions
             class Where(t: Any) : Sql(t) {
 
                 infix fun eq(t: Any) = add(Eq(t))
