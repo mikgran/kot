@@ -1,5 +1,6 @@
 package mg.util.db.dsl
 
+import mg.util.common.Common.isCustom
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
@@ -126,8 +127,8 @@ open class DslMapper {
 
     private fun buildAndAddJoinFieldAndTableFragments(p: Parameters, sql: Sql.Select.Join): String {
         p.fieldFragments.add(buildFieldFragment(sql))
-        p.joinFragments.add(buildTableFragment(sql))
-        p.joinTypes.add(sql.t)
+        p.joinFragments.add(buildTableFragment(sql))  // TODO 98 remove
+        p.joinTypes.add(sql.t) // TODO 99 remove
         return ""
     }
 
@@ -170,8 +171,6 @@ open class DslMapper {
                 .result()
                 .ifPresent {
                     if (p.joins.isNotEmpty()) {
-//                        it.append(" JOIN ")
-//                        it.append(p.joinFragments.joinToString(", "))
                         it.append(joinFragments)
                     }
                 }
@@ -179,18 +178,40 @@ open class DslMapper {
                 .toString()
     }
 
+    // TODO 110: Replace windowed list handling with hashMap of links handling
     private fun buildJoinOnFragment(p: Parameters, root: Sql.Select): String {
 
-        // SELECT p.address, p.rentInCents, a.fullAddress
-        // FROM Place536353721 p
-        // JOIN Address2002641509 a ON p.id = a.placeRefId
-        // TODO 100: Replace windowed list handling with hashMap of links handling
-//        val tree = hashMapOf<Any, Any>(
-//                Place::class to Address::class, // JOIN Address12345 a ON p.id = a.place12345refId
-//                Place::class to PlaceDescriptor::placeRefId // JOIN PlaceDescriptor p2 ON p.id = p2.placeRefId
-//        )
-//        tree.forEach { (t, u) -> println("${t::class} -> ${u::class}") }
+        // construct tree of relations
+        return buildJoinsWithDefaultRef(p, root)
 
+        // XXX: 111 finish this!
+        of(root.t::class.java.declaredFields)
+                .lfilter(::isCustom)
+                .ifPresent {
+                    p.joinMap[root] = mutableMapOf<Any, Any>()
+                }
+
+        return when {
+            p.joins.isNotEmpty() -> buildJoinsManually(p, root, isFieldRefPresent(p))
+            else -> buildJoinsWithDefaultRef(p, root)
+        }
+    }
+
+    private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }
+
+    private fun buildJoinsManually(p: Parameters, root: Sql.Select, isFieldRefPresent: Boolean): String {
+
+        if (isFieldRefPresent) {
+
+        } else {
+
+        }
+
+        return ""
+    }
+
+    private fun buildJoinsWithDefaultRef(p: Parameters, root: Sql.Select): String {
+        // TODO 98 remodel?
         p.joinTypes.add(0, root.t)
         return of(p.joinTypes)
                 .filter { it.size >= 2 && it.size % 2 == 0 }

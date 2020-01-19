@@ -6,6 +6,7 @@ import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import kotlin.reflect.KProperty1
 
 // TOIMPROVE: test coverage
 internal class DslMapperTest {
@@ -81,27 +82,47 @@ internal class DslMapperTest {
     @Test
     fun testBuildingSqlFromDslJoin() {
 
-        // TODO 50: "on a.f = b.f2", needs to be completed
-
-        Sql select Place()
-
-        val sql = Sql select Place() join Address() // TOIMPROVE: design: Place auto link to Address, but allow artificial links?
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
         // JOIN Address123565 a ON p.id = a.Place1234556refid
+        val dslAutomaticJoin = Sql select Place()
+        val candidateDslJoin = mapper.map(dslAutomaticJoin)
 
-        Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
+        // todo 102 assertDsl1(candidateDslJoin)
+        println(candidateDslJoin)
+
+        // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
+        // JOIN Address123565 a ON p.id = a.Place1234556refid
+        val dslManualJoin = Sql select Place() join Address()
+        val candidateDslManualJoin = mapper.map(dslManualJoin)
+
+        assertDsl1(candidateDslManualJoin)
+
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
         // JOIN Address123565 a ON p.id = a.Place1234556refid
         // JOIN PlaceDescriptor123456 p2 ON p.id = p2.placeRefId
+        val dslManualJoinWithSpecificField = Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
+        val candidateDslManualJoinWithSpecificField = mapper.map(dslManualJoinWithSpecificField)
 
-        val candidate = mapper.map(sql)
+        // TODO 101 assertDsl2(candidate3)
+        println(candidateDslManualJoinWithSpecificField)
+    }
 
+    private fun assertDsl2(candidate: String) {
+        val (uidPlace, p) = buildUidAndAlias(Place())
+        val (uidAddress, a) = buildUidAndAlias(PlaceDescriptor())
+        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
+                " FROM $uidPlace $p JOIN $uidAddress $a" +
+                " ON $p.id = $a.placeRefId"
+        assertHasContent(candidate)
+        assertEquals(expected, candidate)
+    }
+
+    private fun assertDsl1(candidate: String) {
         val (uidPlace, p) = buildUidAndAlias(Place())
         val (uidAddress, a) = buildUidAndAlias(Address())
         val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
                 " FROM $uidPlace $p JOIN $uidAddress $a" +
                 " ON $p.id = $a.${uidPlace}refid"
-
         assertHasContent(candidate)
         assertEquals(expected, candidate)
     }
