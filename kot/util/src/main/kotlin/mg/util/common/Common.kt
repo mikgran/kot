@@ -1,5 +1,9 @@
 package mg.util.common
 
+import mg.util.common.PredicateComposition.Companion.not
+import mg.util.common.PredicateComposition.Companion.or
+import java.lang.reflect.Field
+
 object Common {
 
     fun hasContent(candidate: String?): Boolean = when {
@@ -19,4 +23,9 @@ object Common {
             // no operation
         }
     }
+
+    fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
+    private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.")
+    private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
+    fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
 }

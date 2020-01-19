@@ -1,7 +1,7 @@
 package mg.util.db.dsl
 
-import mg.util.common.PredicateComposition.Companion.not
-import mg.util.common.PredicateComposition.Companion.or
+import mg.util.common.Common.isCustom
+import mg.util.common.Common.isList
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.Sql.Parameters
@@ -56,11 +56,6 @@ open class MySqlCreateBuilder {
         field.isAccessible = true
         return field.get(type)
     }
-
-    private fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
-    private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.")
-    private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
-    private fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
 
     private fun getFieldsWithListOfCustoms(dp: DslParameters): List<Field> {
         return dp.typeT!!::class.java
