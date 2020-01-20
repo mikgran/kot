@@ -15,7 +15,7 @@ sealed class Sql(val t: Any) {
             val updateFragments: MutableList<String> = mutableListOf(),
             val whereFragments: MutableList<String> = mutableListOf(),
             val joinTypes: MutableList<Any> = mutableListOf(),
-            val joinMap: MutableMap<Any, Any> = mutableMapOf()
+            val joinsMap: MutableMap<Any, Any> = mutableMapOf()
     )
 
     fun parameters() = parameters!!

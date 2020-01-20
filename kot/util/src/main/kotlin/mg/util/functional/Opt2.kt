@@ -2,6 +2,7 @@ package mg.util.functional
 
 import java.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
 import kotlin.reflect.full.safeCast
 
 class Opt2<T : Any> {
@@ -179,11 +180,20 @@ class Opt2<T : Any> {
     }
 
     inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> = of(toList<V>().map(mapper))
+
+    inline fun <reified V : Any, R : Any> lmap(mapper: T.() -> R) {
+        val list = get()
+        if (isPresent() && list is List<*>) {
+            list.filterIsInstance<V>()
+        } else
+            emptyList<List<V>>()
+    }
+
     inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
 
-    inline fun <reified V : Any> toList(): List<V> = when {
-        isPresent() && get() is List<*> -> (get() as List<*>).filterIsInstance<V>()
-        else -> emptyList()
+    inline fun <reified V : Any> toList(): List<V> {
+        val list = get()
+        return if (isPresent() && list is List<*>) list.filterIsInstance<V>() else emptyList()
     }
 
     companion object Factory {

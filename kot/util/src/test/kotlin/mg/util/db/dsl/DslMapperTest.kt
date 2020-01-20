@@ -87,7 +87,7 @@ internal class DslMapperTest {
         val dslAutomaticJoin = Sql select Place()
         val candidateDslJoin = mapper.map(dslAutomaticJoin)
 
-        // todo 102 assertDsl1(candidateDslJoin)
+        // TODO 102 assertDsl1(candidateDslJoin)
         println(candidateDslJoin)
 
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p

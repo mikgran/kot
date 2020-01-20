@@ -7,6 +7,7 @@ import mg.util.db.UidBuilder
 import mg.util.db.dsl.Sql.Parameters
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
+import java.lang.reflect.Field
 import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
@@ -96,6 +97,8 @@ open class DslMapper {
     }
 
     private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
+    private fun <T : Any> getFieldValue(field: Field, type: T) = field.get(type)
+    private fun <T : Any> Field.getFieldValue2(type: T) = get(type)
 
     private fun buildDrop(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
         return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(sql.t)}"
@@ -179,22 +182,30 @@ open class DslMapper {
     }
 
     // TODO 110: Replace windowed list handling with hashMap of links handling
-    private fun buildJoinOnFragment(p: Parameters, root: Sql.Select): String {
+    private fun buildJoinOnFragment(p: Parameters, select: Sql.Select): String {
 
         // construct tree of relations
-        return buildJoinsWithDefaultRef(p, root)
+        // return buildJoinsWithDefaultRef(p, root)
 
         // XXX: 111 finish this!
-        of(root.t::class.java.declaredFields)
-                .lfilter(::isCustom)
-                .ifPresent {
-                    p.joinMap[root] = mutableMapOf<Any, Any>()
-                }
+        linksForParent(select.t, p)
+
 
         return when {
-            p.joins.isNotEmpty() -> buildJoinsManually(p, root, isFieldRefPresent(p))
-            else -> buildJoinsWithDefaultRef(p, root)
+            p.joins.isNotEmpty() -> buildJoinsManually(p, select, isFieldRefPresent(p))
+            else -> buildJoinsWithDefaultRef(p, select)
         }
+    }
+
+    private fun linksForParent(type: Any) {
+        of(type::class.java.declaredFields)
+                .lfilter(::isCustom)
+                .lmap<Field, Any, Any> {
+
+
+                }
+
+
     }
 
     private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }
