@@ -5,6 +5,7 @@ import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.Sql.Parameters
+import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import java.lang.reflect.Field
@@ -98,7 +99,6 @@ open class DslMapper {
 
     private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
     private fun <T : Any> getFieldValue(field: Field, type: T) = field.get(type)
-    private fun <T : Any> Field.getFieldValue2(type: T) = get(type)
 
     private fun buildDrop(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
         return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(sql.t)}"
@@ -188,8 +188,7 @@ open class DslMapper {
         // return buildJoinsWithDefaultRef(p, root)
 
         // XXX: 111 finish this!
-        linksForParent(select.t, p)
-
+        p.joinsMap[select.t] = linksForParent(select.t)
 
         return when {
             p.joins.isNotEmpty() -> buildJoinsManually(p, select, isFieldRefPresent(p))
@@ -197,15 +196,10 @@ open class DslMapper {
         }
     }
 
-    private fun linksForParent(type: Any) {
-        of(type::class.java.declaredFields)
+    private fun linksForParent(type: Any): Opt2<List<Any>> {
+        return of(type::class.java.declaredFields)
                 .lfilter(::isCustom)
-                .lmap<Field, Any, Any> {
-
-
-                }
-
-
+                .lmap<Field, Any> { map { getFieldValue(it, type) } }
     }
 
     private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }

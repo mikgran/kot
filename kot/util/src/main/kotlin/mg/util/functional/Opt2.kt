@@ -179,14 +179,13 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
-    inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> = of(toList<V>().map(mapper))
-
-    inline fun <reified V : Any, R : Any> lmap(mapper: T.() -> R) {
+    // inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> = of(toList<V>().map(mapper))
+    inline fun <reified V : Any, R : Any> lmap(mapper: List<V>.() -> List<R>): Opt2<List<R>> {
         val list = get()
-        if (isPresent() && list is List<*>) {
-            list.filterIsInstance<V>()
-        } else
-            emptyList<List<V>>()
+        return when {
+            isPresent() && list is List<*> -> of(list.filterIsInstance<V>().mapper())
+            else -> of(emptyList())
+        }
     }
 
     inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
