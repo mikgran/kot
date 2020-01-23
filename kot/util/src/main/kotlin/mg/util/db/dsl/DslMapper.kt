@@ -187,8 +187,14 @@ open class DslMapper {
         // construct tree of relations
         // return buildJoinsWithDefaultRef(p, root)
 
-        // XXX: 111 finish this!
-        p.joinsMap[select.t] = linksForParent(select.t)
+        // X XX: 111 finish this!
+        // p.joinsMap[select.t]
+
+        of(linksForParent(select.t))
+                .ifPresent { p.joinsMap[select.t] = it }
+
+
+
 
         return when {
             p.joins.isNotEmpty() -> buildJoinsManually(p, select, isFieldRefPresent(p))
@@ -199,7 +205,7 @@ open class DslMapper {
     private fun linksForParent(type: Any): Opt2<List<Any>> {
         return of(type::class.java.declaredFields)
                 .lfilter(::isCustom)
-                .lmap<Field, Any> { map { getFieldValue(it, type) } }
+                .lxmap<Field, Any> { map { getFieldValue(it, type) } }
     }
 
     private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }

@@ -496,6 +496,33 @@ internal class Opt2Test {
     }
 
     @Test
+    fun test_lxmap() {
+
+        fun twice(list: List<Int>): List<String> = list.map { "${it * 2}" }
+        val twiceFun = fun List<Int>.(): List<String> {
+            return map { i -> "${i * 2}" }
+        }
+
+        Opt2.of(listOf(1, 2, 3, 4))
+                .lxmap(::twice)
+                .apply {
+                    assertEquals(listOf("2", "4", "6", "8"), this.get())
+                }
+
+        Opt2.of(listOf(1, 2, 3, 4))
+                .lxmap<Int, String> { twice(this) }
+                .apply {
+                    assertEquals(listOf("2", "4", "6", "8"), this.get())
+                }
+
+        Opt2.of(listOf(1, 2, 3, 4))
+                .lxmap(twiceFun)
+                .apply {
+                    assertEquals(listOf("2", "4", "6", "8"), this.get())
+                }
+    }
+
+    @Test
     fun test_lfilter() {
 
         Opt2.of(listOf(1, 2, 3, 4))
