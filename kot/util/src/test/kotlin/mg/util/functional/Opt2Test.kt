@@ -499,9 +499,11 @@ internal class Opt2Test {
     fun test_lxmap() {
 
         fun twice(list: List<Int>): List<String> = list.map { "${it * 2}" }
-        val twiceFun = fun List<Int>.(): List<String> {
-            return map { i -> "${i * 2}" }
-        }
+
+        val twiceFun =
+                fun List<Int>.(): List<String> {
+                    return map { "${it * 2}" }
+                }
 
         Opt2.of(listOf(1, 2, 3, 4))
                 .lxmap(::twice)

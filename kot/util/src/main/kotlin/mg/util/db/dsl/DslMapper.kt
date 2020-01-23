@@ -187,14 +187,11 @@ open class DslMapper {
         // construct tree of relations
         // return buildJoinsWithDefaultRef(p, root)
 
-        // X XX: 111 finish this!
+        // XXX: 111 finish this!
         // p.joinsMap[select.t]
 
         of(linksForParent(select.t))
                 .ifPresent { p.joinsMap[select.t] = it }
-
-
-
 
         return when {
             p.joins.isNotEmpty() -> buildJoinsManually(p, select, isFieldRefPresent(p))
