@@ -163,22 +163,22 @@ class Opt2<T : Any> {
     }
 
     inline fun <reified V : Any, R : Any> imap(mapper: (V) -> R): Opt2<List<R>> {
-        return when (val list = get()) {
+        return when (val t = get()) {
             is Iterator<*> -> {
-                val mutableList = mutableListOf<R>()
-                for (e in list) if (e is V) mutableList += mapper(e)
-                of(mutableList.toList())
+                val list = mutableListOf<R>()
+                for (e in t) if (e is V) list += mapper(e)
+                of(list)
             }
             else -> empty()
         }
     }
 
     inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> {
-        return when (val list = get()) {
+        return when (val t = get()) {
             is List<*> -> {
-                val mutableList = mutableListOf<R>()
-                for (e in list) if (e is V) mutableList += mapper(e)
-                of(mutableList.toList())
+                val list = mutableListOf<R>()
+                for (e in t) if (e is V) list += mapper(e)
+                of(list)
             }
             else -> empty()
         }
@@ -191,10 +191,9 @@ class Opt2<T : Any> {
             }
 
     inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
-
     inline fun <reified V : Any> toList(): List<V> {
-        val list = get()
-        return if (isPresent() && list is List<*>) list.filterIsInstance<V>() else emptyList()
+        val value = get()
+        return if (value is List<*>) value.filterIsInstance<V>() else emptyList()
     }
 
     companion object Factory {

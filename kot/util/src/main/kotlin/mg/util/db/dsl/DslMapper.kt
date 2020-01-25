@@ -196,15 +196,11 @@ open class DslMapper {
         }
     }
 
-    private fun linksForParent(select: Sql.Select, p: Parameters) {
-        of(linksForParent(select.t))
-                .ifPresent { p.joinsMap[select.t] = it }
-                .lxmap<Any, Any> {
-                    forEach {
+    private fun linksForParent(type: Any, p: Parameters) {
+        of(linksForParent(type))
+                .ifPresent { p.joinsMap[type] = it } // having the same type used anywhere else, might result in circular refs
+                .xmap { forEach { linksForParent(it, p) } }
 
-                    }
-                    this
-                }
     }
 
     private fun linksForParent(type: Any): Opt2<List<Any>> {
