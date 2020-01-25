@@ -1,6 +1,8 @@
 package mg.util.db.dsl
 
 import mg.util.common.Common.isCustom
+import mg.util.common.Common.isList
+import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
@@ -98,7 +100,10 @@ open class DslMapper {
     }
 
     private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
-    private fun <T : Any> getFieldValue(field: Field, type: T) = field.get(type)
+    private fun <T : Any> getFieldValue(field: Field, type: T): Any? {
+        field.isAccessible = true
+        return field.get(type)
+    }
 
     private fun buildDrop(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
         return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(sql.t)}"
@@ -187,8 +192,10 @@ open class DslMapper {
         // construct tree of relations
         // return buildJoinsWithDefaultRef(p, root)
 
-        // X XX: 111 finish this!
-        linksForParent(select, p)
+        // XXX: 111 finish this!
+        linksForParent(select.t, p)
+
+        println(p.joinsMap)
 
         return when {
             p.joins.isNotEmpty() -> buildJoinsOnGivenId(p, select, isFieldRefPresent(p))
@@ -200,13 +207,16 @@ open class DslMapper {
         of(linksForParent(type))
                 .ifPresent { p.joinsMap[type] = it } // having the same type used anywhere else, might result in circular refs
                 .xmap { forEach { linksForParent(it, p) } }
-
     }
 
     private fun linksForParent(type: Any): Opt2<List<Any>> {
-        return of(type::class.java.declaredFields)
-                .lfilter(::isCustom)
-                .lxmap<Field, Any> { map { getFieldValue(it, type) } }
+        return of(type::class.java.declaredFields.toList())
+                .lfilter(::isCustom or ::isList)
+                .lxmap<Field, Any> {
+                    mapNotNull {
+                        getFieldValue(it, type)
+                    }
+                }
     }
 
     private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }
