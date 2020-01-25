@@ -2,7 +2,6 @@ package mg.util.functional
 
 import java.util.*
 import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
 import kotlin.reflect.full.safeCast
 
 class Opt2<T : Any> {
@@ -163,30 +162,33 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
-    inline fun <reified V : Any, R : Any> imap(mapper: (V) -> R): Opt2<List<R>> = when {
-        isPresent() -> {
-            val mutableList = mutableListOf<R>()
-            val value = get()
-            if (value is Iterator<*>) {
-                for (e in value) {
-                    if (e is V) {
-                        mutableList += mapper(e)
-                    }
-                }
+    inline fun <reified V : Any, R : Any> imap(mapper: (V) -> R): Opt2<List<R>> {
+        return when (val list = get()) {
+            is Iterator<*> -> {
+                val mutableList = mutableListOf<R>()
+                for (e in list) if (e is V) mutableList += mapper(e)
+                of(mutableList.toList())
             }
-            of(mutableList.toList())
+            else -> empty()
         }
-        else -> empty()
     }
 
-    inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> = of(toList<V>().map(mapper))
-    inline fun <reified V : Any, R : Any> lxmap(mapper: List<V>.() -> List<R>): Opt2<List<R>> {
-        val list = get()
-        return when {
-            isPresent() && list is List<*> -> of(list.filterIsInstance<V>().mapper())
-            else -> of(emptyList())
+    inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> {
+        return when (val list = get()) {
+            is List<*> -> {
+                val mutableList = mutableListOf<R>()
+                for (e in list) if (e is V) mutableList += mapper(e)
+                of(mutableList.toList())
+            }
+            else -> empty()
         }
     }
+
+    inline fun <reified V : Any, R : Any> lxmap(mapper: List<V>.() -> List<R>): Opt2<List<R>> =
+            when (val list = get()) {
+                is List<*> -> of(list.filterIsInstance<V>().mapper())
+                else -> of(emptyList())
+            }
 
     inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
 

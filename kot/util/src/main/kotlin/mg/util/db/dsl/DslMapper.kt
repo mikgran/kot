@@ -187,16 +187,24 @@ open class DslMapper {
         // construct tree of relations
         // return buildJoinsWithDefaultRef(p, root)
 
-        // XXX: 111 finish this!
-        // p.joinsMap[select.t]
-
-        of(linksForParent(select.t))
-                .ifPresent { p.joinsMap[select.t] = it }
+        // X XX: 111 finish this!
+        linksForParent(select, p)
 
         return when {
-            p.joins.isNotEmpty() -> buildJoinsManually(p, select, isFieldRefPresent(p))
-            else -> buildJoinsWithDefaultRef(p, select)
+            p.joins.isNotEmpty() -> buildJoinsOnGivenId(p, select, isFieldRefPresent(p))
+            else -> buildJoinsOnIdRefId(p, select)
         }
+    }
+
+    private fun linksForParent(select: Sql.Select, p: Parameters) {
+        of(linksForParent(select.t))
+                .ifPresent { p.joinsMap[select.t] = it }
+                .lxmap<Any, Any> {
+                    forEach {
+
+                    }
+                    this
+                }
     }
 
     private fun linksForParent(type: Any): Opt2<List<Any>> {
@@ -207,7 +215,7 @@ open class DslMapper {
 
     private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }
 
-    private fun buildJoinsManually(p: Parameters, root: Sql.Select, isFieldRefPresent: Boolean): String {
+    private fun buildJoinsOnGivenId(p: Parameters, root: Sql.Select, isFieldRefPresent: Boolean): String {
 
         if (isFieldRefPresent) {
 
@@ -218,7 +226,7 @@ open class DslMapper {
         return ""
     }
 
-    private fun buildJoinsWithDefaultRef(p: Parameters, root: Sql.Select): String {
+    private fun buildJoinsOnIdRefId(p: Parameters, root: Sql.Select): String {
         // TODO 98 remodel?
         p.joinTypes.add(0, root.t)
         return of(p.joinTypes)
