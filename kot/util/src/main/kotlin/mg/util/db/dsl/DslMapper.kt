@@ -1,5 +1,6 @@
 package mg.util.db.dsl
 
+import mg.util.common.Common.hasContent
 import mg.util.common.Common.isCustom
 import mg.util.common.Common.isList
 import mg.util.common.PredicateComposition.Companion.or
@@ -192,19 +193,21 @@ open class DslMapper {
         // construct tree of relations
         // return buildJoinsWithDefaultRef(p, root)
 
-        // XXX: 111 finish this!
+        // XXX: 111 finish this! Still broken...
         linksForParent(select.t, p)
+        println(p.joinsMap.toString())
 
-        println(p.joinsMap)
+        println(buildJoinsOnIdRefId2(p))
 
         return when {
             p.joins.isNotEmpty() -> buildJoinsOnGivenId(p, select, isFieldRefPresent(p))
-            else -> buildJoinsOnIdRefId(p, select)
+            else -> buildJoinsOnIdRefId(p, select.t)
         }
     }
 
     private fun linksForParent(type: Any, p: Parameters) {
         of(linksForParent(type))
+                .filter(::hasContent)
                 .ifPresent { p.joinsMap[type] = it } // having the same type used anywhere else, might result in circular refs
                 .xmap { forEach { linksForParent(it, p) } }
     }
@@ -212,11 +215,7 @@ open class DslMapper {
     private fun linksForParent(type: Any): Opt2<List<Any>> {
         return of(type::class.java.declaredFields.toList())
                 .lfilter(::isCustom or ::isList)
-                .lxmap<Field, Any> {
-                    mapNotNull {
-                        getFieldValue(it, type)
-                    }
-                }
+                .lxmap<Field, Any> { mapNotNull { getFieldValue(it, type) } }
     }
 
     private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }
@@ -232,9 +231,24 @@ open class DslMapper {
         return ""
     }
 
-    private fun buildJoinsOnIdRefId(p: Parameters, root: Sql.Select): String {
+    private fun buildJoinsOnIdRefId2(p: Parameters): String {
+        // XXX: 113 iterate all parents, and their referencing lists of types
+        return of(p.joinsMap)
+                .xmap {
+                    map { entry ->
+                        val (uidI, aliasI) = buildUidAndAlias(entry.key)
+                        val (uidJ, aliasJ) = buildUidAndAlias(entry.value)
+                        println(entry.value::class.java.simpleName)
+                        "$uidJ $aliasJ ON ${aliasI}.id = ${aliasJ}.${uidI}refid"
+                    }.joinToString("")
+                }
+                .map { " JOIN $it" }
+                .getOrElse("")
+    }
+
+    private fun buildJoinsOnIdRefId(p: Parameters, root: Any): String {
         // TODO 98 remodel?
-        p.joinTypes.add(0, root.t)
+        p.joinTypes.add(0, root)
         return of(p.joinTypes)
                 .filter { it.size >= 2 && it.size % 2 == 0 }
                 .xmap {
