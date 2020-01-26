@@ -11,9 +11,14 @@ object Common {
         else -> false
     }
 
-    fun hasContent(candidate: Any?): Boolean = when (candidate) {
+    fun hasAnyContent(candidate: Any?): Boolean = when (candidate) {
         null -> false
         else -> true
+    }
+
+    fun hasContent(candidate: List<*>?) = when (candidate) {
+        null -> false
+        else -> candidate.isNotEmpty()
     }
 
     fun nonThrowingBlock(block: () -> Unit) {

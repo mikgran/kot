@@ -1,9 +1,10 @@
 package mg.util.common
 
+import mg.util.common.Common.hasAnyContent
+import mg.util.common.Common.hasContent
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import mg.util.common.Common.hasContent
 
 internal class CommonTest {
 
@@ -16,7 +17,8 @@ internal class CommonTest {
         val hasContent2 = hasContent("")
         assertFalse(hasContent2)
 
-        val hasContent3 = hasContent(null)
+        val strNull: String? = null
+        val hasContent3 = hasContent(strNull)
         assertFalse(hasContent3)
     }
 
@@ -26,13 +28,25 @@ internal class CommonTest {
         val nullObj: Any? = null
         val someObj: Int? = Int.MIN_VALUE
 
-        val candidate = hasContent(nullObj)
+        val candidate = hasAnyContent(nullObj)
         assertFalse(candidate, "null should yield false")
 
-        val candidate2 = hasContent(someObj)
-        assertTrue(hasContent(candidate2), "a non null should yield true")
+        val candidate2 = hasAnyContent(someObj)
+        assertTrue(candidate2, "a non null should yield true")
     }
 
+    @Test
+    fun `test hasContent with List`() {
 
+        val nullObj: List<Int>? = null
+        val someObj: List<Int>? = listOf(1, 2, 3, 4, 5)
+
+        val candidate = hasContent(someObj)
+        assertTrue(candidate, "a non null should yield true")
+
+        val candidate2 = hasContent(nullObj)
+        assertFalse(candidate2, "a null should yield false")
+
+    }
 
 }
