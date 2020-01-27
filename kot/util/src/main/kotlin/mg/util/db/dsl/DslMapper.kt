@@ -137,7 +137,6 @@ open class DslMapper {
     private fun buildAndAddJoinFieldAndTableFragments(p: Parameters, sql: Sql.Select.Join): String {
         p.fieldFragments.add(buildFieldFragment(sql))
         p.joinFragments.add(buildTableFragment(sql))  // TODO 98 remove
-        p.joinTypes.add(sql.t) // TODO 99 remove
         return ""
     }
 
@@ -179,7 +178,7 @@ open class DslMapper {
                 .caseDefault { it }
                 .result()
                 .ifPresent {
-                    if (p.joins.isNotEmpty()) {
+                    if (p.joins.isNotEmpty()) { // XXX fix this to include the few types of joins
                         it.append(joinFragments)
                     }
                 }
@@ -187,29 +186,24 @@ open class DslMapper {
                 .toString()
     }
 
-    // TODO 110: Replace windowed list handling with hashMap of links handling
     private fun buildJoinOnFragment(p: Parameters, select: Sql.Select): String {
 
-        // construct tree of relations
-        // return buildJoinsWithDefaultRef(p, root)
+        buildRefsTree(select.t, p)
 
-        // XXX: 111 finish this! Still broken...
-        linksForParent(select.t, p)
-        println(p.joinsMap.toString())
-
-        println(buildJoinsOnIdRefId2(p))
-
+        val hasManualJoins = p.joins.isNotEmpty() // XXX: 115 check for relations, joins has the manual joins
+        val hasIdRefIdJoins = (p.joinsMap[select.t] as? List<*>)?.isNotEmpty() ?: false
         return when {
-            p.joins.isNotEmpty() -> buildJoinsOnGivenId(p, select, isFieldRefPresent(p))
-            else -> buildJoinsOnIdRefId(p, select.t)
+            hasManualJoins && !hasIdRefIdJoins -> buildJoinsOnGivenId(p, select)
+            !hasManualJoins && hasIdRefIdJoins -> buildJoinsOnIdRefId(p)
+            else -> "" // TOIMPROVE: in conflicts throw an Exception?
         }
     }
 
-    private fun linksForParent(type: Any, p: Parameters) {
+    private fun buildRefsTree(type: Any, p: Parameters) {
         of(linksForParent(type))
                 .filter(::hasContent)
                 .ifPresent { p.joinsMap[type] = it } // having the same type used anywhere else, might result in circular refs
-                .xmap { forEach { linksForParent(it, p) } }
+                .xmap { forEach { buildRefsTree(it, p) } }
     }
 
     private fun linksForParent(type: Any): Opt2<List<Any>> {
@@ -220,45 +214,26 @@ open class DslMapper {
 
     private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }
 
-    private fun buildJoinsOnGivenId(p: Parameters, root: Sql.Select, isFieldRefPresent: Boolean): String {
-
-        if (isFieldRefPresent) {
-
-        } else {
-
-        }
-
-        return ""
+    private fun buildJoinsOnGivenId(p: Parameters, root: Sql.Select): String {
+        return TODO()
     }
 
-    private fun buildJoinsOnIdRefId2(p: Parameters): String {
-        // XXX: 113 iterate all parents, and their referencing lists of types
+    private fun buildJoinsOnIdRefId(p: Parameters): String {
         return of(p.joinsMap)
-                .xmap {
-                    map { entry ->
-                        val (uidI, aliasI) = buildUidAndAlias(entry.key)
-                        val (uidJ, aliasJ) = buildUidAndAlias(entry.value)
-                        println(entry.value::class.java.simpleName)
-                        "$uidJ $aliasJ ON ${aliasI}.id = ${aliasJ}.${uidI}refid"
-                    }.joinToString("")
-                }
+                .xmap { map { buildJoinsOnIdRefId(it) }.joinToString(" AND ") }
+                .filter(::hasContent)
                 .map { " JOIN $it" }
                 .getOrElse("")
     }
 
-    private fun buildJoinsOnIdRefId(p: Parameters, root: Any): String {
-        // TODO 98 remodel?
-        p.joinTypes.add(0, root)
-        return of(p.joinTypes)
-                .filter { it.size >= 2 && it.size % 2 == 0 }
-                .xmap {
-                    windowed(size = 2, step = 1, partialWindows = false) { (i, j) ->
-                        val (uidI, aliasI) = buildUidAndAlias(i)
-                        val (uidJ, aliasJ) = buildUidAndAlias(j)
-                        "$uidJ $aliasJ ON ${aliasI}.id = ${aliasJ}.${uidI}refid"
-                    }.joinToString("")
+    private fun buildJoinsOnIdRefId(entry: Map.Entry<Any, Any>): String {
+        val (uidRoot, aliasRoot) = buildUidAndAlias(entry.key)
+        return of(entry.value as? List<*>)
+                .lmap { type: Any ->
+                    val (uidRef, aliasRef) = buildUidAndAlias(type)
+                    "$uidRef $aliasRef ON ${aliasRoot}.id = ${aliasRef}.${uidRoot}refid"
                 }
-                .map { " JOIN $it" }
+                .xmap { joinToString(" AND ") }
                 .getOrElse("")
     }
 

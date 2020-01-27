@@ -88,16 +88,16 @@ internal class DslMapperTest {
         val candidateDslJoin = mapper.map(dslAutomaticJoin)
 
         // TODO 102
-        // assertDsl1(candidateDslJoin)
         println("candidateDslJoin $candidateDslJoin")
+        assertDsl1(candidateDslJoin)
 
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
         // JOIN Address123565 a ON p.id = a.Place1234556refid
         val dslManualJoin = Sql select Place() join Address()
         val candidateDslManualJoin = mapper.map(dslManualJoin)
 
-        println("candidateDslManualJoin $candidateDslManualJoin")
-        // assertDsl1(candidateDslManualJoin)
+        // println("candidateDslManualJoin $candidateDslManualJoin")
+        assertDsl1(candidateDslManualJoin)
 
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
         // JOIN Address123565 a ON p.id = a.Place1234556refid
