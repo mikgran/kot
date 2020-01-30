@@ -163,7 +163,7 @@ open class DslMapper {
     private fun buildSelect(p: Parameters, select: Sql.Select?): String {
         p.tableFragments.add(0, buildTableFragment(select as Sql))
         p.fieldFragments.add(0, buildFieldFragment(select as Sql))
-        val joinFragments = buildJoinOnFragment(p, select)
+        val joinOnFragments = buildJoinOnFragment(p, select)
 
         val whereStr = " WHERE "
         val whereFragmentsSize = p.whereFragments.size
@@ -178,8 +178,8 @@ open class DslMapper {
                 .caseDefault { it }
                 .result()
                 .ifPresent {
-                    if (p.joins.isNotEmpty()) { // XXX fix this to include the few types of joins
-                        it.append(joinFragments)
+                    if (joinOnFragments.isNotEmpty()) {
+                        it.append(joinOnFragments)
                     }
                 }
                 .get()
@@ -190,7 +190,7 @@ open class DslMapper {
 
         buildRefsTree(select.t, p)
 
-        val hasManualJoins = p.joins.isNotEmpty() // XXX: 115 check for relations, joins has the manual joins
+        val hasManualJoins = p.joins.isNotEmpty()
         val hasIdRefIdJoins = (p.joinsMap[select.t] as? List<*>)?.isNotEmpty() ?: false
         return when {
             hasManualJoins && !hasIdRefIdJoins -> buildJoinsOnGivenId(p, select)
@@ -211,8 +211,6 @@ open class DslMapper {
                 .lfilter(::isCustom or ::isList)
                 .lxmap<Field, Any> { mapNotNull { getFieldValue(it, type) } }
     }
-
-    private fun isFieldRefPresent(p: Parameters): Boolean = p.joins.any { it.t is KProperty1<*, *> }
 
     private fun buildJoinsOnGivenId(p: Parameters, root: Sql.Select): String {
         return TODO()

@@ -162,38 +162,27 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
-    inline fun <reified V : Any, R : Any> imap(mapper: (V) -> R): Opt2<List<R>> {
-        return when (val t = get()) {
-            is Iterator<*> -> {
-                val list = mutableListOf<R>()
-                for (e in t) if (e is V) list += mapper(e)
-                of(list)
-            }
-            else -> empty()
-        }
+    inline fun <R : Any, reified V : Any> buildList(type: Iterator<*>, mapper: (V) -> R): Opt2<List<R>> {
+        val list = mutableListOf<R>()
+        for (element in type) if (element is V) list += mapper(element)
+        return of(list)
     }
 
     inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> {
-        return when (val t = get()) {
-            is List<*> -> {
-                val list = mutableListOf<R>()
-                for (e in t) if (e is V) list += mapper(e)
-                of(list)
-            }
+        return when (val type = get()) {
+            is List<*> -> buildList(type.iterator(), mapper)
+            is Iterator<*> -> buildList(type, mapper)
             else -> empty()
         }
     }
 
-    inline fun <reified V : Any, R : Any> lxmap(mapper: List<V>.() -> List<R>): Opt2<List<R>> =
-            when (val list = get()) {
-                is List<*> -> of(list.filterIsInstance<V>().mapper())
-                else -> of(emptyList())
-            }
-
+    inline fun <reified V : Any, R : Any> lxmap(mapper: List<V>.() -> List<R>): Opt2<List<R>> = of(toList<V>().mapper())
     inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
     inline fun <reified V : Any> toList(): List<V> {
-        val value = get()
-        return if (value is List<*>) value.filterIsInstance<V>() else emptyList()
+        return when (val value = get()) {
+            is List<*> -> value.filterIsInstance<V>()
+            else -> emptyList()
+        }
     }
 
     companion object Factory {

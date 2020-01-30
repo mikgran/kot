@@ -44,7 +44,7 @@ internal class ResultSetIteratorTest {
                 }
 
         getResultSetIterator(connection, tableUid)
-                .imap { rs: ResultSet -> Person(rs.getString(2), rs.getString(3)) }
+                .lmap { rs: ResultSet -> Person(rs.getString(2), rs.getString(3)) }
                 .apply {
                     assertTrue(get()!!.isNotEmpty())
                     assertTrue(get()!!.containsAll(listOf(person1, person2)))

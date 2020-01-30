@@ -563,7 +563,7 @@ internal class Opt2Test {
                 }
 
         Opt2.of(listOf(1, 2, 3, 4).iterator())
-                .imap(::intToAiString)
+                .lmap(::intToAiString)
                 .apply {
                     assertEquals("A1,A2,A3,A4", get()?.joinToString(","))
                 }
