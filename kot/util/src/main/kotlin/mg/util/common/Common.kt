@@ -6,9 +6,9 @@ import java.lang.reflect.Field
 
 object Common {
 
-    fun hasContent(candidate: String?): Boolean = when {
-        candidate != null && candidate.isNotEmpty() -> true
-        else -> false
+    fun hasContent(candidate: String?): Boolean = when (candidate) {
+        null  -> false
+        else -> candidate.isNotEmpty()
     }
 
     fun hasAnyContent(candidate: Any?): Boolean = when (candidate) {
