@@ -162,7 +162,7 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
-    inline fun <R : Any, reified V : Any> buildList(type: Iterator<*>, mapper: (V) -> R): Opt2<List<R>> {
+    inline fun <reified V : Any, R : Any> map(type: Iterator<*>, mapper: (V) -> R): Opt2<List<R>> {
         val list = mutableListOf<R>()
         for (element in type) if (element is V) list += mapper(element)
         return of(list)
@@ -170,8 +170,8 @@ class Opt2<T : Any> {
 
     inline fun <reified V : Any, R : Any> lmap(mapper: (V) -> R): Opt2<List<R>> {
         return when (val type = get()) {
-            is List<*> -> buildList(type.iterator(), mapper)
-            is Iterator<*> -> buildList(type, mapper)
+            is List<*> -> map(type.iterator(), mapper)
+            is Iterator<*> -> map(type, mapper)
             else -> empty()
         }
     }
