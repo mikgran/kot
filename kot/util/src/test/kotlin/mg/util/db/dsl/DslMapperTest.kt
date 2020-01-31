@@ -93,6 +93,14 @@ internal class DslMapperTest {
 
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
         // JOIN Address123565 a ON p.id = a.Place1234556refid
+        //        Sql create Place()
+        //        Sql insert Place(Address("New Streeet 1 A 1, 00000, Hell"), 150000)
+        //        Sql select Place() where Address::fullAddress eq "%Streeet%"
+        //        SELECT place.id, place.rentincents, address.id, address.fulladdress, address.placerefid
+        //        FROM place
+        //        JOIN address ON place.id = address.placerefid
+        //        WHERE address.fulladdress = "%Street%"
+
         val dslManualJoin = Sql select Place() join Address()
         val candidateDslManualJoin = mapper.map(dslManualJoin)
 
@@ -102,7 +110,8 @@ internal class DslMapperTest {
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
         // JOIN Address123565 a ON p.id = a.Place1234556refid
         // JOIN PlaceDescriptor123456 p2 ON p.id = p2.placeRefId
-//        val dslManualJoinWithSpecificField = Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
+//        val dslManualJoinWithSpecificField =
+//                Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
 //        val candidateDslManualJoinWithSpecificField = mapper.map(dslManualJoinWithSpecificField)
 //
 //        // TODO 101 assertDsl2(candidate3)
@@ -134,7 +143,7 @@ internal class DslMapperTest {
     }
 
     @Test
-    fun testDsl1() {
+    fun testDslSelectWhere() {
 
         val sql = Sql select PersonB() where PersonB::firstName eq "name"
 
@@ -148,7 +157,7 @@ internal class DslMapperTest {
     }
 
     @Test
-    fun testDsl2() {
+    fun testDslSelectWhereAndWhere() {
 
         val sql = Sql select PersonB() where PersonB::firstName eq "first" and PersonB::lastName eq "last"
 

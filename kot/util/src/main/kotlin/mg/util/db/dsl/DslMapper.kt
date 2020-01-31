@@ -53,7 +53,7 @@ open class DslMapper {
             is Sql.Select -> buildSelect(p, sql)
             is Sql.Insert -> buildInsert(p, sql)
             is Sql.Update -> buildUpdate(p, sql)
-            is Sql.Delete -> TODO()
+            is Sql .Delete -> TODO()
             is Sql.Select.Join ->
                 buildAndAddJoinFieldAndTableFragments(p, sql)
             is Sql.Select.Where,
@@ -141,7 +141,7 @@ open class DslMapper {
     }
 
     private fun buildCreate(p: Parameters, sql: Sql): String {
-        return MySqlCreateBuilder().buildCreate(p, sql)
+        return MySqlCreateBuilder().buildCreate(p, sql) // TODO: -150 does not include multilayer creates yet, automate for less hassle.
     }
 
     private fun buildEqFragment(sql: Sql): String = of(sql.t).map { " = '$it'" }.toString()
