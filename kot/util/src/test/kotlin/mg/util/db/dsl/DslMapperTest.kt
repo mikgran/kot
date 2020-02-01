@@ -79,7 +79,7 @@ internal class DslMapperTest {
 
     }
 
-    @Test // XXX: 112 fix me!
+    @Test
     fun testBuildingSqlFromDslJoin() {
 
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
@@ -87,35 +87,18 @@ internal class DslMapperTest {
         val dslAutomaticJoin = Sql select Place()
         val candidateDslJoin = mapper.map(dslAutomaticJoin)
 
-        // TODO 102
-        println("candidateDslJoin $candidateDslJoin")
         assertDsl1(candidateDslJoin)
 
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
         // JOIN Address123565 a ON p.id = a.Place1234556refid
-        //        Sql create Place()
-        //        Sql insert Place(Address("New Streeet 1 A 1, 00000, Hell"), 150000)
-        //        Sql select Place() where Address::fullAddress eq "%Streeet%"
-        //        SELECT place.id, place.rentincents, address.id, address.fulladdress, address.placerefid
-        //        FROM place
-        //        JOIN address ON place.id = address.placerefid
-        //        WHERE address.fulladdress = "%Street%"
-
-        val dslManualJoin = Sql select Place() join Address()
-        val candidateDslManualJoin = mapper.map(dslManualJoin)
-
-        // println("candidateDslManualJoin $candidateDslManualJoin")
-        assertDsl1(candidateDslManualJoin)
-
-        // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
-        // JOIN Address123565 a ON p.id = a.Place1234556refid
         // JOIN PlaceDescriptor123456 p2 ON p.id = p2.placeRefId
-//        val dslManualJoinWithSpecificField =
-//                Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
-//        val candidateDslManualJoinWithSpecificField = mapper.map(dslManualJoinWithSpecificField)
-//
-//        // TODO 101 assertDsl2(candidate3)
-//        println(candidateDslManualJoinWithSpecificField)
+        val dslManualJoinWithSpecificField =
+                Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
+        val candidateDslManualJoinWithSpecificField = mapper.map(dslManualJoinWithSpecificField)
+
+        // XXX 133
+        assertDsl2(candidateDslManualJoinWithSpecificField)
+        println(candidateDslManualJoinWithSpecificField)
     }
 
     private fun assertDsl2(candidate: String) {
