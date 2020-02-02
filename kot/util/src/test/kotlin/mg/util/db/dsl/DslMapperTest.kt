@@ -89,9 +89,20 @@ internal class DslMapperTest {
 
         assertDsl1(candidateDslJoin)
 
-        // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
-        // JOIN Address123565 a ON p.id = a.Place1234556refid
-        // JOIN PlaceDescriptor123456 p2 ON p.id = p2.placeRefId
+        // SELECT p.id, p.rentInCents,
+        //        a.id, a.fullAddress, a.Place1234556refid,
+        //        p2.id, p2.description, p2.Place1234556refid
+        // FROM
+        //        Place1234556 p
+        // JOIN
+        //        Address123565 a ON p.id = a.Place1234556refid
+        // JOIN
+        //        PlaceDescriptor123456 p2 ON p.id = p2.Place1234556refId
+
+        // ResultSet:
+        // p.id, p.rentincents, a.id, a.fulladdress, a.placerefid, p2.id, p2.description, p2.placerefid
+        // 1     150000         15    StreetName     1             2053   Some Desc       1
+        // 2     160000         16    A Street       2             6342   Something..     2
         val dslManualJoinWithSpecificField =
                 Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
         val candidateDslManualJoinWithSpecificField = mapper.map(dslManualJoinWithSpecificField)
@@ -103,9 +114,12 @@ internal class DslMapperTest {
 
     private fun assertDsl2(candidate: String) {
         val (uidPlace, p) = buildUidAndAlias(Place())
-        val (uidAddress, a) = buildUidAndAlias(PlaceDescriptor())
-        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
-                " FROM $uidPlace $p JOIN $uidAddress $a" +
+        val (uidAddress, a) = buildUidAndAlias(Address())
+        val (uidDesc, p2) = buildUidAndAlias(PlaceDescriptor())
+        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress, $p2.description, $p2." +
+                " FROM $uidPlace $p " +
+                " JOIN $uidAddress $a" +
+                " JOIN $uidDesc $p2 " +
                 " ON $p.id = $a.placeRefId"
         assertHasContent(candidate)
         assertEquals(expected, candidate)
