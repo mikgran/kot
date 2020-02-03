@@ -8,7 +8,6 @@ import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.Sql.Parameters
-import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.rcv
 import java.lang.reflect.Field
@@ -55,8 +54,7 @@ open class DslMapper {
             is Sql.Insert -> buildInsert(p, sql)
             is Sql.Update -> buildUpdate(p, sql)
             is Sql.Delete -> TODO()
-            is Sql.Select.Join ->
-                buildAndAddJoinFieldAndTableFragments(p, sql)
+            is Sql.Select.Join -> buildJoinFragment(p, sql)
             is Sql.Select.Where,
             is Sql.Select.Join.Where,
             is Sql.Select.Join.Where.Eq.Where ->
@@ -78,10 +76,26 @@ open class DslMapper {
             is Sql.Update.Set.Eq.And.Eq.Where.Eq ->
                 buildEqFragment(sql).also { p.whereFragments += it }
             null -> throw Exception("Action not supported: null")
-            is Sql.Select.Join.On -> TODO()
-            is Sql.Select.Join.On.Eq -> TODO()
+            is Sql.Select.Join.On -> buildJoinOnFragMent(sql).also { p.joinFragments += it }
+            is Sql.Select.Join.On.Eq -> buildJoinOnEqFragment(sql).also { p.joinFragments += it }
         }
     }
+
+    private fun buildJoinOnEqFragment(sql: Sql.Select.Join.On.Eq): String {
+
+        return ""
+    }
+
+    private fun buildJoinOnFragMent(sql: Sql.Select.Join.On): String {
+
+
+        return ""
+    }
+
+    private fun buildJoinFragment(
+            @Suppress("UNUSED_PARAMETER") p: Parameters,
+            sql: Sql.Select.Join
+    ): String = buildTableFragment(sql)
 
     private fun buildInsert(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
 
@@ -135,13 +149,6 @@ open class DslMapper {
         return builder.get().toString()
     }
 
-    // TODO 98 remove
-    private fun buildAndAddJoinFieldAndTableFragments(p: Parameters, sql: Sql.Select.Join): String {
-        // p.fieldFragments.add(buildFieldFragment(sql))
-        // p.joinFragments.add(buildTableFragment(sql))
-        return ""
-    }
-
     private fun buildCreate(p: Parameters, sql: Sql): String {
         return MySqlCreateBuilder().buildCreate(p, sql) // TODO: -150 does not include multilayer creates yet, automate for less hassle.
     }
@@ -165,15 +172,15 @@ open class DslMapper {
     private fun buildSelect(p: Parameters, select: Sql.Select): String {
         p.tableFragments.add(0, buildTableFragment(select.t))
         buildRefsTree(select.t, p)
-        buildSelectFields(select.t, p)
+        buildSelectColumns(p)
+        buildJoins(p)
 
-        val joinOnFragments = buildJoinOnFragment(p, select)
         val whereStr = " WHERE "
         val whereFragmentsSize = p.whereFragments.size
         val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
         return of(StringBuilder())
                 .rcv {
-                    append("SELECT ${p.fieldFragments.joinToString(", ")}")
+                    append("SELECT ${p.columnFragments.joinToString(", ")}")
                     append(" FROM ${p.tableFragments.joinToString(", ")}")
                 }
                 .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + p.whereFragments.joinToString("")); it })
@@ -181,53 +188,64 @@ open class DslMapper {
                 .caseDefault { it }
                 .result()
                 .ifPresent {
-                    if (joinOnFragments.isNotEmpty()) {
-                        it.append(joinOnFragments)
+                    if (p.joinFragments.isNotEmpty()) {
+                        it.append(p.joinFragments)
                     }
                 }
                 .get()
                 .toString()
     }
 
-    private fun buildSelectFields(root: Any, p: Parameters) {
+    private fun buildSelectColumns(p: Parameters) {
+        collectUniquesFromJoinsMapAndAction(p)
+                .forEach { p.columnFragments += buildFieldFragment(it) }
+    }
+
+    private fun collectUniquesFromJoinsMapAndAction(p: Parameters): MutableSet<Any> {
         val uniques = mutableSetOf<Any>()
-        uniques += root
+        of(p.action?.t).map(uniques::add)
         of(p.joinsMap.iterator())
                 .lmap { entry: MutableEntry<Any, Any> ->
                     uniques += entry.key
                     (entry.value as? List<*>)?.filterNotNull()?.forEach { uniques += it }
                     entry
                 }
-        uniques.forEach { p.fieldFragments += buildFieldFragment(it) }
+        return uniques
     }
 
-    private fun buildJoinOnFragment(p: Parameters, select: Sql.Select): String {
+    private fun buildJoins(p: Parameters) {
 
-        val hasManualJoins = p.joins.isNotEmpty()
-        val hasIdRefIdJoins = (p.joinsMap[select.t] as? List<*>)?.isNotEmpty() ?: false
-        return when {
-            hasManualJoins && !hasIdRefIdJoins -> buildJoinsOnGivenId(p, select)
-            !hasManualJoins && hasIdRefIdJoins -> buildJoinsOnNaturalRefs(p)
-            else -> "" // TOIMPROVE: in conflicts throw an Exception?
-        }
+        of(buildJoinsOnNaturalRefs(p))
+                .map(p.joinFragments::add)
+
+        of(buildJoinsOnGivenId(p))
+                .map(p.joinFragments::add)
     }
 
-    private fun buildRefsTree(type: Any, p: Parameters) {
-        of(linksForParent(type))
-                .filter(::hasContent)
-                .ifPresent { p.joinsMap[type] = it } // having the same type used anywhere else, might result in circular refs
+    private fun buildRefsTree(root: Any, p: Parameters) {
+        of(root)
+                .map {
+                    val list = linksForParent(it)
+                    if (list.isNotEmpty()) {
+                        p.joinsMap[it] = list
+                    }
+                    list
+                }
                 .xmap { forEach { buildRefsTree(it, p) } }
     }
 
-    private fun linksForParent(type: Any): Opt2<List<Any>> {
+    private fun linksForParent(type: Any): List<Any> {
         return of(type::class.java.declaredFields.toList())
                 .lfilter(::isCustom or ::isList)
                 .lxmap<Field, Any> { mapNotNull { getFieldValue(it, type) } }
+                .getOrElse { emptyList() }
     }
 
-    private fun buildJoinsOnGivenId(p: Parameters, root: Sql.Select): String {
+    private fun buildJoinsOnGivenId(p: Parameters): String {
         println("givenRefs") // TODO: -100 remove me
-        return TODO()
+
+
+        return ""
     }
 
     private fun buildJoinsOnNaturalRefs(p: Parameters): String {

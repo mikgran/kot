@@ -9,7 +9,7 @@ sealed class Sql(val t: Any) {
             val joins: MutableList<Sql> = mutableListOf(),
             val updates: MutableList<Sql> = mutableListOf(),
             val wheres: MutableList<Sql> = mutableListOf(),
-            val fieldFragments: MutableList<String> = mutableListOf(),
+            val columnFragments: MutableList<String> = mutableListOf(),
             val tableFragments: MutableList<String> = mutableListOf(),
             val joinFragments: MutableList<String> = mutableListOf(),
             val updateFragments: MutableList<String> = mutableListOf(),
