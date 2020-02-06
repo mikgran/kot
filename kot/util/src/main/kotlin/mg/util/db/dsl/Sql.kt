@@ -16,7 +16,24 @@ sealed class Sql(val t: Any) {
             val whereFragments: MutableList<String> = mutableListOf(),
             val joinTypes: MutableList<Any> = mutableListOf(),
             val joinsMap: MutableMap<Any, Any> = mutableMapOf()
-    )
+    ) {
+        override fun toString(): String {
+            // add some clarity to the bulky data class:
+            return StringBuilder("\nParameters:").append(
+                    "\naction=${action}" +
+                            "\njoins=${joins}" +
+                            "\nupdates=${updates}" +
+                            "\nwheres=${wheres}" +
+                            "\ncolumnFragments=${columnFragments}" +
+                            "\ntableFragments=${tableFragments}" +
+                            "\njoinFragments=${joinFragments}" +
+                            "\nupdateFragments=${updateFragments}" +
+                            "\nwhereFragments=${whereFragments}" +
+                            "\njoinTypes=${joinTypes}" +
+                            "\njoinsMap=${joinsMap}"
+            ).toString()
+        }
+    }
 
     fun parameters() = parameters!!
 
