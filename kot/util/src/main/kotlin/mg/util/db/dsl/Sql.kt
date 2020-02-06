@@ -52,7 +52,9 @@ sealed class Sql(val t: Any) {
             is Delete,
             is Select,
             is Update -> parameters?.action = type
-            is Select.Join -> parameters?.joins?.add(type)
+            is Select.Join,
+            is Select.Join.On,
+            is Select.Join.On.Eq -> parameters?.joins?.add(type)
             is Select.Join.Where,
             is Select.Join.Where.Eq,
             is Select.Where,

@@ -13,6 +13,7 @@ import mg.util.functional.rcv
 import java.lang.reflect.Field
 import kotlin.collections.MutableMap.MutableEntry
 import kotlin.reflect.KCallable
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberProperties
@@ -54,42 +55,47 @@ open class DslMapper {
             is Sql.Insert -> buildInsert(p, sql)
             is Sql.Update -> buildUpdate(p, sql)
             is Sql.Delete -> TODO()
-            is Sql.Select.Join -> buildJoinFragment(p, sql)
-            is Sql.Select.Join.On -> buildJoinOnFragMent(sql).also { p.joinFragments += it }
-            is Sql.Select.Join.On.Eq -> buildJoinOnEqFragment(sql).also { p.joinFragments += it }
-            is Sql.Select.Join.Where -> buildWhereFragment(sql).also { p.whereFragments += it }
-            is Sql.Select.Join.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
-            is Sql.Select.Join.Where.Eq.Where -> buildWhereFragment(sql).also { p.whereFragments += it }
-            is Sql.Select.Join.Where.Eq.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
-            is Sql.Select.Where -> buildWhereFragment(sql).also { p.whereFragments += it }
-            is Sql.Select.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
-            is Sql.Update.Set -> buildUpdateFragments(p, sql).also { p.updateFragments += it }
-            is Sql.Update.Set.Eq -> buildEqFragment(sql).also { p.updateFragments += it }
-            is Sql.Update.Set.Eq.And -> buildUpdateFragments(p, sql).also { p.updateFragments += it }
-            is Sql.Update.Set.Eq.And.Eq -> buildEqFragment(sql).also { p.updateFragments += it }
-            is Sql.Update.Set.Eq.And.Eq.Where -> buildUpdateFragments(p, sql).also { p.whereFragments += it }
-            is Sql.Update.Set.Eq.And.Eq.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
-            is Sql.Update.Set.Eq.Where -> buildUpdateFragments(p, sql).also { p.whereFragments += it }
-            is Sql.Update.Set.Eq.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
+            is Sql.Select.Join -> buildJoinFragmentAndColumnFragments(p, sql)
+            is Sql.Select.Join.On -> buildJoinOnFragment(p, sql)
+            is Sql.Select.Join.On.Eq -> buildJoinOnEqFragment(p, sql)
+            is Sql.Select.Join.Where -> buildWhereFragment(p, sql)
+            is Sql.Select.Join.Where.Eq -> buildWhereEqFragment(p, sql)
+            is Sql.Select.Join.Where.Eq.Where -> buildWhereFragment(p, sql)
+            is Sql.Select.Join.Where.Eq.Where.Eq -> buildWhereEqFragment(p, sql)
+            is Sql.Select.Where -> buildWhereFragment(p, sql)
+            is Sql.Select.Where.Eq -> buildWhereEqFragment(p, sql)
+            is Sql.Update.Set -> buildUpdateFragments(p, sql)
+            is Sql.Update.Set.Eq -> buildUpdateEqFragment(p, sql)
+            is Sql.Update.Set.Eq.And -> buildUpdateFragments(p, sql)
+            is Sql.Update.Set.Eq.And.Eq -> buildUpdateEqFragment(p, sql)
+            is Sql.Update.Set.Eq.And.Eq.Where -> buildWhereFragment(p, sql) // buildUpdateFragments(p, sql)
+            is Sql.Update.Set.Eq.And.Eq.Where.Eq -> buildWhereEqFragment(p, sql)
+            is Sql.Update.Set.Eq.Where -> buildWhereFragment(p, sql) // buildUpdateFragments(p, sql)
+            is Sql.Update.Set.Eq.Where.Eq -> buildWhereEqFragment(p, sql)
             null -> throw Exception("Action not supported: null")
         }
     }
 
-    private fun buildJoinOnEqFragment(sql: Sql.Select.Join.On.Eq): String {
-
+    private fun buildJoinOnEqFragment(p: Parameters, sql: Sql.Select.Join.On.Eq): String {
+        val ref = sql.t as KProperty1<*, *>
+        val uid = UidBuilder.build(ref.javaField?.declaringClass?.kotlin ?: Any::class)
+        val alias = AliasBuilder.build(uid)
+        p.joinFragments += "= $alias.${ref.name}"
         return ""
     }
 
-    private fun buildJoinOnFragMent(sql: Sql.Select.Join.On): String {
-
-
+    private fun buildJoinOnFragment(p: Parameters, sql: Sql.Select.Join.On): String {
+        val uid = UidBuilder.build(sql.t as KClass<*>)
+        val alias = AliasBuilder.build(uid)
+        p.joinFragments += "ON ${alias}.id"
         return ""
     }
 
-    private fun buildJoinFragment(
-            @Suppress("UNUSED_PARAMETER") p: Parameters,
-            sql: Sql.Select.Join
-    ): String = buildTableFragment(sql)
+    private fun buildJoinFragmentAndColumnFragments(p: Parameters, sql: Sql.Select.Join): String {
+        p.columnFragments += buildFieldFragment(sql.t)
+        p.joinFragments += "JOIN ${buildTableFragment(sql.t)}"
+        return ""
+    }
 
     private fun buildInsert(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
 
@@ -119,19 +125,25 @@ open class DslMapper {
         return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(sql.t)}"
     }
 
-    private fun buildUpdateFragments(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String =
-            of(sql.t).mapTo(KProperty1::class)
-                    .map { it.name }
-                    .get()
-                    .toString()
+    private fun buildUpdateFragments(p: Parameters, sql: Sql): String {
+        p.updateFragments += of(sql.t)
+                .mapTo(KProperty1::class)
+                .map { it.name }
+                .get()
+                .toString()
+        return ""
+    }
 
     private fun buildUpdate(p: Parameters, sql: Sql): String {
-
-        // "UPDATE $uid SET firstName = 'newFirstName', lastName = 'newLastName' WHERE firstName = 'firstName'"
+        // "UPDATE $uid $alias SET firstName = 'newFirstName', lastName = 'newLastName' WHERE $alias.firstName = 'firstName'"
+        val uid = UidBuilder.buildUniqueId(sql.t)
+        val alias = AliasBuilder.build(uid)
         val builder = of(StringBuilder())
                 .rcv {
                     append("UPDATE ")
-                    append(UidBuilder.buildUniqueId(sql.t))
+                    append(uid)
+                    append(" ")
+                    append(alias)
                     append(" SET ")
                     append(p.updateFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" })
                     if (p.whereFragments.isNotEmpty()) {
@@ -147,9 +159,17 @@ open class DslMapper {
         return MySqlCreateBuilder().buildCreate(p, sql) // TODO: -150 does not include multilayer creates yet, automate for less hassle.
     }
 
-    private fun buildEqFragment(sql: Sql): String = of(sql.t).map { " = '$it'" }.toString()
+    private fun buildUpdateEqFragment(p: Parameters, sql: Sql): String {
+        p.updateFragments += of(sql.t).map { " = '$it'" }.toString()
+        return ""
+    }
 
-    private fun buildWhereFragment(sql: Sql): String {
+    private fun buildWhereEqFragment(p: Parameters, sql: Sql): String {
+        p.whereFragments += of(sql.t).map { " = '$it'" }.toString()
+        return ""
+    }
+
+    private fun buildWhereFragment(p: Parameters, sql: Sql): String {
 
         val kProperty1 = of(sql.t).mapTo(KProperty1::class)
 
@@ -158,9 +178,11 @@ open class DslMapper {
                 .map(UidBuilder::build)
                 .map(AliasBuilder::build)
 
-        return kProperty1
-                .mapWith(alias) { p, a -> "${a}.${p.name}" }
+        p.whereFragments += kProperty1
+                .mapWith(alias) { property, alias1 -> "${alias1}.${property.name}" }
                 .toString()
+
+        return ""
     }
 
     private fun buildSelect(p: Parameters, select: Sql.Select): String {
@@ -168,8 +190,6 @@ open class DslMapper {
         buildRefsTree(select.t, p)
         buildSelectColumns(p)
         buildJoins(p)
-
-        println(p)
 
         val whereStr = " WHERE "
         val whereFragmentsSize = p.whereFragments.size
@@ -185,7 +205,7 @@ open class DslMapper {
                 .result()
                 .ifPresent {
                     if (p.joinFragments.isNotEmpty()) {
-                        it.append(p.joinFragments.joinToString(" "))
+                        it.append(" " + p.joinFragments.joinToString(" "))
                     }
                 }
                 .get()
@@ -211,12 +231,7 @@ open class DslMapper {
     }
 
     private fun buildJoins(p: Parameters) {
-
         of(buildJoinsOnNaturalRefs(p))
-                .filter(String::isNotEmpty)
-                .map(p.joinFragments::add)
-
-        of(buildJoinsOnGivenId(p))
                 .filter(String::isNotEmpty)
                 .map(p.joinFragments::add)
     }
@@ -240,19 +255,11 @@ open class DslMapper {
                 .getOrElse { emptyList() }
     }
 
-    private fun buildJoinsOnGivenId(p: Parameters): String {
-        println("givenRefs") // TODO: -100 remove me
-
-
-        return ""
-    }
-
     private fun buildJoinsOnNaturalRefs(p: Parameters): String {
-        println("autoRefs") // TODO: -100 remove me
         return of(p.joinsMap)
                 .xmap { map { buildJoinsOnNaturalRefs(it) }.joinToString(" AND ") }
                 .filter(::hasContent)
-                .map { " JOIN $it" }
+                .map { "JOIN $it" }
                 .getOrElse("")
     }
 
@@ -261,7 +268,7 @@ open class DslMapper {
         return of(entry.value as? List<*>)
                 .lmap { type: Any ->
                     val (uidRef, aliasRef) = buildUidAndAlias(type)
-                    "$uidRef $aliasRef ON ${aliasRoot}.id = ${aliasRef}.${uidRoot}refid"
+                    "$uidRef $aliasRef ON ${aliasRoot}.id = ${aliasRef}.${uidRoot}RefId"
                 }
                 .xmap { joinToString(" AND ") }
                 .getOrElse("")
