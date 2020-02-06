@@ -55,29 +55,23 @@ open class DslMapper {
             is Sql.Update -> buildUpdate(p, sql)
             is Sql.Delete -> TODO()
             is Sql.Select.Join -> buildJoinFragment(p, sql)
-            is Sql.Select.Where,
-            is Sql.Select.Join.Where,
-            is Sql.Select.Join.Where.Eq.Where ->
-                buildWhereFragment(sql).also { p.whereFragments += it }
-            is Sql.Select.Where.Eq,
-            is Sql.Select.Join.Where.Eq,
-            is Sql.Select.Join.Where.Eq.Where.Eq ->
-                buildEqFragment(sql).also { p.whereFragments += it }
-            is Sql.Update.Set,
-            is Sql.Update.Set.Eq.And ->
-                buildUpdateFragments(p, sql).also { p.updateFragments += it }
-            is Sql.Update.Set.Eq.Where,
-            is Sql.Update.Set.Eq.And.Eq.Where ->
-                buildUpdateFragments(p, sql).also { p.whereFragments += it }
-            is Sql.Update.Set.Eq,
-            is Sql.Update.Set.Eq.And.Eq ->
-                buildEqFragment(sql).also { p.updateFragments += it }
-            is Sql.Update.Set.Eq.Where.Eq,
-            is Sql.Update.Set.Eq.And.Eq.Where.Eq ->
-                buildEqFragment(sql).also { p.whereFragments += it }
-            null -> throw Exception("Action not supported: null")
             is Sql.Select.Join.On -> buildJoinOnFragMent(sql).also { p.joinFragments += it }
             is Sql.Select.Join.On.Eq -> buildJoinOnEqFragment(sql).also { p.joinFragments += it }
+            is Sql.Select.Join.Where -> buildWhereFragment(sql).also { p.whereFragments += it }
+            is Sql.Select.Join.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
+            is Sql.Select.Join.Where.Eq.Where -> buildWhereFragment(sql).also { p.whereFragments += it }
+            is Sql.Select.Join.Where.Eq.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
+            is Sql.Select.Where -> buildWhereFragment(sql).also { p.whereFragments += it }
+            is Sql.Select.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
+            is Sql.Update.Set -> buildUpdateFragments(p, sql).also { p.updateFragments += it }
+            is Sql.Update.Set.Eq -> buildEqFragment(sql).also { p.updateFragments += it }
+            is Sql.Update.Set.Eq.And -> buildUpdateFragments(p, sql).also { p.updateFragments += it }
+            is Sql.Update.Set.Eq.And.Eq -> buildEqFragment(sql).also { p.updateFragments += it }
+            is Sql.Update.Set.Eq.And.Eq.Where -> buildUpdateFragments(p, sql).also { p.whereFragments += it }
+            is Sql.Update.Set.Eq.And.Eq.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
+            is Sql.Update.Set.Eq.Where -> buildUpdateFragments(p, sql).also { p.whereFragments += it }
+            is Sql.Update.Set.Eq.Where.Eq -> buildEqFragment(sql).also { p.whereFragments += it }
+            null -> throw Exception("Action not supported: null")
         }
     }
 
@@ -175,6 +169,8 @@ open class DslMapper {
         buildSelectColumns(p)
         buildJoins(p)
 
+        println(p)
+
         val whereStr = " WHERE "
         val whereFragmentsSize = p.whereFragments.size
         val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
@@ -189,7 +185,7 @@ open class DslMapper {
                 .result()
                 .ifPresent {
                     if (p.joinFragments.isNotEmpty()) {
-                        it.append(p.joinFragments)
+                        it.append(p.joinFragments.joinToString(" "))
                     }
                 }
                 .get()
@@ -203,7 +199,8 @@ open class DslMapper {
 
     private fun collectUniquesFromJoinsMapAndAction(p: Parameters): MutableSet<Any> {
         val uniques = mutableSetOf<Any>()
-        of(p.action?.t).map(uniques::add)
+        of(p.action?.t)
+                .map(uniques::add)
         of(p.joinsMap.iterator())
                 .lmap { entry: MutableEntry<Any, Any> ->
                     uniques += entry.key
@@ -216,9 +213,11 @@ open class DslMapper {
     private fun buildJoins(p: Parameters) {
 
         of(buildJoinsOnNaturalRefs(p))
+                .filter(String::isNotEmpty)
                 .map(p.joinFragments::add)
 
         of(buildJoinsOnGivenId(p))
+                .filter(String::isNotEmpty)
                 .map(p.joinFragments::add)
     }
 
