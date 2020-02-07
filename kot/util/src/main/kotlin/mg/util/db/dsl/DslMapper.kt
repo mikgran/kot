@@ -9,7 +9,6 @@ import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.Sql.Parameters
 import mg.util.functional.Opt2.Factory.of
-import mg.util.functional.rcv
 import java.lang.reflect.Field
 import kotlin.collections.MutableMap.MutableEntry
 import kotlin.reflect.KCallable
@@ -55,7 +54,7 @@ open class DslMapper {
             is Sql.Insert -> buildInsert(p, sql)
             is Sql.Update -> buildUpdate(p, sql)
             is Sql.Delete -> TODO()
-            is Sql.Select.Join -> buildJoinFragmentAndColumnFragments(p, sql)
+            is Sql.Select.Join -> buildJoinFragmentAndJoinColumnFragments(p, sql)
             is Sql.Select.Join.On -> buildJoinOnFragment(p, sql)
             is Sql.Select.Join.On.Eq -> buildJoinOnEqFragment(p, sql)
             is Sql.Select.Join.Where -> buildWhereFragment(p, sql)
@@ -68,9 +67,9 @@ open class DslMapper {
             is Sql.Update.Set.Eq -> buildUpdateEqFragment(p, sql)
             is Sql.Update.Set.Eq.And -> buildUpdateFragments(p, sql)
             is Sql.Update.Set.Eq.And.Eq -> buildUpdateEqFragment(p, sql)
-            is Sql.Update.Set.Eq.And.Eq.Where -> buildWhereFragment(p, sql) // buildUpdateFragments(p, sql)
+            is Sql.Update.Set.Eq.And.Eq.Where -> buildWhereFragment(p, sql)
             is Sql.Update.Set.Eq.And.Eq.Where.Eq -> buildWhereEqFragment(p, sql)
-            is Sql.Update.Set.Eq.Where -> buildWhereFragment(p, sql) // buildUpdateFragments(p, sql)
+            is Sql.Update.Set.Eq.Where -> buildWhereFragment(p, sql)
             is Sql.Update.Set.Eq.Where.Eq -> buildWhereEqFragment(p, sql)
             null -> throw Exception("Action not supported: null")
         }
@@ -91,14 +90,13 @@ open class DslMapper {
         return ""
     }
 
-    private fun buildJoinFragmentAndColumnFragments(p: Parameters, sql: Sql.Select.Join): String {
+    private fun buildJoinFragmentAndJoinColumnFragments(p: Parameters, sql: Sql.Select.Join): String {
         p.columnFragments += buildFieldFragment(sql.t)
         p.joinFragments += "JOIN ${buildTableFragment(sql.t)}"
         return ""
     }
 
     private fun buildInsert(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
-
         val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(sql.t)} ("
         val padding2 = ") VALUES ("
         val padding3 = ")"
@@ -138,8 +136,8 @@ open class DslMapper {
         // "UPDATE $uid $alias SET firstName = 'newFirstName', lastName = 'newLastName' WHERE $alias.firstName = 'firstName'"
         val uid = UidBuilder.buildUniqueId(sql.t)
         val alias = AliasBuilder.build(uid)
-        val builder = of(StringBuilder())
-                .rcv {
+        val builder = StringBuilder()
+                .apply {
                     append("UPDATE ")
                     append(uid)
                     append(" ")
@@ -152,7 +150,7 @@ open class DslMapper {
                     }
                 }
 
-        return builder.get().toString()
+        return builder.toString()
     }
 
     private fun buildCreate(p: Parameters, sql: Sql): String {
@@ -170,7 +168,6 @@ open class DslMapper {
     }
 
     private fun buildWhereFragment(p: Parameters, sql: Sql): String {
-
         val kProperty1 = of(sql.t).mapTo(KProperty1::class)
 
         val alias = kProperty1
@@ -191,25 +188,32 @@ open class DslMapper {
         buildSelectColumns(p)
         buildJoins(p)
 
+        return StringBuilder()
+                .apply {
+                    append("SELECT ${p.columnFragments.joinToString(", ")}")
+                    append(" FROM ${p.tableFragments.joinToString(", ")}")
+                    append(buildWhereFragments(p))
+                    append(buildJoinFragments(p))
+                }
+                .toString()
+    }
+
+    private fun buildJoinFragments(p: Parameters): String =
+            if (p.joinFragments.isNotEmpty()) " " + p.joinFragments.joinToString(" ") else ""
+
+    private fun buildWhereFragments(p: Parameters): String {
         val whereStr = " WHERE "
         val whereFragmentsSize = p.whereFragments.size
         val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
-        return of(StringBuilder())
-                .rcv {
-                    append("SELECT ${p.columnFragments.joinToString(", ")}")
-                    append(" FROM ${p.tableFragments.joinToString(", ")}")
-                }
-                .case({ whereFragmentsSize == whereElementCount }, { it.append(whereStr + p.whereFragments.joinToString("")); it })
-                .case({ whereFragmentsSize / whereElementCount > 1 }, { it.append(whereStr + (p.whereFragments.chunked(2).joinToString(" AND ") { (i, j) -> "$i$j" })); it })
-                .caseDefault { it }
-                .result()
-                .ifPresent {
-                    if (p.joinFragments.isNotEmpty()) {
-                        it.append(" " + p.joinFragments.joinToString(" "))
-                    }
-                }
-                .get()
-                .toString()
+        return when {
+            whereFragmentsSize == whereElementCount -> whereStr + p.whereFragments.joinToString("")
+            whereFragmentsSize / whereElementCount > 1 -> {
+                whereStr + p.whereFragments
+                        .chunked(2)
+                        .joinToString(" AND ") { (i, j) -> "$i$j" }
+            }
+            else -> ""
+        }
     }
 
     private fun buildSelectColumns(p: Parameters) {

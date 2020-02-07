@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 // TOIMPROVE: test coverage
 internal class DslMapperTest {
 
-    private val debug: () -> Boolean = { true }
     private val mapper = DslMapperFactory.get()
 
     @Test
@@ -117,7 +116,6 @@ internal class DslMapperTest {
         val dsl = Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
         val candidate = mapper.map(dsl)
 
-        // XXX 133
         assertDslForManualField(candidate)
     }
 
@@ -133,6 +131,7 @@ internal class DslMapperTest {
                 " FROM $uidPlace $p" +
                 " JOIN $uidDesc $p2 ON $p.id = $p2.placeRefId" +
                 " JOIN $uidAddress $a ON $p.id = $a.${uidPlace}RefId"
+
         assertHasContent(candidate)
         expect(expected, candidate)
     }
@@ -143,6 +142,7 @@ internal class DslMapperTest {
         val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
                 " FROM $uidPlace $p JOIN $uidAddress $a" +
                 " ON $p.id = $a.${uidPlace}RefId"
+
         assertHasContent(candidate)
         expect(expected, candidate)
     }
@@ -158,7 +158,6 @@ internal class DslMapperTest {
 
         val (uid, p) = buildUidAndAlias(PersonB())
         val expected = "SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'name'"
-
         val candidate = mapper.map(sql)
 
         assertHasContent(candidate)
@@ -172,7 +171,6 @@ internal class DslMapperTest {
 
         val (uid, p) = buildUidAndAlias(PersonB())
         val expected = "SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'first' AND $p.lastName = 'last'"
-
         val candidate = mapper.map(sql)
 
         assertHasContent(candidate)
@@ -184,5 +182,4 @@ internal class DslMapperTest {
         val p = AliasBuilder.build(uid)
         return uid to p
     }
-
 }
