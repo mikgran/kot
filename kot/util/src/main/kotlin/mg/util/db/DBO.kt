@@ -10,7 +10,6 @@ import java.util.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.memberProperties
 
-// TODO: -17 remove old building block usage and replace with DslMapper calls
 // a simple Object-Relational-Mapping class
 class DBO(private val mapper: SqlMapper) {
 

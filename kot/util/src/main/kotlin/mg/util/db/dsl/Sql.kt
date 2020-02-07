@@ -67,7 +67,7 @@ sealed class Sql(val t: Any) {
             is Update.Set.Eq,
             is Update.Set.Eq.And,
             is Update.Set.Eq.And.Eq -> parameters?.updates?.add(type)
-            // TODO: -15 coverage
+            // TODO: -100 coverage
         }
         return type
     }
