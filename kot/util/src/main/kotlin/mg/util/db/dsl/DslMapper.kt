@@ -26,7 +26,7 @@ open class DslMapper {
     // OracleMapper() : DslMapper
     // MySqlMapper() : DslMapper
     // DB2Mapper() : DslMapper
-    // TODO: 12 add all MySql mapping functions
+    // TODO: 2 add all MySql mapping functions
 
     fun map(dsl: Sql): String {
         return of(dsl)
@@ -53,7 +53,7 @@ open class DslMapper {
             is Sql.Select -> buildSelect(p, sql)
             is Sql.Insert -> buildInsert(p, sql)
             is Sql.Update -> buildUpdate(p, sql)
-            is Sql.Delete -> TODO()
+            is Sql.Delete -> "" // TODO 1
             is Sql.Select.Join -> buildJoinFragmentAndJoinColumnFragments(p, sql)
             is Sql.Select.Join.On -> buildJoinOnFragment(p, sql)
             is Sql.Select.Join.On.Eq -> buildJoinOnEqFragment(p, sql)
@@ -154,7 +154,7 @@ open class DslMapper {
     }
 
     private fun buildCreate(p: Parameters, sql: Sql): String {
-        return MySqlCreateBuilder().buildCreate(p, sql) // TODO: -150 does not include multilayer creates yet, automate for less hassle.
+        return MySqlCreateBuilder().buildCreate(p, sql) // TODO: 1 does not include multilayer creates yet, automate for less hassle.
     }
 
     private fun buildUpdateEqFragment(p: Parameters, sql: Sql): String {

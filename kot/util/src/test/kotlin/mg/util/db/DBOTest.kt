@@ -18,7 +18,7 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
 
-// TODO -101 Tests are currently order dependent, fix all tests so that none fail from a change in testing framework
+// TODO 1 Tests are currently order dependent, fix all tests so that none fail from a change in testing framework
 internal class DBOTest {
 
     private var dbConfig = DBConfig(TestConfig())
@@ -135,7 +135,7 @@ internal class DBOTest {
     // @Test
     fun testSaveWithComposition() {
 
-        // TODO -7: use composition for testing
+        // TODO 1: use composition for testing
 
         val b = buildUniqueId(Billing())
         val p = buildUniqueId(Person())

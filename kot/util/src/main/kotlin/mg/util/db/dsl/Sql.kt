@@ -67,7 +67,7 @@ sealed class Sql(val t: Any) {
             is Update.Set.Eq,
             is Update.Set.Eq.And,
             is Update.Set.Eq.And.Eq -> parameters?.updates?.add(type)
-            // TODO: -100 coverage
+            // TODO: 1 coverage
         }
         return type
     }
@@ -98,7 +98,7 @@ sealed class Sql(val t: Any) {
                 }
             }
 
-            infix fun where(t: Any) = add(Where(t)) // TODO: 49 test all unused functions
+            infix fun where(t: Any) = add(Where(t)) // TODO: 10 test all unused functions
             class Where(t: Any) : Sql(t) {
 
                 infix fun eq(t: Any) = add(Eq(t))
