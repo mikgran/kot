@@ -2,8 +2,7 @@ package mg.util.common
 
 import mg.util.common.Common.hasAnyContent
 import mg.util.common.Common.hasContent
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class CommonTest {
@@ -49,4 +48,15 @@ internal class CommonTest {
 
     }
 
+    @Test
+    fun `test plus on StringBuilder`() {
+
+        val stringBuilder = StringBuilder()
+        stringBuilder +
+                "hello" +
+                " " +
+                "world"
+
+        assertEquals("hello world", stringBuilder.toString())
+    }
 }

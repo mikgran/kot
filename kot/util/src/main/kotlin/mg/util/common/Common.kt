@@ -7,7 +7,7 @@ import java.lang.reflect.Field
 object Common {
 
     fun hasContent(candidate: String?): Boolean = when (candidate) {
-        null  -> false
+        null -> false
         else -> candidate.isNotEmpty()
     }
 
@@ -33,4 +33,9 @@ object Common {
     private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.") // or startsWith
     private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
     fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
+}
+
+operator fun StringBuilder.plus(s: String): StringBuilder {
+    append(s)
+    return this
 }
