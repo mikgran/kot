@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package mg.util.db.dsl
 
 // A Simple data holding class that holds a list
@@ -98,7 +100,7 @@ sealed class Sql(val t: Any) {
                 }
             }
 
-            infix fun where(t: Any) = add(Where(t)) // TODO: 10 test all unused functions
+            infix fun where(t: Any) = add(Where(t))
             class Where(t: Any) : Sql(t) {
 
                 infix fun eq(t: Any) = add(Eq(t))
