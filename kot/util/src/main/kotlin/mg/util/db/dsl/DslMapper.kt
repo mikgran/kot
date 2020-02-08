@@ -188,14 +188,12 @@ open class DslMapper {
         buildSelectColumns(p)
         buildJoins(p)
 
-        return StringBuilder()
-                .apply {
-                    append("SELECT ${p.columnFragments.joinToString(", ")}")
-                    append(" FROM ${p.tableFragments.joinToString(", ")}")
-                    append(buildWhereFragments(p))
-                    append(buildJoinFragments(p))
-                }
-                .toString()
+        val sb = StringBuilder() +
+                "SELECT ${p.columnFragments.joinToString(", ")}" +
+                " FROM ${p.tableFragments.joinToString(", ")}" +
+                buildWhereFragments(p) +
+                buildJoinFragments(p)
+        return sb.toString()
     }
 
     private fun buildJoinFragments(p: Parameters): String =

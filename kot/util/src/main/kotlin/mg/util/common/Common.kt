@@ -35,7 +35,4 @@ object Common {
     fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
 }
 
-operator fun StringBuilder.plus(s: String): StringBuilder {
-    append(s)
-    return this
-}
+operator fun StringBuilder.plus(s: String): StringBuilder = append(s)
