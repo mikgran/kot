@@ -36,3 +36,4 @@ object Common {
 }
 
 operator fun StringBuilder.plus(s: String): StringBuilder = append(s)
+operator fun StringBuilder.plus(sb: StringBuilder): StringBuilder = append(sb.toString())

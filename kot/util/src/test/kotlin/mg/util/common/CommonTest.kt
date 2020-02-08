@@ -49,14 +49,33 @@ internal class CommonTest {
     }
 
     @Test
-    fun `test plus on StringBuilder`() {
+    fun `test plus on StringBuilder and String`() {
 
         val stringBuilder = StringBuilder()
         stringBuilder +
-                "hello" +
+                HELLO +
                 " " +
-                "world"
+                WORLD
 
-        assertEquals("hello world", stringBuilder.toString())
+        assertEquals(HELLO_WORLD, stringBuilder.toString())
+    }
+
+    @Test
+    fun `test plus on StringBuilder and StringBuilder`() {
+
+        val stringBuilder1 = StringBuilder() + HELLO
+        val stringBuilder2 = StringBuilder() + " $WORLD"
+        val candidate = stringBuilder1 + stringBuilder2
+
+        assertEquals(HELLO_WORLD, stringBuilder1.toString())
+        assertEquals(" $WORLD", stringBuilder2.toString())
+        assertEquals(HELLO_WORLD, candidate.toString())
+        assertEquals(stringBuilder1, candidate)
+    }
+
+    companion object {
+        private const val HELLO_WORLD = "hello world"
+        private const val HELLO = "hello"
+        private const val WORLD = "world"
     }
 }
