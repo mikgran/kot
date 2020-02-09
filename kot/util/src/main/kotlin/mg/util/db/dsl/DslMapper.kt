@@ -54,28 +54,28 @@ open class DslMapper {
             is Sql.Insert -> buildInsert(p, sql)
             is Sql.Update -> buildUpdate(p, sql)
             is Sql.Delete -> "" // TODO 1
-            is Sql.Select.Join -> buildJoinFragmentAndJoinColumnFragments(p, sql)
-            is Sql.Select.Join.On -> buildJoinOnFragment(p, sql)
-            is Sql.Select.Join.On.Eq -> buildJoinOnEqFragment(p, sql)
-            is Sql.Select.Join.Where -> buildWhereFragment(p, sql)
-            is Sql.Select.Join.Where.Eq -> buildWhereEqFragment(p, sql)
-            is Sql.Select.Join.Where.Eq.Where -> buildWhereFragment(p, sql)
-            is Sql.Select.Join.Where.Eq.Where.Eq -> buildWhereEqFragment(p, sql)
-            is Sql.Select.Where -> buildWhereFragment(p, sql)
-            is Sql.Select.Where.Eq -> buildWhereEqFragment(p, sql)
-            is Sql.Update.Set -> buildUpdateFragments(p, sql)
-            is Sql.Update.Set.Eq -> buildUpdateEqFragment(p, sql)
-            is Sql.Update.Set.Eq.And -> buildUpdateFragments(p, sql)
-            is Sql.Update.Set.Eq.And.Eq -> buildUpdateEqFragment(p, sql)
-            is Sql.Update.Set.Eq.And.Eq.Where -> buildWhereFragment(p, sql)
-            is Sql.Update.Set.Eq.And.Eq.Where.Eq -> buildWhereEqFragment(p, sql)
-            is Sql.Update.Set.Eq.Where -> buildWhereFragment(p, sql)
-            is Sql.Update.Set.Eq.Where.Eq -> buildWhereEqFragment(p, sql)
+            is Sql.Select.Join -> buildJoinAndJoinColumnsParts(p, sql)
+            is Sql.Select.Join.On -> buildSelectJoinOn(p, sql)
+            is Sql.Select.Join.On.Eq -> buildSelectJoinOnEq(p, sql)
+            is Sql.Select.Join.Where -> buildWherePart(p, sql)
+            is Sql.Select.Join.Where.Eq -> buildWhereEqPart(p, sql)
+            is Sql.Select.Join.Where.Eq.Where -> buildWherePart(p, sql)
+            is Sql.Select.Join.Where.Eq.Where.Eq -> buildWhereEqPart(p, sql)
+            is Sql.Select.Where -> buildWherePart(p, sql)
+            is Sql.Select.Where.Eq -> buildWhereEqPart(p, sql)
+            is Sql.Update.Set -> buildUpdateSet(p, sql)
+            is Sql.Update.Set.Eq -> buildUpdateSetEq(p, sql)
+            is Sql.Update.Set.Eq.And -> buildUpdateSet(p, sql)
+            is Sql.Update.Set.Eq.And.Eq -> buildUpdateSetEq(p, sql)
+            is Sql.Update.Set.Eq.And.Eq.Where -> buildWherePart(p, sql)
+            is Sql.Update.Set.Eq.And.Eq.Where.Eq -> buildWhereEqPart(p, sql)
+            is Sql.Update.Set.Eq.Where -> buildWherePart(p, sql)
+            is Sql.Update.Set.Eq.Where.Eq -> buildWhereEqPart(p, sql)
             null -> throw Exception("Action not supported: null")
         }
     }
 
-    private fun buildJoinOnEqFragment(p: Parameters, sql: Sql.Select.Join.On.Eq): String {
+    private fun buildSelectJoinOnEq(p: Parameters, sql: Sql.Select.Join.On.Eq): String {
         val ref = sql.t as KProperty1<*, *>
         val uid = UidBuilder.build(ref.javaField?.declaringClass?.kotlin ?: Any::class)
         val alias = AliasBuilder.build(uid)
@@ -83,14 +83,14 @@ open class DslMapper {
         return ""
     }
 
-    private fun buildJoinOnFragment(p: Parameters, sql: Sql.Select.Join.On): String {
+    private fun buildSelectJoinOn(p: Parameters, sql: Sql.Select.Join.On): String {
         val uid = UidBuilder.build(sql.t as KClass<*>)
         val alias = AliasBuilder.build(uid)
         p.joinFragments += "ON ${alias}.id"
         return ""
     }
 
-    private fun buildJoinFragmentAndJoinColumnFragments(p: Parameters, sql: Sql.Select.Join): String {
+    private fun buildJoinAndJoinColumnsParts(p: Parameters, sql: Sql.Select.Join): String {
         p.columnFragments += buildFieldFragment(sql.t)
         p.joinFragments += "JOIN ${buildTableFragment(sql.t)}"
         return ""
@@ -123,7 +123,7 @@ open class DslMapper {
         return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(sql.t)}"
     }
 
-    private fun buildUpdateFragments(p: Parameters, sql: Sql): String {
+    private fun buildUpdateSet(p: Parameters, sql: Sql): String {
         p.updateFragments += of(sql.t)
                 .mapTo(KProperty1::class)
                 .map { it.name }
@@ -136,38 +136,31 @@ open class DslMapper {
         // "UPDATE $uid $alias SET firstName = 'newFirstName', lastName = 'newLastName' WHERE $alias.firstName = 'firstName'"
         val uid = UidBuilder.buildUniqueId(sql.t)
         val alias = AliasBuilder.build(uid)
-        val builder = StringBuilder()
-                .apply {
-                    append("UPDATE ")
-                    append(uid)
-                    append(" ")
-                    append(alias)
-                    append(" SET ")
-                    append(p.updateFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" })
-                    if (p.whereFragments.isNotEmpty()) {
-                        append(" WHERE ")
-                        append(p.whereFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" })
-                    }
-                }
+        val stringBuilder = StringBuilder() + "UPDATE " + uid + " $alias" + " SET " +
+                p.updateFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" }
 
-        return builder.toString()
+        if (p.whereFragments.isNotEmpty()) {
+            stringBuilder + " WHERE " +
+                    p.whereFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" }
+        }
+        return stringBuilder.toString()
     }
 
     private fun buildCreate(p: Parameters, sql: Sql): String {
         return MySqlCreateBuilder().buildCreate(p, sql) // TODO: 1 does not include multilayer creates yet, automate for less hassle.
     }
 
-    private fun buildUpdateEqFragment(p: Parameters, sql: Sql): String {
+    private fun buildUpdateSetEq(p: Parameters, sql: Sql): String {
         p.updateFragments += of(sql.t).map { " = '$it'" }.toString()
         return ""
     }
 
-    private fun buildWhereEqFragment(p: Parameters, sql: Sql): String {
+    private fun buildWhereEqPart(p: Parameters, sql: Sql): String {
         p.whereFragments += of(sql.t).map { " = '$it'" }.toString()
         return ""
     }
 
-    private fun buildWhereFragment(p: Parameters, sql: Sql): String {
+    private fun buildWherePart(p: Parameters, sql: Sql): String {
         val kProperty1 = of(sql.t).mapTo(KProperty1::class)
 
         val alias = kProperty1
