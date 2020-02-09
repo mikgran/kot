@@ -1,6 +1,8 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common
+import mg.util.common.Common.hasContent
+import mg.util.common.Common.isCustom
+import mg.util.common.Common.isList
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
@@ -46,7 +48,6 @@ class SqlImpl {
     class Select(t: Any) : Sql.Select(t) {
 
         override fun build(p: Parameters): String {
-
             p.tableFragments.add(0, buildTableFragment(t))
             buildRefsTree(t, p)
             buildSelectColumns(p)
@@ -79,7 +80,7 @@ class SqlImpl {
 
         private fun linksForParent(type: Any): List<Any> {
             return of(type::class.java.declaredFields.toList())
-                    .lfilter(Common::isCustom or Common::isList)
+                    .lfilter(::isCustom or ::isList)
                     .lxmap<Field, Any> { mapNotNull { getFieldValue(it, type) } }
                     .getOrElse { emptyList() }
         }
@@ -146,7 +147,7 @@ class SqlImpl {
         private fun buildJoinsOnNaturalRefs(p: Sql.Parameters): String {
             return of(p.joinsMap)
                     .xmap { map { buildJoinsOnNaturalRefs(it) }.joinToString(" AND ") }
-                    .filter(Common::hasContent)
+                    .filter(::hasContent)
                     .map { "JOIN $it" }
                     .getOrElse("")
         }
