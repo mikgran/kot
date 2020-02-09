@@ -5,7 +5,6 @@ import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
-import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import java.lang.reflect.Field
 import kotlin.reflect.full.declaredMemberProperties
