@@ -39,11 +39,11 @@ open class DslMapper {
     }
 
     private fun build(p: Parameters, sql: Sql?): String {
-        return when (sql) {
-            is Sql.Create -> sql.build(p)
-            is Sql.Drop -> sql.build(p)
-            is Sql.Select -> sql.build(p) // XXX 10 finish me! move all into their own sub classes under build() functions
-            is Sql.Insert -> sql.build(p)
+        return when (sql) { // XXX 10 finish me! move all into their own sub classes under build() functions
+            is Sql.Create,
+            is Sql.Drop,
+            is Sql.Select,
+            is Sql.Insert,
             is Sql.Update -> sql.build(p)
             is Sql.Delete -> "" // TODO 1
             is Sql.Select.Join -> buildJoinAndJoinColumnsParts(p, sql)
