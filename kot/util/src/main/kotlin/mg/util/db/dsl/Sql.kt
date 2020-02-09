@@ -82,9 +82,7 @@ sealed class Sql(val t: Any) {
         infix fun insert(t: Any) = Insert(t).also { it.parameters = Parameters(); it.add(it) }
     }
 
-    // val sql = SQL2 select Person() where Person::firstName eq "name"
-    // private val a = "SELECT p.firstName, p.lastName FROM Person AS p WHERE p.firstName = 'name'"
-
+    // Execution tree, only allowed commands in context thing
     class Select(t: Any) : Sql(t) {
 
         infix fun join(t: Any) = add(Join(t))
