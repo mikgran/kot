@@ -39,7 +39,7 @@ open class DslMapper {
     }
 
     private fun build(p: Parameters, sql: Sql?): String {
-        return when (sql) { // XXX 10 finish me! move all into their own sub classes under build() functions
+        return when (sql) { // XXX 10 finish me! move all functionality into their own sub classes under the build() function
             is Sql.Create,
             is Sql.Drop,
             is Sql.Select,
