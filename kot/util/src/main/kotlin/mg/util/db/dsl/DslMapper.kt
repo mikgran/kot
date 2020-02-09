@@ -184,15 +184,15 @@ open class DslMapper {
         val sb = StringBuilder() +
                 "SELECT ${p.columnFragments.joinToString(", ")}" +
                 " FROM ${p.tableFragments.joinToString(", ")}" +
-                buildWhereFragments(p) +
-                buildJoinFragments(p)
+                buildWhereParts(p) +
+                buildJoinParts(p)
         return sb.toString()
     }
 
-    private fun buildJoinFragments(p: Parameters): String =
+    private fun buildJoinParts(p: Parameters): String =
             if (p.joinFragments.isNotEmpty()) " " + p.joinFragments.joinToString(" ") else ""
 
-    private fun buildWhereFragments(p: Parameters): String {
+    private fun buildWhereParts(p: Parameters): String {
         val whereStr = " WHERE "
         val whereFragmentsSize = p.whereFragments.size
         val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
