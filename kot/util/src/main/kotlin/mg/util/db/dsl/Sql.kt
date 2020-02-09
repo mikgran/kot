@@ -38,6 +38,7 @@ sealed class Sql(val t: Any) {
     }
 
     fun parameters() = parameters!!
+    open fun build(p: Parameters) = ""
 
     protected var parameters: Parameters? = null
 
@@ -75,7 +76,7 @@ sealed class Sql(val t: Any) {
     }
 
     companion object {
-        infix fun select(t: Any) = Select(t).also(::newParametersAndAdd)
+        infix fun select(t: Any) = SqlImpl.Select(t).also(::newParametersAndAdd)
         infix fun update(t: Any) = Update(t).also(::newParametersAndAdd)
         infix fun create(t: Any) = Create(t).also(::newParametersAndAdd)
         infix fun drop(t: Any) = Drop(t).also(::newParametersAndAdd)
@@ -88,7 +89,7 @@ sealed class Sql(val t: Any) {
     }
 
     // Execution tree, only allowed commands in context thing
-    class Select(t: Any) : Sql(t) {
+    open class Select(t: Any) : Sql(t) {
 
         infix fun join(t: Any) = add(Join(t))
         class Join(t: Any) : Sql(t) {
