@@ -77,10 +77,10 @@ sealed class Sql(val t: Any) {
 
     companion object {
         infix fun select(t: Any) = SqlImpl.Select(t).also(::newParametersAndAdd)
-        infix fun update(t: Any) = Update(t).also(::newParametersAndAdd)
-        infix fun create(t: Any) = Create(t).also(::newParametersAndAdd)
-        infix fun drop(t: Any) = Drop(t).also(::newParametersAndAdd)
-        infix fun insert(t: Any) = Insert(t).also(::newParametersAndAdd)
+        infix fun update(t: Any) = SqlImpl.Update(t).also(::newParametersAndAdd)
+        infix fun create(t: Any) = SqlImpl.Create(t).also(::newParametersAndAdd)
+        infix fun drop(t: Any) = SqlImpl.Drop(t).also(::newParametersAndAdd)
+        infix fun insert(t: Any) = SqlImpl.Insert(t).also(::newParametersAndAdd)
 
         private fun newParametersAndAdd(sql: Sql) {
             sql.parameters = Parameters()
@@ -131,7 +131,7 @@ sealed class Sql(val t: Any) {
         }
     }
 
-    class Update(t: Any) : Sql(t) {
+    open class Update(t: Any) : Sql(t) {
 
         infix fun set(t: Any) = add(Set(t))
         class Set(t: Any) : Sql(t) {
@@ -164,8 +164,8 @@ sealed class Sql(val t: Any) {
         }
     }
 
-    class Create(t: Any) : Sql(t)
-    class Insert(t: Any) : Sql(t)
-    class Drop(t: Any) : Sql(t)
-    class Delete(t: Any) : Sql(t)
+    open class Create(t: Any) : Sql(t)
+    open class Insert(t: Any) : Sql(t)
+    open class Drop(t: Any) : Sql(t)
+    open class Delete(t: Any) : Sql(t)
 }

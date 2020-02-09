@@ -7,9 +7,41 @@ import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2.Factory.of
 import java.lang.reflect.Field
+import kotlin.reflect.KCallable
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
 
 class SqlImpl {
+
+    class Create(t: Any) : Sql.Create(t) {
+        // TODO: 1 does not include multilayer creates yet
+        override fun build(p: Parameters): String = MySqlCreateBuilder().buildCreate(p, this)
+    }
+
+    class Drop(t: Any) : Sql.Drop(t) {
+        override fun build(p: Parameters): String {
+            return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(t)}"
+        }
+    }
+
+    class Insert(t: Any) : Sql.Insert(t) {
+        override fun build(p: Parameters): String {
+            val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(t)} ("
+            val padding2 = ") VALUES ("
+            val padding3 = ")"
+
+            val properties = of(t)
+                    .map { it::class.memberProperties.toCollection(ArrayList()) }
+
+            val fieldsCommaSeparated = of(properties)
+                    .map { it.joinToString(", ") { p -> p.name } }
+
+            val fieldsValuesCommaSeparated = of(properties)
+                    .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, t)}'" } }
+
+            return "$padding1$fieldsCommaSeparated$padding2$fieldsValuesCommaSeparated$padding3"
+        }
+    }
 
     class Select(t: Any) : Sql.Select(t) {
 
@@ -68,6 +100,23 @@ class SqlImpl {
                         entry
                     }
             return uniques
+        }
+    }
+
+    class Update(t: Any) : Sql.Update(t) {
+        override fun build(p: Parameters): String {
+            // "UPDATE $uid $alias SET firstName = 'newFirstName', lastName = 'newLastName' WHERE $alias.firstName = 'firstName'"
+            val uid = UidBuilder.buildUniqueId(t)
+            val alias = AliasBuilder.build(uid)
+            val stringBuilder = StringBuilder() + "UPDATE " + uid + " $alias" + " SET " +
+                    p.updateFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" }
+
+            if (p.whereFragments.isNotEmpty()) {
+                stringBuilder + " WHERE " +
+                        p.whereFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" }
+            }
+            return stringBuilder.toString()
+
         }
     }
 
@@ -130,6 +179,8 @@ class SqlImpl {
 
         private fun buildJoinParts(p: Sql.Parameters): String =
                 if (p.joinFragments.isNotEmpty()) " " + p.joinFragments.joinToString(" ") else ""
+
+        private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
     }
 
 }

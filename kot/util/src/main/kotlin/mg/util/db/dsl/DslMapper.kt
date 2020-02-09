@@ -5,11 +5,9 @@ import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.Sql.Parameters
 import mg.util.functional.Opt2.Factory.of
-import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
 // DDL, DML
@@ -42,11 +40,11 @@ open class DslMapper {
 
     private fun build(p: Parameters, sql: Sql?): String {
         return when (sql) {
-            is Sql.Create -> buildCreate(p, sql)
-            is Sql.Drop -> buildDrop(p, sql)
+            is Sql.Create -> sql.build(p)
+            is Sql.Drop -> sql.build(p)
             is Sql.Select -> sql.build(p) // XXX 10 finish me! move all into their own sub classes under build() functions
-            is Sql.Insert -> buildInsert(p, sql)
-            is Sql.Update -> buildUpdate(p, sql)
+            is Sql.Insert -> sql.build(p)
+            is Sql.Update -> sql.build(p)
             is Sql.Delete -> "" // TODO 1
             is Sql.Select.Join -> buildJoinAndJoinColumnsParts(p, sql)
             is Sql.Select.Join.On -> buildSelectJoinOn(p, sql)
@@ -90,29 +88,6 @@ open class DslMapper {
         return ""
     }
 
-    private fun buildInsert(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
-        val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(sql.t)} ("
-        val padding2 = ") VALUES ("
-        val padding3 = ")"
-
-        val properties = of(sql.t)
-                .map { it::class.memberProperties.toCollection(ArrayList()) }
-
-        val fieldsCommaSeparated = of(properties)
-                .map { it.joinToString(", ") { p -> p.name } }
-
-        val fieldsValuesCommaSeparated = of(properties)
-                .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, sql.t)}'" } }
-
-        return "$padding1$fieldsCommaSeparated$padding2$fieldsValuesCommaSeparated$padding3"
-    }
-
-    private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
-
-    private fun buildDrop(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
-        return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(sql.t)}"
-    }
-
     private fun buildUpdateSet(p: Parameters, sql: Sql): String {
         p.updateFragments += of(sql.t)
                 .mapTo(KProperty1::class)
@@ -120,24 +95,6 @@ open class DslMapper {
                 .get()
                 .toString()
         return ""
-    }
-
-    private fun buildUpdate(p: Parameters, sql: Sql): String {
-        // "UPDATE $uid $alias SET firstName = 'newFirstName', lastName = 'newLastName' WHERE $alias.firstName = 'firstName'"
-        val uid = UidBuilder.buildUniqueId(sql.t)
-        val alias = AliasBuilder.build(uid)
-        val stringBuilder = StringBuilder() + "UPDATE " + uid + " $alias" + " SET " +
-                p.updateFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" }
-
-        if (p.whereFragments.isNotEmpty()) {
-            stringBuilder + " WHERE " +
-                    p.whereFragments.chunked(2).joinToString(", ") { (a, b) -> "$a$b" }
-        }
-        return stringBuilder.toString()
-    }
-
-    private fun buildCreate(p: Parameters, sql: Sql): String {
-        return MySqlCreateBuilder().buildCreate(p, sql) // TODO: 1 does not include multilayer creates yet, automate for less hassle.
     }
 
     private fun buildUpdateSetEq(p: Parameters, sql: Sql): String {
