@@ -91,72 +91,72 @@ sealed class Sql(val t: Any) {
     // Execution tree, only allowed commands in context thing
     open class Select(t: Any) : Sql(t) {
 
-        infix fun join(t: Any) = add(Join(t))
-        class Join(t: Any) : Sql(t) {
+        infix fun join(t: Any) = add(SqlImpl.Select.Join(t))
+        open class Join(t: Any) : Sql(t) {
 
-            infix fun on(t: Any) = add(On(t))
-            class On(t: Any) : Sql(t) {
+            infix fun on(t: Any) = add(SqlImpl.Select.Join.On(t))
+            open class On(t: Any) : Sql(t) {
 
-                infix fun eq(t: Any) = add(Eq(t))
-                class Eq(t: Any) : Sql(t) {
+                infix fun eq(t: Any) = add(SqlImpl.Select.Join.On.Eq(t))
+                open class Eq(t: Any) : Sql(t) {
 
                     infix fun join(t: Any) = add(Join(t)) // loop back to Sql.Select.Join
                 }
             }
 
-            infix fun where(t: Any) = add(Where(t))
-            class Where(t: Any) : Sql(t) {
+            infix fun where(t: Any) = add(SqlImpl.Select.Join.Where(t))
+            open class Where(t: Any) : Sql(t) {
 
-                infix fun eq(t: Any) = add(Eq(t))
-                class Eq(t: Any) : Sql(t) {
+                infix fun eq(t: Any) = add(SqlImpl.Select.Join.Where.Eq(t))
+                open class Eq(t: Any) : Sql(t) {
 
-                    infix fun and(t: Any) = add(Where(t))
-                    class Where(t: Any) : Sql(t) {
+                    infix fun and(t: Any) = add(SqlImpl.Select.Join.Where.Eq.Where(t))
+                    open class Where(t: Any) : Sql(t) {
 
-                        infix fun eq(t: Any) = add(Eq(t))
-                        class Eq(t: Any) : Sql(t)
+                        infix fun eq(t: Any) = add(SqlImpl.Select.Join.Where.Eq.Where.Eq(t))
+                        open class Eq(t: Any) : Sql(t)
                     }
                 }
             }
         }
 
-        infix fun where(t: Any) = add(Where(t))
-        class Where(t: Any) : Sql(t) {
+        infix fun where(t: Any) = add(SqlImpl.Select.Where(t))
+        open class Where(t: Any) : Sql(t) {
 
-            infix fun eq(t: Any) = add(Eq(t))
-            class Eq(t: Any) : Sql(t) {
+            infix fun eq(t: Any) = add(SqlImpl.Select.Where.Eq(t))
+            open class Eq(t: Any) : Sql(t) {
 
-                infix fun and(t: Any) = add(Where(t))
+                infix fun and(t: Any) = add(SqlImpl.Select.Where(t))
             }
         }
     }
 
     open class Update(t: Any) : Sql(t) {
 
-        infix fun set(t: Any) = add(Set(t))
-        class Set(t: Any) : Sql(t) {
+        infix fun set(t: Any) = add(SqlImpl.Update.Set(t))
+        open class Set(t: Any) : Sql(t) {
 
-            infix fun eq(t: Any) = add(Eq(t))
-            class Eq(t: Any) : Sql(t) {
+            infix fun eq(t: Any) = add(SqlImpl.Update.Set.Eq(t))
+            open class Eq(t: Any) : Sql(t) {
 
-                infix fun where(t: Any) = add(Where(t))
-                class Where(t: Any) : Sql(t) {
+                infix fun where(t: Any) = add(SqlImpl.Update.Set.Eq.Where(t))
+                open class Where(t: Any) : Sql(t) {
 
-                    infix fun eq(t: Any) = add(Eq(t))
-                    class Eq(t: Any) : Sql(t)
+                    infix fun eq(t: Any) = add(SqlImpl.Update.Set.Eq.Where.Eq(t))
+                    open class Eq(t: Any) : Sql(t)
                 }
 
-                infix fun and(t: Any) = add(And(t))
-                class And(t: Any) : Sql(t) {
+                infix fun and(t: Any) = add(SqlImpl.Update.Set.Eq.And(t))
+                open class And(t: Any) : Sql(t) {
 
-                    infix fun eq(t: Any) = add(Eq(t))
-                    class Eq(t: Any) : Sql(t) {
+                    infix fun eq(t: Any) = add(SqlImpl.Update.Set.Eq.And.Eq(t))
+                    open class Eq(t: Any) : Sql(t) {
 
-                        infix fun where(t: Any) = add(Where(t))
-                        class Where(t: Any) : Sql(t) {
+                        infix fun where(t: Any) = add(SqlImpl.Update.Set.Eq.And.Eq.Where(t))
+                        open class Where(t: Any) : Sql(t) {
 
-                            infix fun eq(t: Any) = add(Eq(t))
-                            class Eq(t: Any) : Sql(t)
+                            infix fun eq(t: Any) = add(SqlImpl.Update.Set.Eq.And.Eq.Where.Eq(t))
+                            open class Eq(t: Any) : Sql(t)
                         }
                     }
                 }

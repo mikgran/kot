@@ -1,6 +1,6 @@
 package mg.util.db.dsl
 
-// TODO: 9 move this functionality to Sql / SqlImpl class level.
+// XXX: 10 implement both DslMappers to provide SqlMysqlImpl and SqlOracleImpl
 object DslMapperFactory {
 
     fun get(name: String? = "mysql"): DslMapper {
