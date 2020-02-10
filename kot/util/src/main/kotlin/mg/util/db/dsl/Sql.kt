@@ -76,11 +76,11 @@ sealed class Sql(val t: Any) {
     }
 
     companion object {
-        infix fun select(t: Any) = MySqlImpl.Select(t).also(::newParametersAndAdd)
-        infix fun update(t: Any) = MySqlImpl.Update(t).also(::newParametersAndAdd)
-        infix fun create(t: Any) = MySqlImpl.Create(t).also(::newParametersAndAdd)
-        infix fun drop(t: Any) = MySqlImpl.Drop(t).also(::newParametersAndAdd)
-        infix fun insert(t: Any) = MySqlImpl.Insert(t).also(::newParametersAndAdd)
+        infix fun select(t: Any) = Select(t).also(::newParametersAndAdd)
+        infix fun update(t: Any) = Update(t).also(::newParametersAndAdd)
+        infix fun create(t: Any) = Create(t).also(::newParametersAndAdd)
+        infix fun drop(t: Any) = Drop(t).also(::newParametersAndAdd)
+        infix fun insert(t: Any) = Insert(t).also(::newParametersAndAdd)
 
         private fun newParametersAndAdd(sql: Sql) {
             sql.parameters = Parameters()
@@ -91,71 +91,71 @@ sealed class Sql(val t: Any) {
     // Execution tree, only allowed commands in context thing
     open class Select(t: Any) : Sql(t) {
 
-        infix fun join(t: Any) = add(MySqlImpl.Select.Join(t))
+        infix fun join(t: Any) = add(Join(t))
         open class Join(t: Any) : Sql(t) {
 
-            infix fun on(t: Any) = add(MySqlImpl.Select.Join.On(t))
+            infix fun on(t: Any) = add(On(t))
             open class On(t: Any) : Sql(t) {
 
-                infix fun eq(t: Any) = add(MySqlImpl.Select.Join.On.Eq(t))
+                infix fun eq(t: Any) = add(Eq(t))
                 open class Eq(t: Any) : Sql(t) {
 
                     infix fun join(t: Any) = add(Join(t)) // loop back to Sql.Select.Join
                 }
             }
 
-            infix fun where(t: Any) = add(MySqlImpl.Select.Join.Where(t))
+            infix fun where(t: Any) = add(Where(t))
             open class Where(t: Any) : Sql(t) {
 
-                infix fun eq(t: Any) = add(MySqlImpl.Select.Join.Where.Eq(t))
+                infix fun eq(t: Any) = add(Eq(t))
                 open class Eq(t: Any) : Sql(t) {
 
-                    infix fun and(t: Any) = add(MySqlImpl.Select.Join.Where.Eq.Where(t))
+                    infix fun and(t: Any) = add(Where(t))
                     open class Where(t: Any) : Sql(t) {
 
-                        infix fun eq(t: Any) = add(MySqlImpl.Select.Join.Where.Eq.Where.Eq(t))
+                        infix fun eq(t: Any) = add(Eq(t))
                         open class Eq(t: Any) : Sql(t)
                     }
                 }
             }
         }
 
-        infix fun where(t: Any) = add(MySqlImpl.Select.Where(t))
+        infix fun where(t: Any) = add(Where(t))
         open class Where(t: Any) : Sql(t) {
 
-            infix fun eq(t: Any) = add(MySqlImpl.Select.Where.Eq(t))
+            infix fun eq(t: Any) = add(Eq(t))
             open class Eq(t: Any) : Sql(t) {
 
-                infix fun and(t: Any) = add(MySqlImpl.Select.Where(t))
+                infix fun and(t: Any) = add(Where(t))
             }
         }
     }
 
     open class Update(t: Any) : Sql(t) {
 
-        infix fun set(t: Any) = add(MySqlImpl.Update.Set(t))
+        infix fun set(t: Any) = add(Set(t))
         open class Set(t: Any) : Sql(t) {
 
-            infix fun eq(t: Any) = add(MySqlImpl.Update.Set.Eq(t))
+            infix fun eq(t: Any) = add(Eq(t))
             open class Eq(t: Any) : Sql(t) {
 
-                infix fun where(t: Any) = add(MySqlImpl.Update.Set.Eq.Where(t))
+                infix fun where(t: Any) = add(Where(t))
                 open class Where(t: Any) : Sql(t) {
 
-                    infix fun eq(t: Any) = add(MySqlImpl.Update.Set.Eq.Where.Eq(t))
+                    infix fun eq(t: Any) = add(Eq(t))
                     open class Eq(t: Any) : Sql(t)
                 }
 
-                infix fun and(t: Any) = add(MySqlImpl.Update.Set.Eq.And(t))
+                infix fun and(t: Any) = add(And(t))
                 open class And(t: Any) : Sql(t) {
 
-                    infix fun eq(t: Any) = add(MySqlImpl.Update.Set.Eq.And.Eq(t))
+                    infix fun eq(t: Any) = add(Eq(t))
                     open class Eq(t: Any) : Sql(t) {
 
-                        infix fun where(t: Any) = add(MySqlImpl.Update.Set.Eq.And.Eq.Where(t))
+                        infix fun where(t: Any) = add(Where(t))
                         open class Where(t: Any) : Sql(t) {
 
-                            infix fun eq(t: Any) = add(MySqlImpl.Update.Set.Eq.And.Eq.Where.Eq(t))
+                            infix fun eq(t: Any) = add(Eq(t))
                             open class Eq(t: Any) : Sql(t)
                         }
                     }

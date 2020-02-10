@@ -1,7 +1,6 @@
 package mg.util.db.dsl
 
 import mg.util.common.plus
-import mg.util.db.dsl.Sql.Parameters
 import mg.util.functional.Opt2.Factory.of
 
 // DDL, DML
@@ -27,17 +26,17 @@ abstract class DslMapper {
         (p.joins.iterator() +
                 p.wheres.iterator() +
                 p.updates.iterator())
-                .forEach { it.build(p) }
+                .forEach { getImplementationFor(it).build(p) }
 
-        return p.action?.build(p) ?: ""
+        return getImplementationFor(p.action).build(p)
     }
 
-    abstract fun toImplementation(p: Parameters, sql: Sql?): Sql
+    abstract fun getImplementationFor(sql: Sql?): Sql
 }
 
-class MySqlDslMapper : DslMapper() {
+open class MySqlDslMapper : DslMapper() {
 
-    override fun toImplementation(p: Parameters, sql: Sql?): Sql {
+    override fun getImplementationFor(sql: Sql?): Sql {
         return when (sql) {
             is Sql.Create -> MySqlImpl.Create(sql.t)
             is Sql.Drop -> MySqlImpl.Drop(sql.t)
@@ -68,9 +67,4 @@ class MySqlDslMapper : DslMapper() {
 
 }
 
-
-class OracleDslMapper : DslMapper() {
-    override fun toImplementation(p: Parameters, sql: Sql?): Sql {
-        return Sql select Any() // XXX 9 remove me
-    }
-}
+class OracleDslMapper : MySqlDslMapper()
