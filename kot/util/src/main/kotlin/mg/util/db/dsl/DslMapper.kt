@@ -27,38 +27,9 @@ open class DslMapper {
         (p.joins.iterator() +
                 p.wheres.iterator() +
                 p.updates.iterator())
-                .forEach { build(p, it) }
+                .forEach { it.build(p) }
 
-        return build(p, p.action)
-    }
-
-    private fun build(p: Parameters, sql: Sql?): String {
-        return when (sql) {
-            is Sql.Create,
-            is Sql.Drop,
-            is Sql.Select,
-            is Sql.Insert,
-            is Sql.Update -> sql.build(p)
-            is Sql.Delete -> "" // TODO 1
-            is Sql.Select.Join,
-            is Sql.Select.Join.On,
-            is Sql.Select.Join.On.Eq,
-            is Sql.Select.Join.Where,
-            is Sql.Select.Join.Where.Eq,
-            is Sql.Select.Join.Where.Eq.Where,
-            is Sql.Select.Join.Where.Eq.Where.Eq,
-            is Sql.Select.Where,
-            is Sql.Select.Where.Eq,
-            is Sql.Update.Set,
-            is Sql.Update.Set.Eq,
-            is Sql.Update.Set.Eq.And,
-            is Sql.Update.Set.Eq.And.Eq,
-            is Sql.Update.Set.Eq.And.Eq.Where,
-            is Sql.Update.Set.Eq.And.Eq.Where.Eq,
-            is Sql.Update.Set.Eq.Where,
-            is Sql.Update.Set.Eq.Where.Eq -> sql.build(p) // buildWhereEqPart(p, sql)
-            null -> throw Exception("Action not supported: null")
-        }
+        return p?.action?.build(p) ?: ""
     }
 }
 
