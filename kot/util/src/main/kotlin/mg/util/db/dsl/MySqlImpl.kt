@@ -16,7 +16,7 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
-class SqlImpl {
+class MySqlImpl {
 
     class Create(t: Any) : Sql.Create(t) {
         // TODO: 1 does not include multilayer creates yet

@@ -7,7 +7,7 @@ import mg.util.functional.Opt2.Factory.of
 // DDL, DML
 // CREATE, SELECT, UPDATE, DELETE, ALTER, RENAME, TRUNCATE(remove all rows from table), DROP
 // include methods for data migration
-open class DslMapper {
+abstract class DslMapper {
 
     // OracleMapper() : DslMapper
     // MySqlMapper() : DslMapper
@@ -29,9 +29,48 @@ open class DslMapper {
                 p.updates.iterator())
                 .forEach { it.build(p) }
 
-        return p?.action?.build(p) ?: ""
+        return p.action?.build(p) ?: ""
     }
+
+    abstract fun toImplementation(p: Parameters, sql: Sql?): Sql
 }
 
-class MySqlDslMapper : DslMapper()
-class OracleDslMapper : DslMapper()
+class MySqlDslMapper : DslMapper() {
+
+    override fun toImplementation(p: Parameters, sql: Sql?): Sql {
+        return when (sql) {
+            is Sql.Create -> MySqlImpl.Create(sql.t)
+            is Sql.Drop -> MySqlImpl.Drop(sql.t)
+            is Sql.Select -> MySqlImpl.Select(sql.t)
+            is Sql.Insert -> MySqlImpl.Insert(sql.t)
+            is Sql.Update -> MySqlImpl.Update(sql.t)
+            is Sql.Delete -> Sql select Any() // XXX 10 add delete
+            is Sql.Select.Join -> MySqlImpl.Select.Join(sql.t)
+            is Sql.Select.Join.On -> MySqlImpl.Select.Join.On(sql.t)
+            is Sql.Select.Join.On.Eq -> MySqlImpl.Select.Join.On.Eq(sql.t)
+            is Sql.Select.Join.Where -> MySqlImpl.Select.Join.Where(sql.t)
+            is Sql.Select.Join.Where.Eq -> MySqlImpl.Select.Join.Where.Eq(sql.t)
+            is Sql.Select.Join.Where.Eq.Where -> MySqlImpl.Select.Join.Where.Eq.Where(sql.t)
+            is Sql.Select.Join.Where.Eq.Where.Eq -> MySqlImpl.Select.Join.Where.Eq.Where.Eq(sql.t)
+            is Sql.Select.Where -> MySqlImpl.Select.Where(sql.t)
+            is Sql.Select.Where.Eq -> MySqlImpl.Select.Where.Eq(sql.t)
+            is Sql.Update.Set -> MySqlImpl.Update.Set(sql.t)
+            is Sql.Update.Set.Eq -> MySqlImpl.Update.Set.Eq(sql.t)
+            is Sql.Update.Set.Eq.And -> MySqlImpl.Update.Set.Eq.And(sql.t)
+            is Sql.Update.Set.Eq.And.Eq -> MySqlImpl.Update.Set.Eq.And.Eq(sql.t)
+            is Sql.Update.Set.Eq.And.Eq.Where -> MySqlImpl.Update.Set.Eq.And.Eq.Where(sql.t)
+            is Sql.Update.Set.Eq.And.Eq.Where.Eq -> MySqlImpl.Update.Set.Eq.And.Eq.Where.Eq(sql.t)
+            is Sql.Update.Set.Eq.Where -> MySqlImpl.Update.Set.Eq.Where(sql.t)
+            is Sql.Update.Set.Eq.Where.Eq -> MySqlImpl.Update.Set.Eq.Where.Eq(sql.t)
+            null -> throw Exception("Action not supported: null")
+        }
+    }
+
+}
+
+
+class OracleDslMapper : DslMapper() {
+    override fun toImplementation(p: Parameters, sql: Sql?): Sql {
+        return Sql select Any() // XXX 9 remove me
+    }
+}
