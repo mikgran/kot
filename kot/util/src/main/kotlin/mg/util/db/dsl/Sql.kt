@@ -172,7 +172,7 @@ sealed class Sql(val t: Any) {
 
         infix fun where(t: Any) = add(Where(t))
         open class Where(t: Any) : Sql(t) {
-
+            // XXX 10 finish me
         }
 
     }
