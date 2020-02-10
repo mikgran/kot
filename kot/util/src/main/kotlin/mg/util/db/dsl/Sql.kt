@@ -167,5 +167,13 @@ sealed class Sql(val t: Any) {
     open class Create(t: Any) : Sql(t)
     open class Insert(t: Any) : Sql(t)
     open class Drop(t: Any) : Sql(t)
-    open class Delete(t: Any) : Sql(t)
+
+    open class Delete(t: Any) : Sql(t) {
+
+        infix fun where(t: Any) = add(Where(t))
+        open class Where(t: Any) : Sql(t) {
+
+        }
+
+    }
 }

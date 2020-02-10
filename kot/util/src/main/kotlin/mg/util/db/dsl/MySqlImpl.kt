@@ -48,6 +48,16 @@ class MySqlImpl {
         }
     }
 
+    class Delete(t: Any) : Sql.Delete(t) {
+        override fun build(p: Parameters): String {
+
+
+
+            return ""
+        }
+
+    }
+
     class Select(t: Any) : Sql.Select(t) {
         override fun build(p: Parameters): String {
             p.tableFragments.add(0, buildTableFragment(t))
