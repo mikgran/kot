@@ -5,6 +5,7 @@ import kotlin.reflect.KProperty1
 
 open class MySqlTypeMapper {
 
+    // TODO 1 add remaining missing type mappings
     open fun getTypeString(type: KProperty1<out Any, Any?>): String {
 
         val typeT = type.returnType.classifier as KClass<*>

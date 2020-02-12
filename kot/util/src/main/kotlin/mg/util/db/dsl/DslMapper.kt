@@ -43,7 +43,9 @@ open class MySqlDslMapper : DslMapper() {
             is Sql.Select -> MySqlImpl.Select(sql.t)
             is Sql.Insert -> MySqlImpl.Insert(sql.t)
             is Sql.Update -> MySqlImpl.Update(sql.t)
-            is Sql.Delete -> Sql select Any() // XXX 10 add delete
+            is Sql.Delete -> MySqlImpl.Delete(sql.t)
+            is Sql.Delete.Where -> MySqlImpl.Delete.Where(sql.t)
+            is Sql.Delete.Where.Eq -> MySqlImpl.Delete.Where.Eq(sql.t)
             is Sql.Select.Join -> MySqlImpl.Select.Join(sql.t)
             is Sql.Select.Join.On -> MySqlImpl.Select.Join.On(sql.t)
             is Sql.Select.Join.On.Eq -> MySqlImpl.Select.Join.On.Eq(sql.t)
@@ -62,6 +64,7 @@ open class MySqlDslMapper : DslMapper() {
             is Sql.Update.Set.Eq.Where -> MySqlImpl.Update.Set.Eq.Where(sql.t)
             is Sql.Update.Set.Eq.Where.Eq -> MySqlImpl.Update.Set.Eq.Where.Eq(sql.t)
             null -> throw Exception("Action not supported: null")
+
         }
     }
 

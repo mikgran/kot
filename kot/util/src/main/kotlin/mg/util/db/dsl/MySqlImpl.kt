@@ -48,14 +48,27 @@ class MySqlImpl {
         }
     }
 
+    // XXX 10 finish this
     class Delete(t: Any) : Sql.Delete(t) {
         override fun build(p: Parameters): String {
 
-
+            // no multi table deletes supported
+            // DELETE FROM table where field = value AND field2 = value2
 
             return ""
         }
 
+        class Where(t: Any) : Delete.Where(t) {
+            override fun build(p: Parameters): String {
+                return ""
+            }
+
+            class Eq(t: Any) : Delete.Where.Eq(t) {
+                override fun build(p: Parameters): String {
+                    return ""
+                }
+            }
+        }
     }
 
     class Select(t: Any) : Sql.Select(t) {
