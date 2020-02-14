@@ -52,10 +52,10 @@ class MySqlImpl {
     class Delete(t: Any) : Sql.Delete(t) {
         override fun build(p: Parameters): String {
 
+            val uid = UidBuilder.buildUniqueId(t)
             // no multi table deletes supported
             // DELETE FROM table where field = value AND field2 = value2
-
-            return ""
+            return "DELETE FROM $uid"
         }
 
         class Where(t: Any) : Delete.Where(t) {
