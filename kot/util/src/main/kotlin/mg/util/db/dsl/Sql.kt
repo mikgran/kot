@@ -62,6 +62,8 @@ sealed class Sql(val t: Any) {
             is Select.Join.Where.Eq,
             is Select.Where,
             is Select.Where.Eq,
+            is Delete.Where,
+            is Delete.Where.Eq,
             is Update.Set.Eq.Where,
             is Update.Set.Eq.Where.Eq,
             is Update.Set.Eq.And.Eq.Where,
@@ -81,6 +83,7 @@ sealed class Sql(val t: Any) {
         infix fun create(t: Any) = Create(t).also(::newParametersAndAdd)
         infix fun drop(t: Any) = Drop(t).also(::newParametersAndAdd)
         infix fun insert(t: Any) = Insert(t).also(::newParametersAndAdd)
+        infix fun delete(t: Any) = Delete(t).also(::newParametersAndAdd)
 
         private fun newParametersAndAdd(sql: Sql) {
             sql.parameters = Parameters()
@@ -176,7 +179,7 @@ sealed class Sql(val t: Any) {
             infix fun eq(t: Any) = add(Eq(t))
             open class Eq(t: Any) : Sql(t) {
 
-                infix fun and(t: Any) = add(Where(t))
+                infix fun and(t: Any) = add(Where(t)) // loop back to where
             }
             // XXX 10 finish me
         }

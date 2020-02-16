@@ -38,12 +38,14 @@ open class MySqlDslMapper : DslMapper() {
 
     override fun getImplementationFor(sql: Sql?): Sql {
         return when (sql) {
+            // only actions return full dsl to sql mappings
             is Sql.Create -> MySqlImpl.Create(sql.t)
             is Sql.Drop -> MySqlImpl.Drop(sql.t)
             is Sql.Select -> MySqlImpl.Select(sql.t)
             is Sql.Insert -> MySqlImpl.Insert(sql.t)
             is Sql.Update -> MySqlImpl.Update(sql.t)
             is Sql.Delete -> MySqlImpl.Delete(sql.t)
+            // fragments return empty Strings and are not saved anywhere
             is Sql.Delete.Where -> MySqlImpl.Delete.Where(sql.t)
             is Sql.Delete.Where.Eq -> MySqlImpl.Delete.Where.Eq(sql.t)
             is Sql.Select.Join -> MySqlImpl.Select.Join(sql.t)
@@ -64,10 +66,8 @@ open class MySqlDslMapper : DslMapper() {
             is Sql.Update.Set.Eq.Where -> MySqlImpl.Update.Set.Eq.Where(sql.t)
             is Sql.Update.Set.Eq.Where.Eq -> MySqlImpl.Update.Set.Eq.Where.Eq(sql.t)
             null -> throw Exception("Action not supported: null")
-
         }
     }
-
 }
 
 class OracleDslMapper : MySqlDslMapper() // TODO 1 placeholder: fix dialect

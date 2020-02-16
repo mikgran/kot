@@ -177,6 +177,17 @@ internal class DslMapperTest {
         assertEquals(expected, candidate)
     }
 
+    @Test
+    fun testDslDelete() {
+
+        val uid = UidBuilder.buildUniqueId(Person())
+        val dsl = Sql delete Person() where Person::firstName eq "Something"
+
+        val sql = mapper.map(dsl)
+
+        expect("DELETE FROM $uid WHERE firstName = 'Something'", sql)
+    }
+
     private fun <T : Any> buildUidAndAlias(t: T): Pair<String, String> {
         val uid = UidBuilder.buildUniqueId(t)
         val p = AliasBuilder.build(uid)

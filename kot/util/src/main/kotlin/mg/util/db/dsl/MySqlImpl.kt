@@ -48,23 +48,27 @@ class MySqlImpl {
         }
     }
 
-    // XXX 10 finish this
     class Delete(t: Any) : Sql.Delete(t) {
         override fun build(p: Parameters): String {
-
-            val uid = UidBuilder.buildUniqueId(t)
             // no multi table deletes supported
             // DELETE FROM table where field = value AND field2 = value2
-            return "DELETE FROM $uid"
+            val sb = StringBuilder() +
+                    "DELETE FROM ${UidBuilder.buildUniqueId(t)} " +
+                    p.whereFragments.joinToString(" ")
+            return sb.toString()
         }
 
         class Where(t: Any) : Delete.Where(t) {
             override fun build(p: Parameters): String {
+                p.whereFragments += of(t as? KProperty1<*, *>)
+                        .map { "WHERE ${it.name}" }
+                        .getOrElse("")
                 return ""
             }
 
             class Eq(t: Any) : Delete.Where.Eq(t) {
                 override fun build(p: Parameters): String {
+                    p.whereFragments += "= '$t'"
                     return ""
                 }
             }
