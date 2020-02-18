@@ -78,15 +78,20 @@ class MySqlImpl {
     class Select(t: Any) : Sql.Select(t) {
         override fun build(p: Parameters): String {
             p.tableFragments.add(0, buildTableFragment(t))
-            buildJoinsMap(t, p)
-            buildSelectColumns(p)
-            buildJoins(p)
+            p.joinsMap.putAll(buildJoinsMap(t, p))
+
+            of(buildJoinsForNaturalRefs(p))
+                    .filter(String::isNotEmpty)
+                    .map(p.joinFragments::add)
+
+            collectUniquesFromJoinsMapAndAction(p)
+                    .forEach { p.columnFragments += buildFieldPart(it) }
 
             val sb = StringBuilder() +
                     "SELECT ${p.columnFragments.joinToString(", ")}" +
                     " FROM ${p.tableFragments.joinToString(", ")}" +
-                    buildWhereParts(p) +
-                    buildJoinParts(p)
+                    buildWherePart(p) +
+                    buildJoinPart(p)
             return sb.toString()
         }
 
@@ -95,16 +100,18 @@ class MySqlImpl {
             return "$uid $alias"
         }
 
-        private fun buildJoinsMap(root: Any, p: Parameters) {
+        private fun buildJoinsMap(root: Any, p: Parameters): MutableMap<Any, List<Any>> {
+            val joinsMap = mutableMapOf<Any, List<Any>>()
             of(root)
                     .map {
                         val list = linksForParent(it)
                         if (list.isNotEmpty()) {
-                            p.joinsMap[it] = list
+                            joinsMap[it] = list
                         }
                         list
                     }
                     .xmap { forEach { buildJoinsMap(it, p) } }
+            return joinsMap
         }
 
         private fun linksForParent(type: Any): List<Any> {
@@ -112,11 +119,6 @@ class MySqlImpl {
                     .lfilter(::isCustom or ::isList)
                     .lxmap<Field, Any> { mapNotNull { getFieldValue(it, type) } }
                     .getOrElse { emptyList() }
-        }
-
-        private fun buildSelectColumns(p: Parameters) {
-            collectUniquesFromJoinsMapAndAction(p)
-                    .forEach { p.columnFragments += buildFieldPart(it) }
         }
 
         private fun collectUniquesFromJoinsMapAndAction(p: Parameters): MutableSet<Any> {
@@ -251,18 +253,13 @@ class MySqlImpl {
             return type::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name}" }
         }
 
-        private fun buildJoins(p: Sql.Parameters) {
-            of(buildJoinsOnNaturalRefs(p))
-                    .filter(String::isNotEmpty)
-                    .map(p.joinFragments::add)
-        }
-
-        private fun buildJoinsOnNaturalRefs(p: Sql.Parameters): String {
+        private fun buildJoinsForNaturalRefs(p: Sql.Parameters): String {
             return of(p.joinsMap)
                     .xmap { map { buildJoinsOnNaturalRefs(it) }.joinToString(" AND ") }
                     .filter(::hasContent)
                     .map { "JOIN $it" }
-                    .getOrElse("")
+                    .filter(String::isNotEmpty)
+                    .getOrElse { "" }
         }
 
         private fun buildJoinsOnNaturalRefs(entry: Map.Entry<Any, Any>): String {
@@ -276,7 +273,7 @@ class MySqlImpl {
                     .getOrElse("")
         }
 
-        private fun buildWhereParts(p: Sql.Parameters): String {
+        private fun buildWherePart(p: Sql.Parameters): String {
             val whereStr = " WHERE "
             val whereFragmentsSize = p.whereFragments.size
             val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
@@ -291,7 +288,7 @@ class MySqlImpl {
             }
         }
 
-        private fun buildJoinParts(p: Sql.Parameters): String =
+        private fun buildJoinPart(p: Sql.Parameters): String =
                 if (p.joinFragments.isNotEmpty()) " " + p.joinFragments.joinToString(" ") else ""
 
         private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()

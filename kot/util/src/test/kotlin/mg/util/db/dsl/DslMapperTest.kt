@@ -79,8 +79,8 @@ internal class DslMapperTest {
 
     private fun <T : Any> expect(expected: T, candidate: T) {
         if (expected != candidate) {
-            println("\nexpected:\n$expected")
-            println("\ncandidate:\n$candidate")
+            println("\nexpected:\n<$expected>")
+            println("\ncandidate:\n<$candidate>")
         }
         assertEquals(expected, candidate)
     }
@@ -161,7 +161,7 @@ internal class DslMapperTest {
         val candidate = mapper.map(sql)
 
         assertHasContent(candidate)
-        assertEquals(expected, candidate)
+        expect(expected, candidate)
     }
 
     @Test
