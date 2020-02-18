@@ -79,8 +79,8 @@ internal class DslMapperTest {
 
     private fun <T : Any> expect(expected: T, candidate: T) {
         if (expected != candidate) {
-            println("\nexpected:\n<$expected>")
-            println("\ncandidate:\n<$candidate>")
+            println("\nE:\n<$expected>")
+            println("C:\n<$candidate>")
         }
         assertEquals(expected, candidate)
     }
