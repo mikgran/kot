@@ -78,7 +78,7 @@ class MySqlImpl {
     class Select(t: Any) : Sql.Select(t) {
         override fun build(p: Parameters): String {
             p.tableFragments.add(0, buildTableFragment(t))
-            buildRefsTree(t, p)
+            buildJoinsMap(t, p)
             buildSelectColumns(p)
             buildJoins(p)
 
@@ -95,7 +95,7 @@ class MySqlImpl {
             return "$uid $alias"
         }
 
-        private fun buildRefsTree(root: Any, p: Parameters) {
+        private fun buildJoinsMap(root: Any, p: Parameters) {
             of(root)
                     .map {
                         val list = linksForParent(it)
@@ -104,7 +104,7 @@ class MySqlImpl {
                         }
                         list
                     }
-                    .xmap { forEach { buildRefsTree(it, p) } }
+                    .xmap { forEach { buildJoinsMap(it, p) } }
         }
 
         private fun linksForParent(type: Any): List<Any> {
