@@ -84,7 +84,7 @@ class MySqlImpl {
                     .filter(String::isNotEmpty)
                     .map(p.joinFragments::add)
 
-            collectUniquesFromJoinsMapAndAction(p)
+            collectUniqueTypesFrom(p.action, p.joinsMap)
                     .forEach { p.columnFragments += buildFieldPart(it) }
 
             val sb = StringBuilder() +
@@ -121,11 +121,11 @@ class MySqlImpl {
                     .getOrElse { emptyList() }
         }
 
-        private fun collectUniquesFromJoinsMapAndAction(p: Parameters): MutableSet<Any> {
+        private fun collectUniqueTypesFrom(action: Sql?, joinsMap: MutableMap<*, *>): MutableSet<Any> {
             val uniques = mutableSetOf<Any>()
-            of(p.action?.t)
+            of(action?.t)
                     .map(uniques::add)
-            of(p.joinsMap.iterator())
+            of(joinsMap.iterator())
                     .lmap { entry: MutableMap.MutableEntry<Any, Any> ->
                         uniques += entry.key
                         (entry.value as? List<*>)?.filterNotNull()?.forEach { uniques += it }
@@ -289,7 +289,7 @@ class MySqlImpl {
         }
 
         private fun buildJoinPart(p: Sql.Parameters): String =
-                if (p.joinFragments.isNotEmpty()) " " + p.joinFragments.joinToString(" ") else ""
+                if (p.joinFragments.isNotEmpty()) " ${p.joinFragments.joinToString(" ")}" else ""
 
         private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
 
