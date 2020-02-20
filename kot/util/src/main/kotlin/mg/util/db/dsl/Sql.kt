@@ -179,7 +179,7 @@ sealed class Sql(val t: Any) {
             infix fun eq(t: Any) = add(Eq(t))
             open class Eq(t: Any) : Sql(t) {
 
-                infix fun and(t: Any) = add(Where(t)) // loop back to where
+                infix fun and(t: Any) = add(Where(t)) // loop back to Sql.Delete.Where
             }
             // XXX 10 finish me
         }
