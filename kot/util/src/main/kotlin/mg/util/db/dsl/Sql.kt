@@ -181,7 +181,6 @@ sealed class Sql(val t: Any) {
 
                 infix fun and(t: Any) = add(Where(t)) // loop back to Sql.Delete.Where
             }
-            // XXX 10 finish me
         }
     }
 }
