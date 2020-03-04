@@ -1,7 +1,7 @@
 package mg.util.db.functional
 
 import mg.util.db.DBO
-import mg.util.db.TestDataClasses.Person
+import mg.util.db.TestDataClasses.RSIPerson
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
@@ -9,7 +9,6 @@ import mg.util.db.dsl.SqlMapper
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.sql.Connection
@@ -19,12 +18,12 @@ internal class ResultSetIteratorTest {
 
     private val dbConfig = DBConfig(TestConfig())
     private val dbo = DBO(SqlMapper("mysql"))
+    private val person1 = RSIPerson("test1", "test11")
+    private val person2 = RSIPerson("test2", "test33")
 
     @Test
     fun testIteratingResultSet() {
 
-        val person1 = Person("test1", "test11")
-        val person2 = Person("test2", "test33")
         val connection = dbConfig.connection
 
         with(dbo) {
@@ -36,17 +35,17 @@ internal class ResultSetIteratorTest {
             }
         }
 
-        val tableUid = buildUniqueId(Person())
+        val tableUid = buildUniqueId(RSIPerson())
 
         val candidate = getResultSetIterator(connection, tableUid)
-                .xmap { map { Person(it.getString(2), it.getString(3)) } }
+                .xmap { map { RSIPerson(it.getString(2), it.getString(3)) } }
                 .get()!!
 
         assertTrue(candidate.isNotEmpty())
         assertTrue(candidate.containsAll(listOf(person1, person2)), "xmap: person1 and person2 should be in list of candidates")
 
         val candidate2 = getResultSetIterator(connection, tableUid)
-                .lmap { rs: ResultSet -> Person(rs.getString(2), rs.getString(3)) }
+                .lmap { rs: ResultSet -> RSIPerson(rs.getString(2), rs.getString(3)) }
                 .get()!!
 
         assertTrue(candidate2.isNotEmpty())

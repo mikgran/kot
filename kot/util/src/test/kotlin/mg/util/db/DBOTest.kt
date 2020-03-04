@@ -144,8 +144,8 @@ internal class DBOTest {
 
         val sql = "SELECT * FROM $p $p2 JOIN $b $b2 ON $p2.id = $b2.${p}id"
 
-        dbo.ensureTable(Billing(), dbConfig.connection)
-        // dbo.save(Billing("10", Person("fff", "lll")), dbConfig.connection)
+        dbo.ensureTable(DBOBilling(), dbConfig.connection)
+        dbo.save(DBOBilling("10", DBOPerson("fff", "lll")), dbConfig.connection)
 
         val candidate = of(dbConfig.connection)
                 .map(Connection::createStatement)

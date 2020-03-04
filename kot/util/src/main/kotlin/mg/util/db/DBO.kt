@@ -83,13 +83,12 @@ class DBO(private val mapper: SqlMapper) {
                 .map(mapper::buildFind)
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
 
-        val mappedT = of(getStatement(connection))
+        return of(getStatement(connection))
                 .mapWith(findSql) { c, sql -> c.executeQuery(sql) }
                 .filter(ResultSet::next)
+                .ifPresent { println(it) }
                 .mapWith(t) { rs, type -> ObjectBuilder().buildListOfT(rs, type) }
-                .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
-
-        return mappedT ?: emptyList()
+                .getOrElse { mutableListOf() }
     }
 
     fun <T : Any> drop(t: T, connection: Connection) {
