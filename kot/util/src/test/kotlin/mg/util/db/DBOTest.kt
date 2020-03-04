@@ -28,20 +28,20 @@ internal class DBOTest {
     private val lastName = "lastName"
     private val last2 = "last2"
 
-    private val testPerson = Person(firstName, lastName)
-    private val testPerson2 = Person(first1, last2)
+    private val testPerson = DBOPerson(firstName, lastName)
+    private val testPerson2 = DBOPerson(first1, last2)
 
     private val dbo = DBO(SqlMapper("mysql"))
 
     @Test
     fun testBuildingMetadata() {
 
-        val metadataCandidate: Metadata<Person> = dbo.buildMetadata(testPerson)
+        val metadataCandidate = dbo.buildMetadata(testPerson)
 
         assertNotNull(metadataCandidate)
-        assertEquals("Person", metadataCandidate.name)
+        assertEquals("DBOPerson", metadataCandidate.name)
         assertEquals(2, metadataCandidate.fieldCount)
-        assertEquals(Person::class, metadataCandidate.type::class)
+        assertEquals(DBOPerson::class, metadataCandidate.type::class)
         assertNotNull(metadataCandidate.uid)
         assertTrue(metadataCandidate.uid.isNotEmpty())
     }
@@ -49,18 +49,18 @@ internal class DBOTest {
     @Test
     fun testBuildingUid() {
 
-        val uidCandidate = buildUniqueId(Person(firstName, lastName))
+        val uidCandidate = buildUniqueId(DBOPerson(firstName, lastName))
 
         assertNotNull(uidCandidate)
-        assertEquals("Person${(firstName + lastName).hashCode()}", uidCandidate)
+        assertEquals("DBOPerson${(firstName + lastName).hashCode()}", uidCandidate)
     }
 
     @Test
     fun testEnsureTable() {
-        val multipleCompositionUid = build(MultipleComposition::class)
+        val multipleCompositionUid = build(DBOMultipleComposition::class)
         val connection = of(dbConfig.connection)
 
-        dbo.ensureTable(MultipleComposition(), dbConfig.connection)
+        dbo.ensureTable(DBOMultipleComposition(), dbConfig.connection)
         queryShowTables(connection)
                 .any { it.equals(multipleCompositionUid, ignoreCase = true) }
                 .apply(::assertTrue)
@@ -85,28 +85,28 @@ internal class DBOTest {
                 .filter(ResultSet::next)
                 .getOrElseThrow { Exception("Test failed: no test data found") }
 
-        val candidateMapped = ObjectBuilder().buildListOfT(persons, Person())
+        val candidateMapped = ObjectBuilder().buildListOfT(persons, DBOPerson())
 
         assertNotNull(candidateMapped)
         assertTrue(candidateMapped.isNotEmpty())
-        assertTrue(candidateMapped.contains(Person("first1", "last2")))
+        assertTrue(candidateMapped.contains(DBOPerson("first1", "last2")))
     }
 
     private fun testFind() {
         val test1 = "test1DBOTest"
         val test2 = "test2DBOTest"
 
-        val person = Person(test1, test2)
+        val dboPerson = DBOPerson(test1, test2)
 
-        dbo.save(person, dbConfig.connection)
+        dbo.save(dboPerson, dbConfig.connection)
 
-        val personTest2 = Person(test1, test2)
+        val dboPerson2 = DBOPerson(test1, test2)
 
-        val candidatePersonList = dbo.find(personTest2, dbConfig.connection)
+        val candidatePersonList = dbo.find(dboPerson2, dbConfig.connection)
 
         assertNotNull(candidatePersonList)
         assertTrue(candidatePersonList.isNotEmpty())
-        assertTrue(candidatePersonList.contains(Person(test1, test2)))
+        assertTrue(candidatePersonList.contains(DBOPerson(test1, test2)))
     }
 
     private fun testSave() {
@@ -122,9 +122,9 @@ internal class DBOTest {
                 .filter(ResultSet::next)
                 .getOrElseThrow { Exception("Test failed: no rows in db.") }!!
 
-        val candidates = mutableListOf<Person>()
+        val candidates = mutableListOf<DBOPerson>()
         while (rs.next()) {
-            candidates += Person(rs.getString("firstName"), rs.getString("lastName"))
+            candidates += DBOPerson(rs.getString("firstName"), rs.getString("lastName"))
         }
 
         assertNotNull(candidates)
@@ -137,8 +137,8 @@ internal class DBOTest {
 
         // TODO 1: use composition for testing
 
-        val b = buildUniqueId(Billing())
-        val p = buildUniqueId(Person())
+        val b = buildUniqueId(DBOBilling())
+        val p = buildUniqueId(DBOPerson())
         val b2 = build(b)
         val p2 = build(p)
 
@@ -171,9 +171,9 @@ internal class DBOTest {
     @Test
     fun testDrop() {
 
-        data class Tttt(val value: String = "")
+        data class DBOTttt(val value: String = "")
 
-        val uid = buildUniqueId(Tttt())
+        val uid = buildUniqueId(DBOTttt())
         val connection = of(dbConfig.connection)
 
         connection.map(Connection::createStatement)
@@ -183,7 +183,7 @@ internal class DBOTest {
                 .any { it.equals(uid, ignoreCase = true) }
                 .apply(::assertTrue)
 
-        dbo.drop(Tttt(), dbConfig.connection)
+        dbo.drop(DBOTttt(), dbConfig.connection)
 
         queryShowTables(connection)
                 .none { it.equals(uid, ignoreCase = true) }
@@ -206,15 +206,15 @@ internal class DBOTest {
 
             val dbConfig = DBConfig(TestConfig())
 
-            val tableUids = listOf(Simple(),
-                    Composition(),
-                    MultipleComposition(),
-                    // Person(), shared class between tests
-                    // PersonB(), shared class between tests
-                    SimpleComp(),
-                    MultipleComposition(),
-                    Uuuu(),
-                    Billing())
+            val tableUids = listOf(
+                    DBOSimple(),
+                    DBOComposition(),
+                    DBOMultipleComposition(),
+                    DBOSimpleComp(),
+                    DBOMultipleComposition(),
+                    DBOPerson2(),
+                    DBOPerson(),
+                    DBOBilling())
                     .map(::buildUniqueId)
 
             forStatement(dbConfig, tableUids) { stmt, uid ->
