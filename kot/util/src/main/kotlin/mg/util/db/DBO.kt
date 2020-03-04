@@ -86,7 +86,6 @@ class DBO(private val mapper: SqlMapper) {
         return of(getStatement(connection))
                 .mapWith(findSql) { c, sql -> c.executeQuery(sql) }
                 .filter(ResultSet::next)
-                .ifPresent { println(it) }
                 .mapWith(t) { rs, type -> ObjectBuilder().buildListOfT(rs, type) }
                 .getOrElse { mutableListOf() }
     }

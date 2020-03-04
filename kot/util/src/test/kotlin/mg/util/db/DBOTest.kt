@@ -200,14 +200,11 @@ internal class DBOTest {
     @Suppress("unused")
     companion object {
 
+        // XXX: 10 generalize
         @AfterAll
         @JvmStatic
         internal fun afterAll() {
-
-            val dbConfig = DBConfig(TestConfig())
-
-            val tableUids = listOf(
-                    DBOSimple(),
+            listOf(DBOSimple(),
                     DBOComposition(),
                     DBOMultipleComposition(),
                     DBOSimpleComp(),
@@ -215,12 +212,7 @@ internal class DBOTest {
                     DBOPerson2(),
                     DBOPerson(),
                     DBOBilling())
-                    .map(::buildUniqueId)
-
-            forStatement(dbConfig, tableUids) { stmt, uid ->
-                deleteFromUid(stmt, uid)
-                dropTableUid(stmt, uid)
-            }
+                    .also(TestSupport::dropTables)
         }
 
         private fun forStatement(dbConfig: DBConfig, uids: List<String>, mapper: (Statement, String) -> Unit) {

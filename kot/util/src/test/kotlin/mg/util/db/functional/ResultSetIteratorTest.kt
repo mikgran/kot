@@ -9,6 +9,7 @@ import mg.util.db.dsl.SqlMapper
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.sql.Connection
@@ -58,5 +59,16 @@ internal class ResultSetIteratorTest {
                 .mapWith(tableUid) { stmt, uid -> stmt.executeQuery("SELECT * FROM $uid") }
                 .map(::iof)
     }
+
+    @Suppress("unused")
+    companion object {
+
+        @AfterAll
+        @JvmStatic
+        internal fun afterAll() {
+            // XXX: finish me
+        }
+    }
+
 
 }

@@ -3,6 +3,7 @@ package mg.util.db
 // NOTE: remember to prefix things with test classes
 // XXX: 10 remove test dependencies from each test
 class TestDataClasses {
+
     data class DBOPerson(val firstName: String = "", val lastName: String = "")
     data class DBOPerson2(val firstName: String = "", val lastName: String = "")
     data class DBOBilling(val amount: String = "", val dboPerson: DBOPerson = DBOPerson("", ""))
