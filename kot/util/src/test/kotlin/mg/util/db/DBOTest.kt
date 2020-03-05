@@ -200,7 +200,6 @@ internal class DBOTest {
     @Suppress("unused")
     companion object {
 
-        // XXX: 10 generalize
         @AfterAll
         @JvmStatic
         internal fun afterAll() {
@@ -212,17 +211,8 @@ internal class DBOTest {
                     DBOPerson2(),
                     DBOPerson(),
                     DBOBilling())
-                    .also(TestSupport::dropTables)
+                    .also { TestSupport.dropTables(it) }
         }
-
-        private fun forStatement(dbConfig: DBConfig, uids: List<String>, mapper: (Statement, String) -> Unit) {
-            of(dbConfig.connection)
-                    .map(Connection::createStatement)
-                    .ifPresent { stmt -> uids.forEach { uid -> mapper(stmt, uid) } }
-        }
-
-        private fun deleteFromUid(s: Statement, uid: String) = nonThrowingBlock { s.executeUpdate("DELETE FROM $uid") }
-        private fun dropTableUid(s: Statement, uid: String) = nonThrowingBlock { s.executeUpdate("DROP TABLE IF EXISTS $uid") }
     }
 }
 

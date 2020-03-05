@@ -1,7 +1,9 @@
 package mg.util.db.functional
 
 import mg.util.db.DBO
+import mg.util.db.TestDataClasses
 import mg.util.db.TestDataClasses.RSIPerson
+import mg.util.db.TestSupport
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
@@ -66,7 +68,8 @@ internal class ResultSetIteratorTest {
         @AfterAll
         @JvmStatic
         internal fun afterAll() {
-            // XXX: finish me
+            listOf(RSIPerson())
+                    .also { TestSupport.dropTables(it) }
         }
     }
 
