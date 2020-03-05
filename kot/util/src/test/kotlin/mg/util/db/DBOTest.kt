@@ -1,6 +1,5 @@
 package mg.util.db
 
-import mg.util.common.Common.nonThrowingBlock
 import mg.util.db.AliasBuilder.build
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder.build
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
-import java.sql.Statement
 
 // TODO 1 Tests are currently order dependent, fix all tests so that none fail from a change in testing framework
 internal class DBOTest {
