@@ -68,8 +68,7 @@ internal class ResultSetIteratorTest {
         @AfterAll
         @JvmStatic
         internal fun afterAll() {
-            listOf(RSIPerson())
-                    .also { TestSupport.dropTables(it) }
+            TestSupport.dropTables(listOf(RSIPerson()))
         }
     }
 
