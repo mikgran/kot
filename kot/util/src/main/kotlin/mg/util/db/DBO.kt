@@ -39,6 +39,8 @@ class DBO(private val mapper: SqlMapper) {
                 .map(mapper::buildInsert)
                 .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
+        println("insertSql==$insertSql")
+
         of(getStatement(connection))
                 .map { s -> s.executeUpdate(insertSql) }
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }

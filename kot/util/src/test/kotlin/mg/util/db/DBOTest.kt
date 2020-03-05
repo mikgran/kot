@@ -130,7 +130,7 @@ internal class DBOTest {
         assertTrue(candidates.contains(testPerson2))
     }
 
-    // @Test
+    @Test
     fun testSaveWithComposition() {
 
         // TODO 1: use composition for testing
@@ -201,14 +201,16 @@ internal class DBOTest {
         @AfterAll
         @JvmStatic
         internal fun afterAll() {
-            listOf(DBOSimple(),
+            listOf(
+                    DBOSimple(),
                     DBOComposition(),
                     DBOMultipleComposition(),
                     DBOSimpleComp(),
                     DBOMultipleComposition(),
                     DBOPerson2(),
                     DBOPerson(),
-                    DBOBilling())
+                    DBOBilling()
+            )
                     .also { TestSupport.dropTables(it) }
         }
     }
