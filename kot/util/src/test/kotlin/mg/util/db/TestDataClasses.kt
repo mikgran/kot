@@ -1,7 +1,7 @@
 package mg.util.db
 
 class TestDataClasses {
-    // Note: prefix classes with their test classes name
+    // Note: prefix classes with their test class camel case capitals
     data class DBPersonB(val firstName: String = "", val lastName: String = "")
     data class DBOPerson(val firstName: String = "", val lastName: String = "")
     data class DBOPerson2(val firstName: String = "", val lastName: String = "")

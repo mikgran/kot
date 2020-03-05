@@ -8,7 +8,6 @@ import java.sql.Connection
 import java.sql.Statement
 
 class TestSupport {
-    // XXX: 10 move this to own package/file
 
     companion object {
 
