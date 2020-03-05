@@ -1,11 +1,9 @@
 package mg.util.db
 
-import mg.util.common.Common.nonThrowingBlock
-import mg.util.db.TestDataClasses.PersonB
+import mg.util.db.TestDataClasses.DBPersonB
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.Config
 import mg.util.db.config.DBConfig
-import mg.util.db.dsl.SqlMapper
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
@@ -27,8 +25,8 @@ internal class DBTest {
             val connection = dbConfig.connection
 
             val db = DB()
-            val testPerson = PersonB(fName, lName)
-            val uniqueId = buildUniqueId(PersonB("", ""))
+            val testPerson = DBPersonB(fName, lName)
+            val uniqueId = buildUniqueId(DBPersonB("", ""))
 
             db.save(testPerson)
 
@@ -36,7 +34,7 @@ internal class DBTest {
                     .map(Connection::createStatement)
                     .map { it.executeQuery("SELECT * FROM $uniqueId") }
                     .map(::iof)
-                    .map { it.map { i -> PersonB(i.getString(fName), i.getString(lName)) } }
+                    .map { it.map { i -> DBPersonB(i.getString(fName), i.getString(lName)) } }
                     .getOrElse(ArrayList())
 
             assertTrue(candidates.isNotEmpty())
@@ -48,11 +46,11 @@ internal class DBTest {
     fun testFind() {
 
         val db = DB()
-        val testPerson = PersonB("aa", "bb")
+        val testPerson = DBPersonB("aa", "bb")
 
         db.save(testPerson)
 
-        val personListCandidate = db.find(PersonB())
+        val personListCandidate = db.find(DBPersonB())
 
         assertTrue(personListCandidate.isNotEmpty())
         assertTrue(personListCandidate.any { it.firstName == "aa" && it.lastName == "bb" })
@@ -62,7 +60,7 @@ internal class DBTest {
     fun testFindById() {
 
         val db = DB()
-        val testPerson = PersonB("11", "22")
+        val testPerson = DBPersonB("11", "22")
         db.save(testPerson)
 
         // db.findBySql { select PersonB() where it::firstName eq "name" }
@@ -75,21 +73,7 @@ internal class DBTest {
         @AfterAll
         @JvmStatic
         internal fun afterTest() {
-
-            val person = PersonB("first1", "last2")
-            val dbConfig = DBConfig(Config())
-            val dbo = DBO(SqlMapper(dbConfig.mapper))
-            val uidTableName = dbo.buildMetadata(person).uid
-            val sqlCommandsList = listOf("DELETE FROM $uidTableName", "DROP TABLE $uidTableName")
-
-            Opt2.of(dbConfig.connection)
-                    .map(Connection::createStatement)
-                    .mapWith(sqlCommandsList) { statement, sqlCommands ->
-
-                        sqlCommands.forEach { sqlCommand ->
-                            nonThrowingBlock { statement.executeUpdate(sqlCommand) }
-                        }
-                    }
+            TestSupport.dropTables(listOf(DBPersonB()))
         }
     }
 }

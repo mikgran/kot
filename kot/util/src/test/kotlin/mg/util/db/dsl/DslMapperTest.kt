@@ -15,9 +15,9 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTable() {
 
-        val sql = Sql create PersonB()
+        val sql = Sql create DSLPersonB()
 
-        val uid = UidBuilder.build(PersonB::class)
+        val uid = UidBuilder.build(DSLPersonB::class)
         val candidate = mapper.map(sql)
 
         assertEquals("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", candidate)
@@ -26,10 +26,10 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithListReference() {
 
-        val sql = Sql create Building("some address")
+        val sql = Sql create DSLBuilding("some address")
 
-        val buildingUid = UidBuilder.build(Building::class)
-        val floorUid = UidBuilder.build(Floor::class)
+        val buildingUid = UidBuilder.build(DSLBuilding::class)
+        val floorUid = UidBuilder.build(DSLFloor::class)
 
         val candidate = mapper.map(sql)
 
@@ -45,10 +45,10 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithSimpleReference() {
 
-        val sql = Sql create Place(Address("somePlace"), 100000)
+        val sql = Sql create DSLPlace(DSLAddress("somePlace"), 100000)
 
-        val placeUid = UidBuilder.build(Place::class)
-        val addressUid = UidBuilder.build(Address::class)
+        val placeUid = UidBuilder.build(DSLPlace::class)
+        val addressUid = UidBuilder.build(DSLAddress::class)
         val candidate = mapper.map(sql)
 
         val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
@@ -63,9 +63,9 @@ internal class DslMapperTest {
     fun testUpdate() {
 
         // UPDATE personb12345 SET field1 = new-value1, field2 = new-value2
-        val sql = Sql update PersonB() set PersonB::firstName eq "newFirstName" and PersonB::lastName eq "newLastName" where PersonB::firstName eq "firstName"
+        val sql = Sql update DSLPersonB() set DSLPersonB::firstName eq "newFirstName" and DSLPersonB::lastName eq "newLastName" where DSLPersonB::firstName eq "firstName"
 
-        val uid = UidBuilder.build(PersonB::class)
+        val uid = UidBuilder.build(DSLPersonB::class)
         val alias = AliasBuilder.build(uid)
 
         val candidate = mapper.map(sql)
@@ -89,7 +89,7 @@ internal class DslMapperTest {
     fun testBuildingSqlFromDslJoin_AutoRef() {
         // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
         // JOIN Address123565 a ON p.id = a.Place1234556refid
-        val dsl = Sql select Place()
+        val dsl = Sql select DSLPlace()
         val candidate = mapper.map(dsl)
 
         assertDslForAutoRef(candidate)
@@ -113,7 +113,7 @@ internal class DslMapperTest {
         // 1     150000         15    StreetName     1             2053   Some Desc       1
         // 2     160000         16    A Street       2             6342   Something..     2
 
-        val dsl = Sql select Place() join PlaceDescriptor() on Place::class eq PlaceDescriptor::placeRefId
+        val dsl = Sql select DSLPlace() join DSLPlaceDescriptor() on DSLPlace::class eq DSLPlaceDescriptor::placeRefId
         val candidate = mapper.map(dsl)
 
         assertDslForManualField(candidate)
@@ -124,9 +124,9 @@ internal class DslMapperTest {
         // FROM Place536353721 p2
         // JOIN PlaceDescriptor1660249411 p ON p2.id = p.placeRefId
         // JOIN Address2002641509 a ON p2.id = a.Place536353721refid
-        val (uidPlace, p) = buildUidAndAlias(Place())
-        val (uidAddress, a) = buildUidAndAlias(Address())
-        val (uidDesc, p2) = buildUidAndAlias(PlaceDescriptor())
+        val (uidPlace, p) = buildUidAndAlias(DSLPlace())
+        val (uidAddress, a) = buildUidAndAlias(DSLAddress())
+        val (uidDesc, p2) = buildUidAndAlias(DSLPlaceDescriptor())
         val expected = "SELECT $p2.description, ${p2}.placeRefId, $p.address, $p.rentInCents, $a.fullAddress" +
                 " FROM $uidPlace $p" +
                 " JOIN $uidDesc $p2 ON $p.id = $p2.placeRefId" +
@@ -137,8 +137,8 @@ internal class DslMapperTest {
     }
 
     private fun assertDslForAutoRef(candidate: String) {
-        val (uidPlace, p) = buildUidAndAlias(Place())
-        val (uidAddress, a) = buildUidAndAlias(Address())
+        val (uidPlace, p) = buildUidAndAlias(DSLPlace())
+        val (uidAddress, a) = buildUidAndAlias(DSLAddress())
         val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
                 " FROM $uidPlace $p JOIN $uidAddress $a" +
                 " ON $p.id = $a.${uidPlace}RefId"
@@ -154,9 +154,9 @@ internal class DslMapperTest {
     @Test
     fun testDslSelectWhere() {
 
-        val sql = Sql select PersonB() where PersonB::firstName eq "name"
+        val sql = Sql select DSLPersonB() where DSLPersonB::firstName eq "name"
 
-        val (uid, p) = buildUidAndAlias(PersonB())
+        val (uid, p) = buildUidAndAlias(DSLPersonB())
         val expected = "SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'name'"
         val candidate = mapper.map(sql)
 
@@ -167,9 +167,9 @@ internal class DslMapperTest {
     @Test
     fun testDslSelectWhereAndWhere() {
 
-        val sql = Sql select PersonB() where PersonB::firstName eq "first" and PersonB::lastName eq "last"
+        val sql = Sql select DSLPersonB() where DSLPersonB::firstName eq "first" and DSLPersonB::lastName eq "last"
 
-        val (uid, p) = buildUidAndAlias(PersonB())
+        val (uid, p) = buildUidAndAlias(DSLPersonB())
         val expected = "SELECT $p.firstName, $p.lastName FROM $uid $p WHERE $p.firstName = 'first' AND $p.lastName = 'last'"
         val candidate = mapper.map(sql)
 
@@ -180,8 +180,8 @@ internal class DslMapperTest {
     @Test
     fun testDslDelete() {
 
-        val uid = UidBuilder.buildUniqueId(Person())
-        val dsl = Sql delete Person() where Person::firstName eq "Something"
+        val uid = UidBuilder.buildUniqueId(DSLPerson())
+        val dsl = Sql delete DSLPerson() where DSLPerson::firstName eq "Something"
 
         val sql = mapper.map(dsl)
 
