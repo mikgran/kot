@@ -1,6 +1,6 @@
 package mg.util.db
 
-import mg.util.db.TestDataClasses.PersonB
+import mg.util.db.TestDataClasses.OBPersonB
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
@@ -18,22 +18,22 @@ internal class ObjectBuilderTest {
     fun testBuildT() {
 
         val connection = dbConfig.connection
-        dbo.ensureTable(PersonB("", ""), connection)
-        dbo.save(PersonB(firstName, lastName), connection)
-        val uid = buildUniqueId(PersonB())
+        dbo.ensureTable(OBPersonB("", ""), connection)
+        dbo.save(OBPersonB(firstName, lastName), connection)
+        val uid = buildUniqueId(OBPersonB())
 
         val results = Opt2.of(connection.createStatement())
                 .map { it.executeQuery("SELECT * FROM $uid") }
                 .filter { it.next() }
                 .getOrElseThrow { Exception("no results in table $uid.") }
 
-        val listT = ObjectBuilder().buildListOfT(results, PersonB())
+        val listT = ObjectBuilder().buildListOfT(results, OBPersonB())
 
         assertTrue(listT.isNotEmpty())
         assertTrue(containsFirstNameLastName(listT))
     }
 
-    private fun containsFirstNameLastName(candidateMapped: List<PersonB>): Boolean {
+    private fun containsFirstNameLastName(candidateMapped: List<OBPersonB>): Boolean {
         var found = false
         candidateMapped.forEach {
             if (firstName == it.firstName && lastName == it.lastName) {

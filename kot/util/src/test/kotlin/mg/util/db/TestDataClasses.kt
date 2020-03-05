@@ -1,7 +1,5 @@
 package mg.util.db
 
-
-// XXX: 10 remove test dependencies from each test
 class TestDataClasses {
     // Note: prefix classes with their test classes name
     data class DBPersonB(val firstName: String = "", val lastName: String = "")
@@ -19,14 +17,8 @@ class TestDataClasses {
     data class DSLPlaceDescriptor(val description: String = "", val placeRefId: Int = 0)
     data class DSLFloor(var number: Int = 0)
     data class DSLBuilding(var fullAddress: String = "", var floors: List<DSLFloor> = listOf(DSLFloor(1)))
-    data class SMTPerson(val firstName: String = "", val lastName: String = "")
-
-    data class RSIPerson(val firstName: String = "", val lastName: String = "")
-
-    data class Person(val firstName: String = "", val lastName: String = "")
-
-    data class PersonB(val firstName: String = "", val lastName: String = "")
-
-
     data class MTMPerson(val firstName: String = "", val lastName: String = "")
+    data class OBPersonB(val firstName: String = "", val lastName: String = "")
+    data class SMTPerson(val firstName: String = "", val lastName: String = "")
+    data class RSIPerson(val firstName: String = "", val lastName: String = "")
 }
