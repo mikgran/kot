@@ -2,7 +2,8 @@ package mg.util.db.dsl
 
 import mg.util.db.AliasBuilder
 import mg.util.db.DBO
-import mg.util.db.TestDataClasses.Person
+import mg.util.db.TestDataClasses
+import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -10,9 +11,9 @@ import org.junit.jupiter.api.Test
 
 internal class SqlMapperTest {
 
-    private val person = Person("testname1", "testname2")
+    private val person = SMTPerson("testname1", "testname2")
     private val dbo = DBO(SqlMapper("mysql"))
-    private val personUid = UidBuilder.build(Person::class)
+    private val personUid = UidBuilder.build(SMTPerson::class)
     private val personAlias = AliasBuilder.build(personUid)
     private val personMetadata = dbo.buildMetadata(person)
 

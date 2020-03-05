@@ -2,7 +2,7 @@ package mg.util.db.dsl.mysql
 
 import mg.util.db.DBO
 import mg.util.db.Metadata
-import mg.util.db.TestDataClasses.Person
+import mg.util.db.TestDataClasses.MTMPerson
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.MySqlTypeMapper
 import mg.util.db.dsl.SqlMapper
@@ -13,7 +13,7 @@ import kotlin.reflect.full.declaredMemberProperties
 
 internal class MySqlTypeMapperTest {
 
-    private val person = Person("testname1", "testname2")
+    private val person = MTMPerson("testname1", "testname2")
     private val dbo = DBO(SqlMapper("mysql"))
 
     data class Yyyyy(val a: Int = 0)
@@ -22,7 +22,7 @@ internal class MySqlTypeMapperTest {
     @Test
     fun testMappingClassWithTwoStringFields() {
 
-        val metadata: Metadata<Person> = dbo.buildMetadata(person)
+        val metadata: Metadata<MTMPerson> = dbo.buildMetadata(person)
 
         val candidates = buildCandidates(metadata)
 
@@ -31,7 +31,7 @@ internal class MySqlTypeMapperTest {
         assertContainsExpectedCandidates(candidates, expectedFieldDefinitions)
     }
 
-    // @Test
+    // @Test TODO 5 fix custom relations, or remove this
     fun testMappingWithOneToOneRelation() {
 
         val metadata = dbo.buildMetadata(Qqqqq())

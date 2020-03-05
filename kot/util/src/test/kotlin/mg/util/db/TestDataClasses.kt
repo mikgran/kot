@@ -1,9 +1,10 @@
 package mg.util.db
 
-// NOTE: remember to prefix things with test classes
+
 // XXX: 10 remove test dependencies from each test
 class TestDataClasses {
-
+    // Note: prefix classes with their test classes name
+    data class DBPersonB(val firstName: String = "", val lastName: String = "")
     data class DBOPerson(val firstName: String = "", val lastName: String = "")
     data class DBOPerson2(val firstName: String = "", val lastName: String = "")
     data class DBOBilling(val amount: String = "", val dboPerson: DBOPerson = DBOPerson("", ""))
@@ -16,17 +17,16 @@ class TestDataClasses {
     data class DSLAddress(var fullAddress: String = "")
     data class DSLPlace(var address: DSLAddress = DSLAddress(), var rentInCents: Int = 0)
     data class DSLPlaceDescriptor(val description: String = "", val placeRefId: Int = 0)
+    data class DSLFloor(var number: Int = 0)
+    data class DSLBuilding(var fullAddress: String = "", var floors: List<DSLFloor> = listOf(DSLFloor(1)))
+    data class SMTPerson(val firstName: String = "", val lastName: String = "")
 
     data class RSIPerson(val firstName: String = "", val lastName: String = "")
 
     data class Person(val firstName: String = "", val lastName: String = "")
-    data class Billing(val amount: String = "", val person: Person = Person("", ""))
-    data class Address(var fullAddress: String = "")
-    data class Place(var address: Address = Address(), var rentInCents: Int = 0)
-    data class PlaceDescriptor(val description: String = "", val placeRefId: Int = 0)
-    data class DSLFloor(var number: Int = 0)
-    data class DSLBuilding(var fullAddress: String = "", var floors: List<DSLFloor> = listOf(DSLFloor(1)))
+
     data class PersonB(val firstName: String = "", val lastName: String = "")
 
-    data class DBPersonB(val firstName: String = "", val lastName: String = "")
+
+    data class MTMPerson(val firstName: String = "", val lastName: String = "")
 }
