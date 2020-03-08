@@ -130,9 +130,7 @@ internal class DBOTest {
         assertTrue(candidates.contains(testPerson2))
     }
 
-    // TOIMPROVE: consider changing feature
-    // Currently behavior not supported, thus no testing
-    // @Test
+    @Test // XXX: 10 fix this
     fun testSaveWithComposition() {
 
         // TODO 1: use composition for testing

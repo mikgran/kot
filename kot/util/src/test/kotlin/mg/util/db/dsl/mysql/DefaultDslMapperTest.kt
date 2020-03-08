@@ -31,7 +31,9 @@ internal class DefaultDslMapperTest {
         assertContainsExpectedCandidates(candidates, expectedFieldDefinitions)
     }
 
-    // @Test // XXX: 10 fix this
+    // TOIMPROVE: consider changing feature
+    // Currently behavior not supported, thus no testing
+    // @Test
     fun testMappingWithOneToOneRelation() {
 
         val metadata = dbo.buildMetadata(QWithYRef())
