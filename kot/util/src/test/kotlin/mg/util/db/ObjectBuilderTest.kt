@@ -4,7 +4,7 @@ import mg.util.db.TestDataClasses.OBPersonB
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
-import mg.util.db.dsl.SqlMapper
+import mg.util.db.dsl.DefaultDslMapper
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 
 internal class ObjectBuilderTest {
 
-    private val dbo = DBO(SqlMapper("mysql"))
+    private val dbo = DBO(DefaultDslMapper("mysql"))
     private val dbConfig = DBConfig(TestConfig())
 
     @Test

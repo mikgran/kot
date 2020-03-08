@@ -2,7 +2,7 @@ package mg.util.db
 
 import mg.util.db.config.Config
 import mg.util.db.config.DBConfig
-import mg.util.db.dsl.SqlMapper
+import mg.util.db.dsl.DefaultDslMapper
 import mg.util.functional.Opt2.Factory.of
 import java.sql.Connection
 
@@ -12,7 +12,7 @@ import java.sql.Connection
 class DB {
 
     private val dbConfig = DBConfig(Config())
-    private val dbo = DBO(SqlMapper(dbConfig.mapper))
+    private val dbo = DBO(DefaultDslMapper(dbConfig.mapper))
 
     fun <T : Any> save(type: T) {
         val connection = getConnection()

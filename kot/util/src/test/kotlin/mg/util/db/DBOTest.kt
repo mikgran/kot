@@ -6,7 +6,7 @@ import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
-import mg.util.db.dsl.SqlMapper
+import mg.util.db.dsl.DefaultDslMapper
 import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
@@ -29,7 +29,7 @@ internal class DBOTest {
     private val testPerson = DBOPerson(firstName, lastName)
     private val testPerson2 = DBOPerson(first1, last2)
 
-    private val dbo = DBO(SqlMapper("mysql"))
+    private val dbo = DBO(DefaultDslMapper("mysql"))
 
     @Test
     fun testBuildingMetadata() {

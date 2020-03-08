@@ -1,7 +1,7 @@
 package mg.util.db
 
 import mg.util.db.UidBuilder.buildUniqueId
-import mg.util.db.dsl.SqlMapper
+import mg.util.db.dsl.DefaultDslMapper
 import mg.util.functional.Opt2.Factory.of
 import java.sql.Connection
 import java.sql.ResultSet
@@ -11,7 +11,7 @@ import kotlin.reflect.KCallable
 import kotlin.reflect.full.memberProperties
 
 // a simple Object-Relational-Mapping class
-class DBO(private val mapper: SqlMapper) {
+class DBO(private val mapper: DefaultDslMapper) {
 
     fun <T : Any> buildMetadata(type: T): Metadata<T> {
 

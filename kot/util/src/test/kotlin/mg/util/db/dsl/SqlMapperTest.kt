@@ -2,7 +2,6 @@ package mg.util.db.dsl
 
 import mg.util.db.AliasBuilder
 import mg.util.db.DBO
-import mg.util.db.TestDataClasses
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -12,7 +11,7 @@ import org.junit.jupiter.api.Test
 internal class SqlMapperTest {
 
     private val person = SMTPerson("testname1", "testname2")
-    private val dbo = DBO(SqlMapper("mysql"))
+    private val dbo = DBO(DefaultDslMapper("mysql"))
     private val personUid = UidBuilder.build(SMTPerson::class)
     private val personAlias = AliasBuilder.build(personUid)
     private val personMetadata = dbo.buildMetadata(person)
@@ -20,7 +19,7 @@ internal class SqlMapperTest {
     @Test
     fun testCreateTable() {
 
-        val createTableSqlCandidate = SqlMapper(MYSQL).buildCreateTable(personMetadata)
+        val createTableSqlCandidate = DefaultDslMapper(MYSQL).buildCreateTable(personMetadata)
 
         assertNotNull(createTableSqlCandidate)
         assertEquals("CREATE TABLE IF NOT EXISTS ${personMetadata.uid}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", createTableSqlCandidate)
@@ -31,7 +30,7 @@ internal class SqlMapperTest {
     @Test
     fun testBuildInsert() {
 
-        val insertCandidate = SqlMapper(MYSQL).buildInsert(personMetadata)
+        val insertCandidate = DefaultDslMapper(MYSQL).buildInsert(personMetadata)
 
         val expectedInsert = "INSERT INTO ${personMetadata.uid} (firstName, lastName) VALUES ('testname1', 'testname2')"
 
@@ -42,7 +41,7 @@ internal class SqlMapperTest {
     @Test
     fun testFinding() {
 
-        val findCandidate = SqlMapper(MYSQL).buildFind(personMetadata)
+        val findCandidate = DefaultDslMapper(MYSQL).buildFind(personMetadata)
 
         val expectedFind = "SELECT $personAlias.firstName, $personAlias.lastName FROM $personUid $personAlias"
 
@@ -53,7 +52,7 @@ internal class SqlMapperTest {
     @Test
     fun testDrop() {
 
-        val dropCandidate = SqlMapper(MYSQL).buildDrop(personMetadata)
+        val dropCandidate = DefaultDslMapper(MYSQL).buildDrop(personMetadata)
 
         val expectedDrop = "DROP TABLE IF EXISTS $personUid"
 
