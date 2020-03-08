@@ -1,12 +1,12 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common.isCustom
-import mg.util.common.Common.isList
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
+import mg.util.db.dsl.FieldAccessor.Companion.fieldGet
+import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithCustoms
+import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithListOfCustoms
 import mg.util.db.dsl.Sql.Parameters
 import mg.util.functional.Opt2
-import java.lang.reflect.Field
 import kotlin.reflect.full.declaredMemberProperties
 
 open class MySqlCreateBuilder {
@@ -50,33 +50,6 @@ open class MySqlCreateBuilder {
             uniqueId = UidBuilder.buildUniqueId(t)
             uniqueIdAlias = AliasBuilder.build(uniqueId!!)
         }
-    }
-
-    private fun fieldGet(field: Field, type: Any?): Any {
-        field.isAccessible = true
-        return field.get(type)
-    }
-
-    private fun getFieldsWithListOfCustoms(dp: DslParameters): List<Field> {
-        return dp.typeT!!::class.java
-                .declaredFields
-                .filterNotNull()
-                .filter(::isList)
-                .filter { isSingleTypeList(it, dp) } // multiple type lists not supported atm.
-    }
-
-    private fun isSingleTypeList(field: Field, dp: DslParameters): Boolean {
-        return (fieldGet(field, dp.typeT) as List<*>)
-                .filterNotNull()
-                .distinctBy { i -> "${i::class.java.packageName}.${i::class.java.simpleName}" }
-                .size == 1
-    }
-
-    private fun getFieldsWithCustoms(dp: DslParameters): List<Field> {
-        return dp.typeT!!::class.java
-                .declaredFields
-                .filterNotNull()
-                .filter(::isCustom)
     }
 
     private fun buildSqlCreate(dp: DslParameters): String {

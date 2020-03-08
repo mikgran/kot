@@ -18,4 +18,14 @@ open class MySqlTypeMapper {
         }
 
     }
+
+//    private fun buildCustom(typeT: KClass<*>): String {
+//
+//        // In the root class
+//        // notKotlinOrJavaType -> fieldNameRefId
+//        // list -> fieldNameRefId
+//        // in root class -> ignore
+//        // in referred class -> add as RefId
+//
+//    }
 }

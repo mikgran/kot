@@ -16,8 +16,8 @@ internal class DefaultDslMapperTest {
     private val person = MTMPerson("testname1", "testname2")
     private val dbo = DBO(DefaultDslMapper("mysql"))
 
-    data class Yyyyy(val a: Int = 0)
-    data class Qqqqq(val b: String = "", val c: Yyyyy = Yyyyy())
+    data class YClass(val a: Int = 0)
+    data class QWithYRef(val q: String = "", val y: YClass = YClass())
 
     @Test
     fun testMappingClassWithTwoStringFields() {
@@ -31,15 +31,15 @@ internal class DefaultDslMapperTest {
         assertContainsExpectedCandidates(candidates, expectedFieldDefinitions)
     }
 
-    // @Test TODO 5 fix custom relations, or remove this
+    // @Test // XXX: 10 fix this
     fun testMappingWithOneToOneRelation() {
 
-        val metadata = dbo.buildMetadata(Qqqqq())
-        val yyyyyUid = buildUniqueId(Yyyyy())
+        val metadata = dbo.buildMetadata(QWithYRef())
+        val yUid = buildUniqueId(YClass())
 
         val candidates = buildCandidates(metadata)
 
-        val expectedFieldDefinitions = listOf("a VARCHAR(64) NOT NULL", "${yyyyyUid}id MEDIUMINT NOT NULL")
+        val expectedFieldDefinitions = listOf("q VARCHAR(64) NOT NULL", "${yUid}refId MEDIUMINT NOT NULL")
 
         assertContainsExpectedCandidates(candidates, expectedFieldDefinitions)
     }
@@ -47,7 +47,7 @@ internal class DefaultDslMapperTest {
     private fun assertContainsExpectedCandidates(candidates: List<String>, expectedFieldDefinitions: List<String>) {
         assertNotNull(candidates)
         assertEquals(2, candidates.size)
-        assertTrue(expectedFieldDefinitions.containsAll(candidates))
+        assertTrue(expectedFieldDefinitions.containsAll(candidates), "expected: $expectedFieldDefinitions\ncandidates: $candidates")
     }
 
     private fun <T : Any> buildCandidates(metadata: Metadata<T>): List<String> {
