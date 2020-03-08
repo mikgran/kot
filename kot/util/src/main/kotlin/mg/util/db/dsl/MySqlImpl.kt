@@ -29,6 +29,7 @@ class MySqlImpl {
         }
     }
 
+    // FIXME: 10 propagation of child items
     class Insert(t: Any) : Sql.Insert(t) {
         override fun build(p: Parameters): String {
             val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(t)} ("
