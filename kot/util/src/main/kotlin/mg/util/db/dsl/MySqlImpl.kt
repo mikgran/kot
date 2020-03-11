@@ -7,6 +7,9 @@ import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
+import mg.util.db.dsl.FieldAccessor.Companion.fieldGet
+import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithCustoms
+import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithListOfCustoms
 import mg.util.functional.Opt2.Factory.of
 import java.lang.reflect.Field
 import kotlin.reflect.KCallable
@@ -32,12 +35,37 @@ class MySqlImpl {
     // FIXME: 10 propagation of child items
     class Insert(t: Any) : Sql.Insert(t) {
         override fun build(p: Parameters): String {
-            val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(t)} ("
+
+            val dp = DslParameters().apply {
+                typeT = t
+                uniqueId = UidBuilder.buildUniqueId(t)
+                uniqueIdAlias = AliasBuilder.build(uniqueId!!)
+            }
+
+            val sqls = mutableListOf<String>()
+
+            sqls += buildInsertSql(t)
+
+            sqls += getFieldsWithCustoms(dp)
+                    .map { field -> fieldGet(field, dp.typeT) }
+                    .map(this@Insert::buildInsertSql)
+
+            sqls += getFieldsWithListOfCustoms(dp)
+                    .map { field -> fieldGet(field, dp.typeT) }
+                    .map(this@Insert::buildInsertSql)
+
+            return sqls.joinToString(";")
+        }
+
+        private fun buildInsertSql(type: Any): String {
+
+            val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(type)} ("
             val padding2 = ") VALUES ("
             val padding3 = ")"
 
             val properties = of(t)
                     .map { it::class.memberProperties.toCollection(ArrayList()) }
+                    .lfilter { p: KProperty1<out Any, *> -> !isCustom(p.javaField!!) }
 
             val fieldsCommaSeparated = of(properties)
                     .map { it.joinToString(", ") { p -> p.name } }
@@ -238,6 +266,7 @@ class MySqlImpl {
     }
 
     companion object {
+
         private fun <T : Any> buildUidAndAlias(t: T): Pair<String, String> {
             val uid = UidBuilder.buildUniqueId(t)
             val alias = AliasBuilder.build(uid)

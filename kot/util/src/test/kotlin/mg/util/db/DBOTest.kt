@@ -140,7 +140,9 @@ internal class DBOTest {
         val b2 = build(b)
         val p2 = build(p)
 
-        val sql = "SELECT * FROM $p $p2 JOIN $b $b2 ON $p2.id = $b2.${p}id"
+        val sql = "SELECT * FROM $p $p2 JOIN $b $b2 ON $p2.id = $b2.${p}refid"
+
+        println("sql: $sql")
 
         dbo.ensureTable(DBOBilling(), dbConfig.connection)
         dbo.save(DBOBilling("10", DBOPerson("fff", "lll")), dbConfig.connection)
@@ -208,8 +210,8 @@ internal class DBOTest {
                     DBOSimpleComp(),
                     DBOMultipleComposition(),
                     DBOPerson2(),
-                    DBOPerson(),
-                    DBOBilling()
+                    DBOPerson()
+                    // , DBOBilling()
             )
                     .also { TestSupport.dropTables(it) }
         }
