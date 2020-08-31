@@ -37,10 +37,10 @@ sealed class Sql(val t: Any) {
         }
     }
 
-    fun parameters() = parameters!!
+    fun parameters() = parameters
     open fun build(p: Parameters) = ""
 
-    protected var parameters: Parameters? = null
+    protected var parameters: Parameters = Parameters()
 
     protected fun <T : Sql> add(type: T): T {
 
@@ -54,10 +54,10 @@ sealed class Sql(val t: Any) {
             is Drop,
             is Delete,
             is Select,
-            is Update -> parameters?.action = type
+            is Update -> parameters.action = type
             is Select.Join,
             is Select.Join.On,
-            is Select.Join.On.Eq -> parameters?.joins?.add(type)
+            is Select.Join.On.Eq -> parameters.joins.add(type)
             is Select.Join.Where,
             is Select.Join.Where.Eq,
             is Select.Where,
@@ -67,28 +67,23 @@ sealed class Sql(val t: Any) {
             is Update.Set.Eq.Where,
             is Update.Set.Eq.Where.Eq,
             is Update.Set.Eq.And.Eq.Where,
-            is Update.Set.Eq.And.Eq.Where.Eq -> parameters?.wheres?.add(type)
+            is Update.Set.Eq.And.Eq.Where.Eq -> parameters.wheres.add(type)
             is Update.Set,
             is Update.Set.Eq,
             is Update.Set.Eq.And,
-            is Update.Set.Eq.And.Eq -> parameters?.updates?.add(type)
+            is Update.Set.Eq.And.Eq -> parameters.updates.add(type)
             // TODO: 1 coverage
         }
         return type
     }
 
     companion object {
-        infix fun select(t: Any) = Select(t).also(::newParametersAndAdd)
-        infix fun update(t: Any) = Update(t).also(::newParametersAndAdd)
-        infix fun create(t: Any) = Create(t).also(::newParametersAndAdd)
-        infix fun drop(t: Any) = Drop(t).also(::newParametersAndAdd)
-        infix fun insert(t: Any) = Insert(t).also(::newParametersAndAdd)
-        infix fun delete(t: Any) = Delete(t).also(::newParametersAndAdd)
-
-        private fun newParametersAndAdd(sql: Sql) {
-            sql.parameters = Parameters()
-            sql.add(sql)
-        }
+        infix fun select(t: Any) = Select(t).also { it.add(it) }
+        infix fun update(t: Any) = Update(t).also { it.add(it) }
+        infix fun create(t: Any) = Create(t).also { it.add(it) }
+        infix fun drop(t: Any) = Drop(t).also { it.add(it) }
+        infix fun insert(t: Any) = Insert(t).also { it.add(it) }
+        infix fun delete(t: Any) = Delete(t).also { it.add(it) }
     }
 
     // Execution tree, only allowed commands in context thing
