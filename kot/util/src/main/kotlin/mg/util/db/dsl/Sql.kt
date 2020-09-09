@@ -78,12 +78,17 @@ sealed class Sql(val t: Any) {
     }
 
     companion object {
-        infix fun select(t: Any) = Select(t).also { it.add(it) }
-        infix fun update(t: Any) = Update(t).also { it.add(it) }
-        infix fun create(t: Any) = Create(t).also { it.add(it) }
-        infix fun drop(t: Any) = Drop(t).also { it.add(it) }
-        infix fun insert(t: Any) = Insert(t).also { it.add(it) }
-        infix fun delete(t: Any) = Delete(t).also { it.add(it) }
+        infix fun select(t: Any) = add(Select(t))
+        infix fun update(t: Any) = add(Update(t))
+        infix fun create(t: Any) = add(Create(t))
+        infix fun drop(t: Any) = add(Drop(t))
+        infix fun insert(t: Any) = add(Insert(t))
+        infix fun delete(t: Any) = add(Delete(t))
+
+        protected fun <T : Sql> add(type: T): T {
+            type.add(type)
+            return type
+        }
     }
 
     // Execution tree, only allowed commands in context thing
