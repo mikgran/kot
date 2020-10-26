@@ -18,9 +18,11 @@ open class MySqlCreateBuilder {
 
         sqls += buildSqlCreate(dp)
 
+        // direct one to one Objects:
         sqls += getFieldsWithCustoms(dp) // TOIMPROVE: add more test coverage
                 .map { buildSqlCreateForChild(dp, fieldGet(it, dp.typeT)) }
 
+        // lists of Objects:
         sqls += getFieldsWithListOfCustoms(dp)
                 .map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
 

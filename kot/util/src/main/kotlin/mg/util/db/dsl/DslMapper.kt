@@ -65,7 +65,7 @@ open class MySqlDslMapper : DslMapper() {
             is Sql.Update.Set.Eq.And.Eq.Where.Eq -> MySqlImpl.Update.Set.Eq.And.Eq.Where.Eq(sql.t)
             is Sql.Update.Set.Eq.Where -> MySqlImpl.Update.Set.Eq.Where(sql.t)
             is Sql.Update.Set.Eq.Where.Eq -> MySqlImpl.Update.Set.Eq.Where.Eq(sql.t)
-            null -> throw Exception("Action not supported: null")
+            null -> throw Exception("Action not supported: ${sql?.t}")
         }
     }
 }

@@ -130,22 +130,27 @@ internal class DBOTest {
         assertTrue(candidates.contains(testPerson2))
     }
 
-    // @Test // XXX: 10 fix this
+    // XXX: 10 fix this
+    // @Test
     fun testSaveWithComposition() {
 
         // TODO 1: use composition for testing
 
-        val b = buildUniqueId(DBOBilling())
-        val p = buildUniqueId(DBOPerson())
+        val b = buildUniqueId(DBOBilling2())
+        val p = buildUniqueId(DBOPerson3())
         val b2 = build(b)
         val p2 = build(p)
 
         val sql = "SELECT * FROM $p $p2 JOIN $b $b2 ON $p2.id = $b2.${p}refid"
 
-        // println("sql: $sql")
+        println("sql: $sql")
 
-        dbo.ensureTable(DBOBilling(), dbConfig.connection)
-        dbo.save(DBOBilling("10", DBOPerson("fff", "lll")), dbConfig.connection)
+        // INSERT INTO DBOPerson608543900 (amount) VALUES ('10')
+        // INSERT INTO DBOPerson608543900 (firstname, lastname, DBOBilling2133415182refId) VALUES ('fff', 'lll', 1)
+        val connection = dbConfig.connection
+        dbo.ensureTable(DBOBilling2(), connection)
+        dbo.ensureTable(DBOPerson3(), connection)
+        // dbo.save(DBOBilling2("10", DBOPerson3("fff", "lll")), connection)
 
         val candidate = of(dbConfig.connection)
                 .map(Connection::createStatement)
@@ -156,6 +161,18 @@ internal class DBOTest {
 
         assertTrue(candidate.get()!!.next())
     }
+
+    @Test
+    fun testShowColumns() {
+
+        val candidate: List<String> = dbo.showColumns(DBOPerson3(), dbConfig.connection)
+
+        assertNotNull(candidate)
+        assertTrue(candidate.isNotEmpty())
+        assertTrue(candidate.contains("firstName"))
+        assertTrue(candidate.contains("lastName"))
+    }
+
 
 //    private fun getColumnsAsCSVdata(metaData: ResultSetMetaData?): String {
 //
@@ -209,9 +226,11 @@ internal class DBOTest {
                     DBOMultipleComposition(),
                     DBOSimpleComp(),
                     DBOMultipleComposition(),
+                    DBOPerson3(),
                     DBOPerson2(),
-                    DBOPerson()
-                    // , DBOBilling()
+                    DBOPerson(),
+                    DBOBilling(),
+                    DBOBilling2()
             )
                     .also { TestSupport.dropTables(it) }
         }
