@@ -39,6 +39,7 @@ open class MySqlDslMapper : DslMapper() {
     override fun getImplementationFor(sql: Sql?): Sql {
         return when (sql) {
             // only actions return full dsl to sql mappings
+            is Sql.ShowColumns -> MySqlImpl.ShowColumns(sql.t)
             is Sql.Create -> MySqlImpl.Create(sql.t)
             is Sql.Drop -> MySqlImpl.Drop(sql.t)
             is Sql.Select -> MySqlImpl.Select(sql.t)

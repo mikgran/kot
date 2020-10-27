@@ -33,6 +33,14 @@ class MySqlImpl {
         }
     }
 
+    class ShowColumns(t: Any) : Sql.ShowColumns(t) {
+
+        override fun build(p: Parameters): String {
+            return "SHOW COLUMNS FROM ${UidBuilder.buildUniqueId(t)}"
+        }
+    }
+
+
     class Drop(t: Any) : Sql.Drop(t) {
         override fun build(p: Parameters): String {
             return "DROP TABLE IF EXISTS ${UidBuilder.buildUniqueId(t)}"

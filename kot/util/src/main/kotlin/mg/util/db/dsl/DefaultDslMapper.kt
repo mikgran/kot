@@ -22,4 +22,6 @@ class DefaultDslMapper(internal val mapper: String) {
         return ""
     }
 
+    internal fun <T: Any> buildShowColumns(metadata: Metadata<T>): String = dslMapper.map(Sql showColumns metadata.type)
+
 }

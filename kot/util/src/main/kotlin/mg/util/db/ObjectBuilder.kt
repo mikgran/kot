@@ -14,6 +14,12 @@ class ObjectBuilder {
 
     private data class ConstructorData(val type: Any, val name: String)
 
+    // FIXME 10: add buildStringList
+    fun buildStringList(results: ResultSet?): List<String> {
+
+        return emptyList()
+    }
+
     fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
 
         val constructorForT = narrowDownConstructorForT(results, typeT)

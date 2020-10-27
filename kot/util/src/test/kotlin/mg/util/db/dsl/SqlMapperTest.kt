@@ -60,8 +60,20 @@ internal class SqlMapperTest {
         assertEquals(expectedDrop, dropCandidate)
     }
 
+    @Test
+    fun testBuildShowColumns() {
+
+        val columnsCandidate = DefaultDslMapper(MYSQL).buildShowColumns(personMetadata)
+
+        val expectedShowColumns = "SHOW COLUMNS FROM $personUid"
+
+        assertNotNull(columnsCandidate)
+        assertEquals(expectedShowColumns, columnsCandidate)
+    }
+
     companion object {
         private const val MYSQL = "mysql"
+
         @Suppress("unused")
         private const val ORACLE = "oracle"
     }

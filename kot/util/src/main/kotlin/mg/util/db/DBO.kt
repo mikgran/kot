@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.DefaultDslMapper
+import mg.util.db.dsl.DslMapperFactory
 import mg.util.functional.Opt2.Factory.of
 import java.sql.Connection
 import java.sql.ResultSet
@@ -106,13 +107,19 @@ class DBO(private val mapper: DefaultDslMapper) {
 
     internal fun <T : Any> showColumns(t: T, connection: Connection): List<String> {
 
-        val showColumnsSql = ""
+        val showColumnsSql = of(t)
+                .map (::buildMetadata)
+                .map(mapper::buildShowColumns)
+                .get()
 
-        of(connection)
+        return of(connection)
                 .map(Connection::createStatement)
-                .mapWith(showColumnsSql) { s, sql -> s.executeQuery(sql) }
+                .mapWith(showColumnsSql) { stmt, sql -> stmt.executeQuery(sql) }
+                .filter(ResultSet::next)
+                .map { resultSet -> ObjectBuilder().buildListOfT(resultSet, "") }
+                .getOrElse { mutableListOf() }
 
-        return emptyList()
+//         return emptyList()
     }
 
     companion object {

@@ -49,6 +49,7 @@ sealed class Sql(val t: Any) {
         }
 
         when (type) {
+            is ShowColumns,
             is Create,
             is Insert,
             is Drop,
@@ -84,6 +85,7 @@ sealed class Sql(val t: Any) {
         infix fun drop(t: Any) = add(Drop(t))
         infix fun insert(t: Any) = add(Insert(t))
         infix fun delete(t: Any) = add(Delete(t))
+        internal infix fun showColumns(t: Any) = add(ShowColumns(t))
 
         protected fun <T : Sql> add(type: T): T {
             type.add(type)
@@ -167,6 +169,7 @@ sealed class Sql(val t: Any) {
         }
     }
 
+    open class ShowColumns(t: Any) : Sql(t)
     open class Create(t: Any) : Sql(t)
     open class Insert(t: Any) : Sql(t)
     open class Drop(t: Any) : Sql(t)

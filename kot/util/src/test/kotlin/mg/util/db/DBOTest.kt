@@ -165,6 +165,7 @@ internal class DBOTest {
     @Test
     fun testShowColumns() {
 
+        dbo.ensureTable(DBOPerson3(), dbConfig.connection)
         val candidate: List<String> = dbo.showColumns(DBOPerson3(), dbConfig.connection)
 
         assertNotNull(candidate)
