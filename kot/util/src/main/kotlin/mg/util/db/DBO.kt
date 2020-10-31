@@ -107,6 +107,8 @@ class DBO(private val mapper: DefaultDslMapper) {
 
     internal fun <T : Any> showColumns(t: T, connection: Connection): List<String> {
 
+        println("type: $t")
+
         val showColumnsSql = of(t)
                 .map (::buildMetadata)
                 .map(mapper::buildShowColumns)

@@ -381,7 +381,7 @@ internal class Opt2Test {
                 .of(10)
                 .case({ it == 5 }, { it + 100 }) // predicate is false, not mapped here
                 .case({ it == 10 }, { it + 50 }) // predicate is true, the mapping is applied
-                .case({ it == 20 }, { it + 10 }) // predicate is true, but since the previous result is stored in the right no mapping is done
+                .case({ it == 60 }, { it + 10 }) // predicate is true, but since the previous result is stored in the right no mapping is done
 
         assertNotNull(candidate)
         assertNotNull(candidate.right())

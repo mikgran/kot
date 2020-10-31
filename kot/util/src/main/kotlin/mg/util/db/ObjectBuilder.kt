@@ -14,17 +14,24 @@ class ObjectBuilder {
 
     private data class ConstructorData(val type: Any, val name: String)
 
-    // FIXME 10: add buildStringList
-    fun buildStringList(results: ResultSet?): List<String> {
-
-        return emptyList()
+    fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
+        return Opt2.of(typeT)
+                .case({ it is String }, { buildListUsingConstructorForT(results, it) })
+                .caseDefault { buildListUsingConstructorForT(results, it) }
+                .result()
+                .getOrElse(mutableListOf())
     }
 
-    fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
+    private fun <T: Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
 
-        val constructorForT = narrowDownConstructorForT(results, typeT)
+        return mutableListOf()
+    }
+
+    private fun <T : Any> buildListUsingConstructorForT(results: ResultSet?, typeT: T): MutableList<T> {
 
         val listT = mutableListOf<T>()
+        val constructorForT = narrowDownConstructorForT(results, typeT)
+
         do {
             val parametersListForT = getParameters(results)
 
@@ -41,10 +48,10 @@ class ObjectBuilder {
                 .map(::getConstructorData)
                 .mapWith(t) { data, type -> narrowDown(type::class.constructors, data) }
                 .filter { it.t != null }
-                .getOrElseThrow { Exception("Unable to narrow down a constructor for object T") }!!
+                .getOrElseThrow { Exception("Unable to narrow down a constructor for object T: ${t::class}") }!!
     }
 
-    private fun <T : Any> createT(constructor: Wrap<Constructor<T>?>, parametersList: MutableList<Any>, typeT: T) : T {
+    private fun <T : Any> createT(constructor: Wrap<Constructor<T>?>, parametersList: MutableList<Any>, typeT: T): T {
         return Opt2.of<Constructor<*>>(constructor.t)
                 .mapWith(parametersList.toTypedArray()) { cons, params -> cons.newInstance(*params) } // spread operator
                 .ifMissingThrow { Exception("Unable to instantiate ${typeT::class}") }

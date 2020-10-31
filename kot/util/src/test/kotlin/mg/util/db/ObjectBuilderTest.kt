@@ -34,6 +34,11 @@ internal class ObjectBuilderTest {
         assertTrue(containsFirstNameLastName(listT))
     }
 
+    @Test
+    fun testBuildString() {
+
+    }
+
     private fun containsFirstNameLastName(candidateMapped: List<OBPersonB>): Boolean {
         var found = false
         candidateMapped.forEach {
