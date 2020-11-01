@@ -16,15 +16,25 @@ class ObjectBuilder {
 
     fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
         return Opt2.of(typeT)
-                .case({ it is String }, { buildListUsingConstructorForT(results, it) })
+                .case({ it is String }, { buildListUsingStrings(results, it) })
                 .caseDefault { buildListUsingConstructorForT(results, it) }
                 .result()
                 .getOrElse(mutableListOf())
     }
 
-    private fun <T: Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
+    fun <T : Any> add(list: MutableList<T>, t: T) = list.add(t)
 
-        return mutableListOf()
+    private fun <T : Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
+
+        val list = mutableListOf<T>()
+
+        while (true == results?.next()) {
+
+            Opt2.of(results.getString(1))
+                    .mapTo(typeT::class)
+                    .ifPresent { list += it }
+        }
+        return list
     }
 
     private fun <T : Any> buildListUsingConstructorForT(results: ResultSet?, typeT: T): MutableList<T> {
@@ -71,8 +81,10 @@ class ObjectBuilder {
     private fun isColumnNameNotId(results: ResultSet?, it: Int) = results?.metaData?.getColumnName(it) != "id"
     private fun getColumnCount(results: ResultSet?) = results?.metaData?.columnCount ?: 1
 
-    private fun <T : Any> narrowDown(constr: Collection<KFunction<T>>,
-                                     rscd: MutableList<ConstructorData>): Wrap<Constructor<T>?> {
+    private fun <T : Any> narrowDown(
+            constr: Collection<KFunction<T>>,
+            rscd: MutableList<ConstructorData>
+    ): Wrap<Constructor<T>?> {
         val result = Wrap<Constructor<T>?>(null)
         constr.map { c ->
             val constructorDatas = getConstructorDatas(c)
