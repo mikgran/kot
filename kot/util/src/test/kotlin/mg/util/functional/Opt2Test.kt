@@ -579,6 +579,15 @@ internal class Opt2Test {
         }
     }
 
+    @Test
+    fun testOptOfExtension(){
+
+        val someData = "someData"
+        val candidate: Opt2<String> = someData.toOpt()
+        assertNotNull(candidate)
+        assertEquals(someData, candidate.get())
+    }
+
     companion object {
         const val ANOTHER_STRING = "anotherString"
         const val NEW_STRING = "newString"

@@ -2,6 +2,7 @@ package mg.util.db
 
 import mg.util.common.Wrap
 import mg.util.functional.Opt2
+import mg.util.functional.toOpt
 import java.lang.reflect.Constructor
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
@@ -15,7 +16,8 @@ class ObjectBuilder {
     private data class ConstructorData(val type: Any, val name: String)
 
     fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
-        return Opt2.of(typeT)
+        return typeT
+                .toOpt()
                 .case({ it is String }, { buildListUsingStrings(results, it) })
                 .caseDefault { buildListUsingConstructorForT(results, it) }
                 .result()
@@ -30,7 +32,8 @@ class ObjectBuilder {
 
         while (true == results?.next()) {
 
-            Opt2.of(results.getString(1))
+            results.getString(1)
+                    .toOpt()
                     .mapTo(typeT::class)
                     .ifPresent { list += it }
         }
@@ -42,8 +45,10 @@ class ObjectBuilder {
         val listT = mutableListOf<T>()
         val constructorForT = narrowDownConstructorForT(results, typeT)
 
+        val columnCount = getColumnCount(results)
+
         do {
-            val parametersListForT = getParameters(results)
+            val parametersListForT = getParameters(results, columnCount)
 
             listT += createT(constructorForT, parametersListForT, typeT)
 
@@ -53,7 +58,8 @@ class ObjectBuilder {
     }
 
     private fun <T : Any> narrowDownConstructorForT(results: ResultSet?, t: T): Wrap<Constructor<T>?> {
-        return Opt2.of(results)
+        return results
+                .toOpt()
                 .map(ResultSet::getMetaData)
                 .map(::getConstructorData)
                 .mapWith(t) { data, type -> narrowDown(type::class.constructors, data) }
@@ -62,15 +68,16 @@ class ObjectBuilder {
     }
 
     private fun <T : Any> createT(constructor: Wrap<Constructor<T>?>, parametersList: MutableList<Any>, typeT: T): T {
-        return Opt2.of<Constructor<*>>(constructor.t)
+        return constructor.t
+                .toOpt()
                 .mapWith(parametersList.toTypedArray()) { cons, params -> cons.newInstance(*params) } // spread operator
                 .ifMissingThrow { Exception("Unable to instantiate ${typeT::class}") }
                 .get() as T
     }
 
-    private fun getParameters(results: ResultSet?): MutableList<Any> {
+    private fun getParameters(results: ResultSet?, columnCount: Int): MutableList<Any> {
         val parametersList = mutableListOf<Any>()
-        (1..getColumnCount(results))
+        (1..columnCount)
                 .filter { isColumnNameNotId(results, it) }
                 .forEach {
                     parametersList += results?.getString(it) as Any // TOIMPROVE: constructor parameter names from the type?
@@ -78,17 +85,17 @@ class ObjectBuilder {
         return parametersList
     }
 
-    private fun isColumnNameNotId(results: ResultSet?, it: Int) = results?.metaData?.getColumnName(it) != "id"
+    private fun isColumnNameNotId(results: ResultSet?, columnNumber: Int) = results?.metaData?.getColumnName(columnNumber) != "id"
     private fun getColumnCount(results: ResultSet?) = results?.metaData?.columnCount ?: 1
 
     private fun <T : Any> narrowDown(
             constr: Collection<KFunction<T>>,
-            rscd: MutableList<ConstructorData>
+            resultSetConstructorData: MutableList<ConstructorData>
     ): Wrap<Constructor<T>?> {
         val result = Wrap<Constructor<T>?>(null)
         constr.map { c ->
             val constructorDatas = getConstructorDatas(c)
-            if (constructorDatas.containsAll(rscd)) { // TOIMPROVE: test coverage
+            if (constructorDatas.containsAll(resultSetConstructorData)) { // TOIMPROVE: test coverage
                 result.t = c.javaConstructor
             }
         }
@@ -106,7 +113,7 @@ class ObjectBuilder {
     private fun getConstructorData(resultSetMetadata: ResultSetMetaData): MutableList<ConstructorData> {
         val list = mutableListOf<ConstructorData>()
         (1..resultSetMetadata.columnCount).forEach { i ->
-            if (resultSetMetadata.getColumnName(i) != DB_ID_FIELD) {
+            if (resultSetMetadata.getColumnName(i) != DB_ID_FIELD) { // add coverage for various types of db providers
                 list += ConstructorData(resultSetMetadata.getColumnClassName(i), resultSetMetadata.getColumnName(i))
             }
         }
