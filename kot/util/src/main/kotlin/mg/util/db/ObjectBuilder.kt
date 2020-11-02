@@ -35,7 +35,7 @@ class ObjectBuilder {
             results.getString(1)
                     .toOpt()
                     .mapTo(typeT::class)
-                    .ifPresent { list += it }
+                    .map(list::add)
         }
         return list
     }

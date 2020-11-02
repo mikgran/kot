@@ -11,6 +11,7 @@ import mg.util.db.dsl.FieldAccessor.Companion.fieldGet
 import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithCustoms
 import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithListOfCustoms
 import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.toOpt
 import java.lang.reflect.Field
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
@@ -159,7 +160,8 @@ class MySqlImpl {
         }
 
         private fun linksForParent(type: Any): List<Any> {
-            return of(type::class.java.declaredFields.toList())
+            return type::class.java.declaredFields.toList()
+                    .toOpt()
                     .lfilter(::isCustom or ::isList)
                     .lxmap<Field, Any> { mapNotNull { getFieldValue(it, type) } }
                     .getOrElse { emptyList() }
@@ -167,9 +169,11 @@ class MySqlImpl {
 
         private fun collectUniqueTypesFrom(action: Sql?, joinsMap: MutableMap<*, *>): MutableSet<Any> {
             val uniques = mutableSetOf<Any>()
-            of(action?.t)
+            action?.t
+                    .toOpt()
                     .map(uniques::add)
-            of(joinsMap.iterator())
+            joinsMap.iterator()
+                    .toOpt()
                     .lmap { entry: MutableMap.MutableEntry<Any, Any> ->
                         uniques += entry.key
                         (entry.value as? List<*>)?.filterNotNull()?.forEach { uniques += it }
