@@ -211,6 +211,6 @@ inline fun <T : Any> Opt2<T>.rcv(block: T.() -> Unit): Opt2<T> {
     return this
 }
 
-fun <T: Any> T?.toOpt(): Opt2<T> {
+fun <T : Any> T?.toOpt(): Opt2<T> {
     return Opt2.of(this)
 }

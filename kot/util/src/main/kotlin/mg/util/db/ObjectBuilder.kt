@@ -1,12 +1,14 @@
 package mg.util.db
 
 import mg.util.common.Wrap
-import mg.util.functional.Opt2
+import mg.util.db.functional.ResultSetIterator
+import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
 import java.lang.reflect.Constructor
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
+import kotlin.reflect.full.safeCast
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaType
 
@@ -30,26 +32,28 @@ class ObjectBuilder {
 
         val list = mutableListOf<T>()
 
-        while (true == results?.next()) {
+        results.toOpt()
+                .map(ResultSet::toResultSetIterator)
+                .xmap { forEach { addToList(it, typeT, list) } }
 
-            results.getString(1)
-                    .toOpt()
-                    .mapTo(typeT::class)
-                    .map(list::add)
-        }
         return list
+    }
+
+    private fun <T : Any> addToList(resultSet: ResultSet, typeT: T, list: MutableList<T>) {
+        resultSet.getString(1)
+                .toOpt()
+                .mapTo(typeT::class)
+                .map(list::add)
     }
 
     private fun <T : Any> buildListUsingConstructorForT(results: ResultSet?, typeT: T): MutableList<T> {
 
         val listT = mutableListOf<T>()
         val constructorForT = narrowDownConstructorForT(results, typeT)
-
         val columnCount = getColumnCount(results)
 
         do {
             val parametersListForT = getParameters(results, columnCount)
-
             listT += createT(constructorForT, parametersListForT, typeT)
 
         } while (true == results?.next())

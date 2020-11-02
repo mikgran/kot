@@ -49,3 +49,7 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
         }
     }
 }
+
+fun ResultSet.toResultSetIterator(): ResultSetIterator {
+    return ResultSetIterator.of(this)
+}
