@@ -147,21 +147,17 @@ internal class DBOTest {
 
         val connection = dbConfig.connection
         dbo.ensureTable(DBOBilling2(), connection)
-        // dbo.ensureTable(DBOPerson3(), connection)
-        // dbo.save(DBOBilling2("10", DBOPerson3("fff", "lll")), connection)
+        dbo.save(DBOBilling2("10", DBOPerson3("fff", "lll")), connection)
 
-        println("person3:")
-        dbo.showColumns(DBOPerson3(), connection).forEach(::println)
-
-        println("billing2:")
-        dbo.showColumns(DBOBilling2(), connection).forEach(::println)
+//        println("person3:")
+//        dbo.showColumns(DBOPerson3(), connection).forEach(::println)
+//
+//        println("billing2:")
+//        dbo.showColumns(DBOBilling2(), connection).forEach(::println)
 
         val candidate = of(dbConfig.connection)
                 .map(Connection::createStatement)
                 .map { it.executeQuery(sql) }
-//                .map { it.metaData }
-//                .map(::getColumnsAsCSVdata)
-//                .ifPresent (::println)
 
         assertTrue(candidate.get()!!.next())
     }
