@@ -1,14 +1,12 @@
 package mg.util.db
 
 import mg.util.common.Wrap
-import mg.util.db.functional.ResultSetIterator
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
 import java.lang.reflect.Constructor
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
-import kotlin.reflect.full.safeCast
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaType
 
