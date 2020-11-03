@@ -44,7 +44,7 @@ open class MySqlCreateBuilder {
     }
 
     private fun buildAlterTableForRefId(childDp: DslParameters, parentDp: DslParameters) =
-            "ALTER TABLE ${childDp.uniqueId} ADD COLUMN ${parentDp.uniqueId}refId MEDIUMINT(9) NOT NULL" // MEDIUMINT ?
+            "ALTER TABLE ${parentDp.uniqueId} ADD COLUMN ${childDp.uniqueId}refId MEDIUMINT(9) NOT NULL" // MEDIUMINT ?
 
     private fun buildDslParameters(t: Any): DslParameters {
         return DslParameters().apply {

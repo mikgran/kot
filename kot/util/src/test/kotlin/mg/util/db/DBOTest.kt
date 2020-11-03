@@ -131,7 +131,7 @@ internal class DBOTest {
     }
 
     // XXX: 10 fix this
-    // @Test
+    @Test
     fun testSaveWithComposition() {
 
         // TODO 1: use composition for testing
@@ -145,12 +145,16 @@ internal class DBOTest {
 
         println("sql: $sql")
 
-        // INSERT INTO DBOPerson608543900 (amount) VALUES ('10')
-        // INSERT INTO DBOPerson608543900 (firstname, lastname, DBOBilling2133415182refId) VALUES ('fff', 'lll', 1)
         val connection = dbConfig.connection
         dbo.ensureTable(DBOBilling2(), connection)
-        dbo.ensureTable(DBOPerson3(), connection)
+        // dbo.ensureTable(DBOPerson3(), connection)
         // dbo.save(DBOBilling2("10", DBOPerson3("fff", "lll")), connection)
+
+        println("person3:")
+        dbo.showColumns(DBOPerson3(), connection).forEach(::println)
+
+        println("billing2:")
+        dbo.showColumns(DBOBilling2(), connection).forEach(::println)
 
         val candidate = of(dbConfig.connection)
                 .map(Connection::createStatement)

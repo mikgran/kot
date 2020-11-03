@@ -40,8 +40,6 @@ class DBO(private val mapper: DefaultDslMapper) {
                 .map(mapper::buildInsert)
                 .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
-        println("insertSql==$insertSql")
-
         of(getStatement(connection))
                 .map { s -> s.executeUpdate(insertSql) }
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
@@ -107,10 +105,8 @@ class DBO(private val mapper: DefaultDslMapper) {
 
     internal fun <T : Any> showColumns(t: T, connection: Connection): List<String> {
 
-        println("type: $t")
-
         val showColumnsSql = of(t)
-                .map (::buildMetadata)
+                .map(::buildMetadata)
                 .map(mapper::buildShowColumns)
                 .get()
 
@@ -120,8 +116,6 @@ class DBO(private val mapper: DefaultDslMapper) {
                 .filter(ResultSet::next)
                 .map { resultSet -> ObjectBuilder().buildListOfT(resultSet, "") }
                 .getOrElse { mutableListOf() }
-
-//         return emptyList()
     }
 
     companion object {
