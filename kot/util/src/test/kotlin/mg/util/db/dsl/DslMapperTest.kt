@@ -38,7 +38,7 @@ internal class DslMapperTest {
                 "fullAddress VARCHAR(64) NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
                 "number MEDIUMINT NOT NULL);" +
-                "ALTER TABLE $floorUid ADD COLUMN ${buildingUid}refId MEDIUMINT(9) NOT NULL",
+                "ALTER TABLE $buildingUid ADD COLUMN ${floorUid}refId MEDIUMINT(9) NOT NULL",
                 candidate)
     }
 
@@ -53,7 +53,7 @@ internal class DslMapperTest {
 
         val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
-                "ALTER TABLE $addressUid ADD COLUMN ${placeUid}refId MEDIUMINT(9) NOT NULL"
+                "ALTER TABLE $placeUid ADD COLUMN ${addressUid}refId MEDIUMINT(9) NOT NULL"
 
         assertNotNull(candidate)
         assertEquals(expected, candidate)
