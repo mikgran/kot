@@ -143,7 +143,7 @@ internal class DBOTest {
 
         val sql = "SELECT * FROM $p $p2 JOIN $b $b2 ON $p2.id = $b2.${p}refid"
 
-        println("sql: $sql")
+//        println("sql: $sql")
 
         val connection = dbConfig.connection
         dbo.ensureTable(DBOBilling2(), connection)

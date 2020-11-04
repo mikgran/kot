@@ -4,6 +4,7 @@ import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.DefaultDslMapper
 import mg.util.db.dsl.DslMapperFactory
 import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.toOpt
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -35,12 +36,13 @@ class DBO(private val mapper: DefaultDslMapper) {
 
     fun <T : Any> save(t: T, connection: Connection) {
 
-        val insertSql = of(t)
+        val insertSql = t.toOpt()
                 .map(::buildMetadata)
                 .map(mapper::buildInsert)
+                .ifPresent(::println)
                 .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
-        of(getStatement(connection))
+        getStatement(connection).toOpt()
                 .map { s -> s.executeUpdate(insertSql) }
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
     }
