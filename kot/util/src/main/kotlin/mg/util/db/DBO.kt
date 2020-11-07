@@ -2,7 +2,6 @@ package mg.util.db
 
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.dsl.DefaultDslMapper
-import mg.util.db.dsl.DslMapperFactory
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.toOpt
 import java.sql.Connection
@@ -36,10 +35,20 @@ class DBO(private val mapper: DefaultDslMapper) {
 
     fun <T : Any> save(t: T, connection: Connection) {
 
+        // Car(name: String, tires: List<Tire>, windows: List<Window>)
+        // * Set (parent, child)
+        // * start transaction
+        // * iterate over Set for inserts
+        // - two-way ResultSet
+        // - fetch parentId
+        // - save children with parentId
+        // * finish transaction
+
+
         val insertSql = t.toOpt()
                 .map(::buildMetadata)
                 .map(mapper::buildInsert)
-                .ifPresent(::println)
+                // .ifPresent(::println)
                 .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
         getStatement(connection).toOpt()
@@ -48,7 +57,7 @@ class DBO(private val mapper: DefaultDslMapper) {
     }
 
     private fun getStatement(connection: Connection): Statement? {
-        return of(connection)
+        return connection.toOpt()
                 .filter { !it.isClosed }
                 .ifMissingThrow { Exception(CONNECTION_WAS_CLOSED) }
                 .map(Connection::createStatement)
@@ -56,7 +65,7 @@ class DBO(private val mapper: DefaultDslMapper) {
     }
 
     fun <T : Any> ensureTable(t: T, connection: Connection) {
-        val createTable = of(t).map(::buildMetadata)
+        val createTable = t.toOpt().map(::buildMetadata)
                 .map(mapper::buildCreateTable)
 
         createTable
@@ -67,21 +76,21 @@ class DBO(private val mapper: DefaultDslMapper) {
     }
 
     private fun batchUpdate(connection: Connection, listSqls: List<String>) {
-        of(getStatement(connection))
+        getStatement(connection).toOpt()
                 .mapWith(listSqls) { stmt, sqls -> sqls.map { stmt.addBatch(it) }; stmt }
                 .map { it.executeBatch() }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
     }
 
     private fun singleUpdate(connection: Connection, listSqls: List<String>) {
-        of(getStatement(connection))
+        getStatement(connection).toOpt()
                 .mapWith(listSqls) { stmt, sqls -> stmt.executeUpdate(sqls[0]) }
                 .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
     }
 
     fun <T : Any> find(t: T, connection: Connection): List<T> {
 
-        val findSql = of(t)
+        val findSql = t.toOpt()
                 .map(::buildMetadata)
                 .map(mapper::buildFind)
                 .getOrElseThrow { Exception(UNABLE_TO_DO_FIND) }
@@ -95,7 +104,7 @@ class DBO(private val mapper: DefaultDslMapper) {
 
     fun <T : Any> drop(t: T, connection: Connection) {
 
-        val dropSql = of(t)
+        val dropSql = t.toOpt()
                 .map(::buildMetadata)
                 .map(mapper::buildDrop)
                 .get()
@@ -107,7 +116,7 @@ class DBO(private val mapper: DefaultDslMapper) {
 
     internal fun <T : Any> showColumns(t: T, connection: Connection): List<String> {
 
-        val showColumnsSql = of(t)
+        val showColumnsSql = t.toOpt()
                 .map(::buildMetadata)
                 .map(mapper::buildShowColumns)
                 .get()
