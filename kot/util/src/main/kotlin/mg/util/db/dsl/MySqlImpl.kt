@@ -54,7 +54,6 @@ class MySqlImpl {
 
             // Complex reference many to many
 
-
             // Simple reference one to one
             val dp = DslParameters().apply {
                 typeT = t
@@ -66,10 +65,12 @@ class MySqlImpl {
 
             sqls += buildInsertSql(t)
 
+            // Move this out?
             sqls += getFieldsWithCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
                     .map(this@Insert::buildInsertSql)
 
+            // Move this out?
             sqls += getFieldsWithListOfCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
                     .map(this@Insert::buildInsertSql)

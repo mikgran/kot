@@ -23,8 +23,9 @@ internal class DslMapperTest {
         assertEquals("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", candidate)
     }
 
+    // TODO: remove/remodel?
     @Test
-    fun testCreatingANewTableWithListReference() {
+    fun testCreatingANewTableWithListRelation() {
 
         val sql = Sql create DSLBuilding("some address")
 
@@ -43,7 +44,7 @@ internal class DslMapperTest {
     }
 
     @Test
-    fun testCreatingANewTableWithSimpleReference() {
+    fun testCreatingANewTableWithOneToOneRelation() {
 
         val sql = Sql create DSLPlace(DSLAddress("somePlace"), 100000)
 
@@ -59,10 +60,41 @@ internal class DslMapperTest {
         assertEquals(expected, candidate)
     }
 
+    @Test
+    fun testCreatingANewTableWithOneToManyRelation() {
+
+        val placeUid = ""
+        val addressUid = ""
+        val placeToAddressUid = ""
+
+        val expected =
+"CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
+"CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
+"CREATE TABLE IF NOT EXISTS $placeToAddressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${placeUid}ref MEDIUMINT NOT NULL, ${addressUid}ref MEDIUMINT NOT NULL);"
+
+    }
+
+    @Test
+    fun testInsertNoCustomRelations() {
+
+        val sql = Sql insert DSLPerson("first", "last")
+
+        val (personUid, p) = buildUidAndAlias(DSLPerson())
+
+        val expected = "INSERT INTO $personUid $p VALUES(10)" +
+                ";" +
+                ""
+
+
+    }
+
     // FIXME: 100 Insert and multi level insert?
     // limit to just one layer?
     @Test
-    fun testInsert() {
+    fun testInsertOneToOneRelation() {
+
+        val sql = Sql insert DSLPlace(DSLAddress("anAdress"), 800)
+
 
 
 
