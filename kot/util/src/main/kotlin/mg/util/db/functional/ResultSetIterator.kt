@@ -24,9 +24,7 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
         }
     }
 
-    override fun iterator(): Iterator<ResultSet> {
-        return this
-    }
+    override fun iterator(): Iterator<ResultSet> = this
 
     fun <T : Any> map(mapper: (ResultSet) -> T): List<T> {
         val listT = mutableListOf<T>()
@@ -39,17 +37,9 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
     }
 
     companion object {
-
-        fun iof(rs: ResultSet): ResultSetIterator {
-            return of(rs)
-        }
-
-        fun of(rs: ResultSet): ResultSetIterator {
-            return ResultSetIterator(rs)
-        }
+        fun iof(rs: ResultSet): ResultSetIterator = of(rs)
+        fun of(rs: ResultSet): ResultSetIterator = ResultSetIterator(rs)
     }
 }
 
-fun ResultSet.toResultSetIterator(): ResultSetIterator {
-    return ResultSetIterator.of(this)
-}
+fun ResultSet.toResultSetIterator(): ResultSetIterator = ResultSetIterator.of(this)
