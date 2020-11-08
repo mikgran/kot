@@ -36,24 +36,40 @@ class DBO(private val mapper: DefaultDslMapper) {
     fun <T : Any> save(t: T, connection: Connection) {
 
         // Car(name: String, tires: List<Tire>, windows: List<Window>)
-        // * Set (parent, child)
-        // * start transaction
-        // * iterate over Set for inserts
-        // - two-way ResultSet
-        // - fetch parentId
-        // - save children with parentId
-        // * finish transaction
-
+        // - Set (parent, child)
+        // - start transaction
+        // - collect a set of parent-child
+        // - iterate over Set for inserts
+        // --- two-way ResultSet
+        // --- fetch parentId
+        // --- save children with parentId
+        // - finish transaction
 
         val insertSql = t.toOpt()
                 .map(::buildMetadata)
                 .map(mapper::buildInsert)
-                // .ifPresent(::println)
                 .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
         getStatement(connection).toOpt()
                 .map { s -> s.executeUpdate(insertSql) }
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
+    }
+
+    fun <T : Any> save2(t: T, connection: Connection) {
+
+        t.toOpt()
+                .map(this::buildRelationMap)
+
+    }
+    private fun <T : Any> buildRelationMap(t: T): HashMap<T, Set<Any>> {
+
+        val relations = hashMapOf<T, Set<Any>>()
+
+        t::class.memberProperties.toSet()
+
+
+        return relations
+
     }
 
     private fun getStatement(connection: Connection): Statement? {

@@ -52,6 +52,10 @@ class MySqlImpl {
     class Insert(t: Any) : Sql.Insert(t) {
         override fun build(p: Parameters): String {
 
+            // Complex reference many to many
+
+
+            // Simple reference one to one
             val dp = DslParameters().apply {
                 typeT = t
                 uniqueId = UidBuilder.buildUniqueId(t)

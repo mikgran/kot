@@ -59,6 +59,15 @@ internal class DslMapperTest {
         assertEquals(expected, candidate)
     }
 
+    // FIXME: 100 Insert and multi level insert?
+    // limit to just one layer?
+    @Test
+    fun testInsert() {
+
+
+
+    }
+
     @Test
     fun testUpdate() {
 
