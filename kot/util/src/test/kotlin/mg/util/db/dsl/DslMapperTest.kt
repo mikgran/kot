@@ -99,7 +99,7 @@ internal class DslMapperTest {
     @Test
     fun testInsertOneToOneRelation() {
 
-        val dslAddress2 = DSLAddress2("anAdress")
+        val dslAddress2 = DSLAddress2("anAddress")
         val dslPlace2 = DSLPlace2(dslAddress2, rentInCents = 80000)
 
         val dslAddress2Uid = UidBuilder.buildUniqueId(dslAddress2)
@@ -109,7 +109,7 @@ internal class DslMapperTest {
 
         val candidate = mapper.map(sql)
 
-        val expected =  "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');INSERT INTO $dslAddress2Uid (refId, address) VALUES(1, 'someTestData')"
+        val expected =  "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');INSERT INTO $dslAddress2Uid (refid, fullAddress) VALUES(1, 'anAddress')"
 
         expect(expected, candidate)
     }

@@ -9,7 +9,6 @@ import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.FieldAccessor.Companion.fieldGet
 import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithCustoms
-import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithListOfCustoms
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
@@ -63,36 +62,36 @@ class MySqlImpl {
 
             val sqls = mutableListOf<String>()
 
-            sqls += buildInsertSql(t)
+            sqls += buildInsertSqlSimple(t)
 
-            // Move this out?
+            // FIXME 103
             sqls += getFieldsWithCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
-                    .map(this@Insert::buildInsertSql)
+                    .map { type -> buildInsertSqlSimple(type) }
 
             // Move this out?
-            sqls += getFieldsWithListOfCustoms(dp)
-                    .map { field -> fieldGet(field, dp.typeT) }
-                    .map(this@Insert::buildInsertSql)
+//            sqls += getFieldsWithListOfCustoms(dp)
+//                    .map { field -> fieldGet(field, dp.typeT) }
+//                    .map(this@Insert::buildInsertSql)
 
             return sqls.joinToString(";")
         }
 
-        private fun buildInsertSql(type: Any): String {
+        private fun buildInsertSqlSimple(type: Any): String {
 
             val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(type)} ("
             val padding2 = ") VALUES ("
             val padding3 = ")"
 
-            val properties = of(t)
+            val properties = type.toOpt()
                     .map { it::class.memberProperties.toCollection(ArrayList()) }
                     .lfilter { p: KProperty1<out Any, *> -> !isCustom(p.javaField!!) }
 
-            val fieldsCommaSeparated = of(properties)
+            val fieldsCommaSeparated = properties
                     .map { it.joinToString(", ") { p -> p.name } }
 
-            val fieldsValuesCommaSeparated = of(properties)
-                    .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, t)}'" } }
+            val fieldsValuesCommaSeparated = properties
+                    .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, type)}'" } }
 
             return "$padding1$fieldsCommaSeparated$padding2$fieldsValuesCommaSeparated$padding3"
         }
