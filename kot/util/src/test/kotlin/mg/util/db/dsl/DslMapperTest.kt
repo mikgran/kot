@@ -4,6 +4,7 @@ import mg.util.common.Common
 import mg.util.db.AliasBuilder
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -98,9 +99,19 @@ internal class DslMapperTest {
     @Test
     fun testInsertOneToOneRelation() {
 
-        val sql = Sql insert DSLPlace(DSLAddress("anAdress"), 800)
+        val dslAddress2 = DSLAddress2("anAdress")
+        val dslPlace2 = DSLPlace2(dslAddress2, rentInCents = 80000)
 
+        val dslAddress2Uid = UidBuilder.buildUniqueId(dslAddress2)
+        val dslPlace2Uid = UidBuilder.buildUniqueId(dslPlace2)
 
+        val sql = Sql insert dslPlace2
+
+        val candidate = mapper.map(sql)
+
+        val expected =  "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');INSERT INTO $dslAddress2Uid (refId, address) VALUES(1, 'someTestData')"
+
+        expect(expected, candidate)
     }
 
     @Test
