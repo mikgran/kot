@@ -24,12 +24,25 @@ open class MySqlCreateBuilder {
 
         // lists of Objects:
         sqls += getFieldsWithListOfCustoms(dp)
-                .map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
+                .map { buildSqlCreateForOneToMany(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
 
         return sqls.joinToString(";")
     }
 
-    private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String {
+    private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String =
+            buildSqlCreateForChild(parentDp, t) { childDp ->
+                "ALTER TABLE ${parentDp.uniqueId} ADD COLUMN ${childDp.uniqueId}refId MEDIUMINT NOT NULL"
+            }
+
+    private fun buildSqlCreateForOneToMany(parentDp: DslParameters, t: Any?): String =
+            buildSqlCreateForChild(parentDp, t) { childDp ->
+                "CREATE TABLE IF NOT EXISTS ${parentDp.uniqueId}to${childDp.uniqueId}" +
+                        "(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                        "${parentDp.uniqueId}refid MEDIUMINT NOT NULL, " +
+                        "${childDp.uniqueId}refid MEDIUMINT NOT NULL)"
+            }
+
+    private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?, relationFunc: (DslParameters) -> String): String {
 
         val childDp = Opt2.of(t)
                 .map(::buildDslParameters)
@@ -38,13 +51,10 @@ open class MySqlCreateBuilder {
         val childSqlCreate = buildSqlCreate(childDp)
 
         // ALTER TABLE floors ADD COLUMN buildingId INT NOT NULL;
-        val childAlterTable = buildAlterTableForRefId(childDp, parentDp)
+        val childAlterTable = relationFunc(childDp)
 
         return "$childSqlCreate;$childAlterTable"
     }
-
-    private fun buildAlterTableForRefId(childDp: DslParameters, parentDp: DslParameters) =
-            "ALTER TABLE ${parentDp.uniqueId} ADD COLUMN ${childDp.uniqueId}refId MEDIUMINT(9) NOT NULL" // MEDIUMINT ?
 
     private fun buildDslParameters(t: Any): DslParameters {
         return DslParameters().apply {

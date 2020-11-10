@@ -1,6 +1,6 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common.hasContent
+import mg.util.common.Common
 import mg.util.db.AliasBuilder
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
@@ -12,6 +12,19 @@ internal class DslMapperTest {
 
     private val mapper = DslMapperFactory.get()
 
+    private fun <T : Any> expect(expected: T, candidate: T) {
+        assertNotNull(candidate)
+        if (expected != candidate) {
+            println("\nE:\n<$expected>")
+            println("C:\n<$candidate>")
+        }
+        assertEquals(expected, candidate)
+    }
+
+    private fun assertHasContent(candidate: String) {
+        assertTrue(Common.hasContent(candidate), "no mapped content")
+    }
+
     @Test
     fun testCreatingANewTable() {
 
@@ -20,10 +33,10 @@ internal class DslMapperTest {
         val uid = UidBuilder.build(DSLPersonB::class)
         val candidate = mapper.map(sql)
 
-        assertEquals("CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)", candidate)
+        val expected = "CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)"
+        expect(expected, candidate)
     }
 
-    // FIXME: remodel
     @Test
     fun testCreatingANewTableWithOneToManyRelation() {
 
@@ -31,15 +44,15 @@ internal class DslMapperTest {
 
         val buildingUid = UidBuilder.build(DSLBuilding::class)
         val floorUid = UidBuilder.build(DSLFloor::class)
-        val floorToBuildingUid = floorUid + buildingUid
+        val floorToBuildingUid = "${buildingUid}to${floorUid}"
 
         val candidate = mapper.map(sql)
 
-        assertNotNull(candidate)
-        assertEquals("CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
+        val expected = "CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, number MEDIUMINT NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $floorToBuildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${floorUid}ref MEDIUMINT NOT NULL, ${buildingUid}ref MEDIUMINT NOT NULL);",
-                candidate)
+                "CREATE TABLE IF NOT EXISTS $floorToBuildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${buildingUid}refid MEDIUMINT NOT NULL, ${floorUid}refid MEDIUMINT NOT NULL)"
+
+        expect(expected, candidate)
     }
 
     @Test
@@ -53,13 +66,12 @@ internal class DslMapperTest {
 
         val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
-                "ALTER TABLE $placeUid ADD COLUMN ${addressUid}refId MEDIUMINT(9) NOT NULL"
+                "ALTER TABLE $placeUid ADD COLUMN ${addressUid}refId MEDIUMINT NOT NULL"
 
-        assertNotNull(candidate)
-        assertEquals(expected, candidate)
+        expect(expected, candidate)
     }
 
-    // TODO: Insert-No-Custom-Object-Relations
+    // FIXME 98: Insert-No-Custom-Object-Relations
     @Test
     fun testInsertNoCustomRelations() {
 
@@ -105,16 +117,7 @@ internal class DslMapperTest {
         val expected = "UPDATE $uid $alias SET firstName = 'newFirstName', lastName = 'newLastName'" +
                 " WHERE $alias.firstName = 'firstName'"
 
-        assertNotNull(candidate)
         expect(expected, candidate)
-    }
-
-    private fun <T : Any> expect(expected: T, candidate: T) {
-        if (expected != candidate) {
-            println("\nE:\n<$expected>")
-            println("C:\n<$candidate>")
-        }
-        assertEquals(expected, candidate)
     }
 
     @Test
@@ -124,7 +127,15 @@ internal class DslMapperTest {
         val dsl = Sql select DSLPlace()
         val candidate = mapper.map(dsl)
 
-        assertDslForAutoRef(candidate)
+        val (placeUid, p) = buildUidAndAlias(DSLPlace())
+        val (addressUid, a) = buildUidAndAlias(DSLAddress())
+
+        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
+                " FROM $placeUid $p JOIN $addressUid $a" +
+                " ON $p.id = $a.${placeUid}RefId"
+
+        assertHasContent(candidate)
+        expect(expected, candidate)
     }
 
     @Test
@@ -148,17 +159,10 @@ internal class DslMapperTest {
         val dsl = Sql select DSLPlace() join DSLPlaceDescriptor() on DSLPlace::class eq DSLPlaceDescriptor::placeRefId
         val candidate = mapper.map(dsl)
 
-        assertDslForManualField(candidate)
-    }
-
-    private fun assertDslForManualField(candidate: String) {
-        // SELECT p.description, p.placeRefId, p2.address, p2.rentInCents, a.fullAddress
-        // FROM Place536353721 p2
-        // JOIN PlaceDescriptor1660249411 p ON p2.id = p.placeRefId
-        // JOIN Address2002641509 a ON p2.id = a.Place536353721refid
         val (uidPlace, p) = buildUidAndAlias(DSLPlace())
         val (uidAddress, a) = buildUidAndAlias(DSLAddress())
         val (uidDesc, p2) = buildUidAndAlias(DSLPlaceDescriptor())
+
         val expected = "SELECT $p2.description, ${p2}.placeRefId, $p.address, $p.rentInCents, $a.fullAddress" +
                 " FROM $uidPlace $p" +
                 " JOIN $uidDesc $p2 ON $p.id = $p2.placeRefId" +
@@ -166,21 +170,6 @@ internal class DslMapperTest {
 
         assertHasContent(candidate)
         expect(expected, candidate)
-    }
-
-    private fun assertDslForAutoRef(candidate: String) {
-        val (uidPlace, p) = buildUidAndAlias(DSLPlace())
-        val (uidAddress, a) = buildUidAndAlias(DSLAddress())
-        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
-                " FROM $uidPlace $p JOIN $uidAddress $a" +
-                " ON $p.id = $a.${uidPlace}RefId"
-
-        assertHasContent(candidate)
-        expect(expected, candidate)
-    }
-
-    private fun assertHasContent(candidate: String) {
-        assertTrue(hasContent(candidate), "no mapped content")
     }
 
     @Test
@@ -206,7 +195,7 @@ internal class DslMapperTest {
         val candidate = mapper.map(sql)
 
         assertHasContent(candidate)
-        assertEquals(expected, candidate)
+        expect(expected, candidate)
     }
 
     @Test
