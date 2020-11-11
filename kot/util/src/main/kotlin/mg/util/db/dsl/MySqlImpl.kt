@@ -9,6 +9,8 @@ import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.FieldAccessor.Companion.fieldGet
 import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithCustoms
+import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithListOfCustoms
+import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
@@ -62,38 +64,52 @@ class MySqlImpl {
 
             val sqls = mutableListOf<String>()
 
-            sqls += buildInsertSqlSimple(t)
+            sqls += buildInsertSql(t)
 
             // FIXME 103
             sqls += getFieldsWithCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
-                    .map { type -> buildInsertSqlSimple(type) }
+                    .map { type -> buildInsertSqlOneToOne(type, t) }
 
-            // Move this out?
-//            sqls += getFieldsWithListOfCustoms(dp)
-//                    .map { field -> fieldGet(field, dp.typeT) }
-//                    .map(this@Insert::buildInsertSql)
+            sqls += getFieldsWithListOfCustoms(dp)
+                    .map { field -> fieldGet(field, dp.typeT) }
+                    .map { type -> buildInsertSqlOneToMany(type) }
 
             return sqls.joinToString(";")
         }
 
-        private fun buildInsertSqlSimple(type: Any): String {
+        private fun buildInsertSql(type: Any): String =
+                buildInsertSql(type) { typeUid, fields, fieldsValues ->
+                    "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
+                }
 
-            val padding1 = "INSERT INTO ${UidBuilder.buildUniqueId(type)} ("
-            val padding2 = ") VALUES ("
-            val padding3 = ")"
+        private fun buildInsertSqlOneToOne(type: Any, parentType: Any): String =
+                buildInsertSql(type) { typeUid, fields, fieldsValues ->
+
+                    val parentUid = UidBuilder.buildUniqueId(type)
+                    "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
+                }
+
+        private fun buildInsertSqlOneToMany(type: Any): String =
+                buildInsertSql(type) { typeUid, fields, fieldsValues ->
+                    "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
+                }
+
+        private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
+
+            val typeUid = UidBuilder.buildUniqueId(type)
 
             val properties = type.toOpt()
                     .map { it::class.memberProperties.toCollection(ArrayList()) }
                     .lfilter { p: KProperty1<out Any, *> -> !isCustom(p.javaField!!) }
 
-            val fieldsCommaSeparated = properties
+            val fields = properties
                     .map { it.joinToString(", ") { p -> p.name } }
 
-            val fieldsValuesCommaSeparated = properties
+            val fieldsValues = properties
                     .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, type)}'" } }
 
-            return "$padding1$fieldsCommaSeparated$padding2$fieldsValuesCommaSeparated$padding3"
+            return insertCreateFunction(typeUid, fields, fieldsValues)
         }
     }
 
