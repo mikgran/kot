@@ -86,7 +86,7 @@ class MySqlImpl {
         private fun buildInsertSqlOneToOne(type: Any, parentType: Any): String =
                 buildInsertSql(type) { typeUid, fields, fieldsValues ->
 
-                    val parentUid = UidBuilder.buildUniqueId(type)
+                    val parentUid = UidBuilder.buildUniqueId(parentType)
                     "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
                 }
 
