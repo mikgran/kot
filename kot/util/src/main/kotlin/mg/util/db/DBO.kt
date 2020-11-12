@@ -63,6 +63,17 @@ class DBO(private val mapper: DefaultDslMapper) {
     }
     private fun <T : Any> buildRelationMap(t: T): HashMap<T, Set<Any>> {
 
+        // Car(name: String, tires: List<Tire>, windows: List<Window>)
+        // Tables: Car, Tire, Window, CarTire, CarWindow
+        // Creates: --"--
+        // car -> tire, car -> window
+        // 1. insert into car -> carid
+        // 2. insert into tire with carid
+        // 3. insert into window with carid
+
+
+
+
         val relations = hashMapOf<T, Set<Any>>()
 
         t::class.memberProperties.toSet()

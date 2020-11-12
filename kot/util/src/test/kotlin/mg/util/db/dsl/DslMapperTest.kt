@@ -107,12 +107,12 @@ internal class DslMapperTest {
 
         val sql = Sql insert dslPlace2
 
-        val candidate = mapper.map(sql)
+        val candidate: String = mapper.map(sql)
 
-        val expected =  "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');INSERT INTO $dslAddress2Uid (refid, fullAddress) VALUES(1, 'anAddress')"
+        val expected =  "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');INSERT INTO $dslAddress2Uid (fullAddress,${dslPlace2Uid}refId) VALUES ('anAddress',1)"
 
         expect(expected, candidate)
-    }
+}
 
     @Test
     fun testUpdate() {

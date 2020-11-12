@@ -49,13 +49,9 @@ class MySqlImpl {
         }
     }
 
-    // FIXME: 10 propagation of child items
     class Insert(t: Any) : Sql.Insert(t) {
         override fun build(p: Parameters): String {
 
-            // Complex reference many to many
-
-            // Simple reference one to one
             val dp = DslParameters().apply {
                 typeT = t
                 uniqueId = UidBuilder.buildUniqueId(t)
@@ -64,9 +60,10 @@ class MySqlImpl {
 
             val sqls = mutableListOf<String>()
 
+            // FIXME 103 parent relation needs to be in the database before one-to-one or one-to-many
+            // change to case a, b or c
             sqls += buildInsertSql(t)
 
-            // FIXME 103
             sqls += getFieldsWithCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
                     .map { type -> buildInsertSqlOneToOne(type, t) }
@@ -85,9 +82,8 @@ class MySqlImpl {
 
         private fun buildInsertSqlOneToOne(type: Any, parentType: Any): String =
                 buildInsertSql(type) { typeUid, fields, fieldsValues ->
-
                     val parentUid = UidBuilder.buildUniqueId(parentType)
-                    "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
+                    "INSERT INTO $typeUid ($fields,${parentUid}refid) VALUES ($fieldsValues,xxx)"
                 }
 
         private fun buildInsertSqlOneToMany(type: Any): String =
