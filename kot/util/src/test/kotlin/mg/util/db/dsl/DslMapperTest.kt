@@ -4,9 +4,10 @@ import mg.util.common.Common
 import mg.util.db.AliasBuilder
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.util.*
+
 
 // TOIMPROVE: test coverage
 internal class DslMapperTest {
@@ -18,8 +19,37 @@ internal class DslMapperTest {
         if (expected != candidate) {
             println("\nE:\n<$expected>")
             println("C:\n<$candidate>")
+            if (expected is String && candidate is String) {
+                val commons = longestCommonSubstrings(expected, candidate)
+                if (commons.size > 0)
+                println("\nLongest common part counting from the left:\n${commons.first()}")
+            }
         }
         assertEquals(expected, candidate)
+
+    }
+
+    // ref: https://en.wikipedia.org/wiki/Longest_common_substring_problem
+    private fun longestCommonSubstrings(s: String, t: String): MutableSet<String> {
+        val table = Array(s.length) { IntArray(t.length) }
+        var longest = 0
+        val result: MutableSet<String> = HashSet()
+        for (i in s.indices) {
+            for (j in t.indices) {
+                if (s[i] != t[j]) {
+                    continue
+                }
+                table[i][j] = if (i == 0 || j == 0) 1 else 1 + table[i - 1][j - 1]
+                if (table[i][j] > longest) {
+                    longest = table[i][j]
+                    result.clear()
+                }
+                if (table[i][j] == longest) {
+                    result.add(s.substring(i - longest + 1, i + 1))
+                }
+            }
+        }
+        return result
     }
 
     private fun assertHasContent(candidate: String) {
@@ -109,10 +139,12 @@ internal class DslMapperTest {
 
         val candidate: String = mapper.map(sql)
 
-        val expected =  "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');INSERT INTO $dslAddress2Uid (fullAddress,${dslPlace2Uid}refId) VALUES ('anAddress',1)"
+        val expected = "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');" +
+                "INSERT INTO $dslAddress2Uid (fullAddress,${dslPlace2Uid}refId) VALUES ('anAddress'," +
+                "(SELECT id from $dslPlace2Uid WHERE rentInCents='80000'))"
 
         expect(expected, candidate)
-}
+    }
 
     @Test
     fun testUpdate() {

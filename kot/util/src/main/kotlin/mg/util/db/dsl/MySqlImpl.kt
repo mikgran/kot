@@ -66,7 +66,7 @@ class MySqlImpl {
 
             sqls += getFieldsWithCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
-                    .map { type -> buildInsertSqlOneToOne(type, t) }
+                    .map { type -> buildInsertSqlOneToOne(type, t, p) }
 
             sqls += getFieldsWithListOfCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
@@ -80,10 +80,17 @@ class MySqlImpl {
                     "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
                 }
 
-        private fun buildInsertSqlOneToOne(type: Any, parentType: Any): String =
+        private fun buildInsertSqlOneToOne(type: Any, parentType: Any, p: Parameters): String =
                 buildInsertSql(type) { typeUid, fields, fieldsValues ->
+
                     val parentUid = UidBuilder.buildUniqueId(parentType)
-                    "INSERT INTO $typeUid ($fields,${parentUid}refid) VALUES ($fieldsValues,xxx)"
+
+                    val fieldsWithValues = getMemberProperties(parentType)
+                            .map { it.joinToString(", ") { p -> "${p.name}='${getFieldValueAsString(p, parentType)}'" } }
+
+                    val selectIdSql = "SELECT id from $parentUid WHERE $fieldsWithValues"
+
+                    "INSERT INTO $typeUid ($fields,${parentUid}refid) VALUES ($fieldsValues,($selectIdSql))"
                 }
 
         private fun buildInsertSqlOneToMany(type: Any): String =
@@ -95,9 +102,7 @@ class MySqlImpl {
 
             val typeUid = UidBuilder.buildUniqueId(type)
 
-            val properties = type.toOpt()
-                    .map { it::class.memberProperties.toCollection(ArrayList()) }
-                    .lfilter { p: KProperty1<out Any, *> -> !isCustom(p.javaField!!) }
+            val properties = getMemberProperties(type)
 
             val fields = properties
                     .map { it.joinToString(", ") { p -> p.name } }
@@ -106,6 +111,13 @@ class MySqlImpl {
                     .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, type)}'" } }
 
             return insertCreateFunction(typeUid, fields, fieldsValues)
+        }
+
+        private fun getMemberProperties(type: Any): Opt2<List<KProperty1<out Any, *>>> {
+            val properties = type.toOpt()
+                    .map { it::class.memberProperties.toCollection(ArrayList()) }
+                    .lfilter { p: KProperty1<out Any, *> -> !isCustom(p.javaField!!) }
+            return properties
         }
     }
 
@@ -141,7 +153,7 @@ class MySqlImpl {
             p.tableFragments.add(0, buildTableFragment(t))
             p.joinsMap.putAll(buildJoinsMap(t, p))
 
-            of(buildJoinsForNaturalRefs(p))
+            buildJoinsForNaturalRefs(p).toOpt()
                     .filter(String::isNotEmpty)
                     .map(p.joinFragments::add)
 

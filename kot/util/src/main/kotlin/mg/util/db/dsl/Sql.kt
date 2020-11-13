@@ -6,7 +6,7 @@ package mg.util.db.dsl
 // of parameters for Dsl to Sql building.
 sealed class Sql(val t: Any) {
 
-    data class Parameters(
+    data class  Parameters(
             var action: Sql? = null,
             val joins: MutableList<Sql> = mutableListOf(),
             val updates: MutableList<Sql> = mutableListOf(),
