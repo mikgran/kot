@@ -20,13 +20,12 @@ internal class DslMapperTest {
             println("\nE:\n<$expected>")
             println("C:\n<$candidate>")
             if (expected is String && candidate is String) {
-                val commons = longestCommonSubstrings(expected, candidate)
-                if (commons.size > 0)
-                println("\nLongest common part counting from the left:\n${commons.first()}")
+                val common = longestCommonSubstrings(expected, candidate)
+                if (common.size > 0)
+                println("\nLongest common part counting from the left:\n${common.first()}")
             }
         }
         assertEquals(expected, candidate)
-
     }
 
     // ref: https://en.wikipedia.org/wiki/Longest_common_substring_problem
