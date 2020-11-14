@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
 
-
+// FIXME: 50 Fix all select, select-join, multitable inserts, creates
 // TOIMPROVE: test coverage
 internal class DslMapperTest {
 
