@@ -24,36 +24,28 @@ open class MySqlCreateBuilder {
 
         // lists of Objects:
         sqls += getFieldsWithListOfCustoms(dp)
-                .map { buildSqlCreateForOneToMany(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
+                .map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
 
         return sqls.joinToString(";")
     }
 
-    private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String =
-            buildSqlCreateForChild(parentDp, t) { childDp ->
-                "ALTER TABLE ${parentDp.uniqueId} ADD COLUMN ${childDp.uniqueId}refId MEDIUMINT NOT NULL"
-            }
-
-    private fun buildSqlCreateForOneToMany(parentDp: DslParameters, t: Any?): String =
-            buildSqlCreateForChild(parentDp, t) { childDp ->
-                "CREATE TABLE IF NOT EXISTS ${parentDp.uniqueId}to${childDp.uniqueId}" +
-                        "(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                        "${parentDp.uniqueId}refid MEDIUMINT NOT NULL, " +
-                        "${childDp.uniqueId}refid MEDIUMINT NOT NULL)"
-            }
-
-    private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?, relationFunc: (DslParameters) -> String): String {
+    private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String {
 
         val childDp = Opt2.of(t)
                 .map(::buildDslParameters)
                 .getOrElseThrow { Exception("Unable to get field for $t and to build DslParameters.") }!!
 
         val childSqlCreate = buildSqlCreate(childDp)
-
-        // ALTER TABLE floors ADD COLUMN buildingId INT NOT NULL;
-        val childAlterTable = relationFunc(childDp)
+        val childAlterTable = buildCreateTableForJoinTable(parentDp, childDp)
 
         return "$childSqlCreate;$childAlterTable"
+    }
+
+    private fun buildCreateTableForJoinTable(parentDp: DslParameters, childDp: DslParameters): String {
+        return "CREATE TABLE IF NOT EXISTS ${parentDp.uniqueId}${childDp.uniqueId}" +
+                "(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "${parentDp.uniqueId}refid MEDIUMINT NOT NULL, " +
+                "${childDp.uniqueId}refid MEDIUMINT NOT NULL)"
     }
 
     private fun buildDslParameters(t: Any): DslParameters {

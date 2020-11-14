@@ -22,7 +22,7 @@ internal class DslMapperTest {
             if (expected is String && candidate is String) {
                 val common = longestCommonSubstrings(expected, candidate)
                 if (common.size > 0)
-                println("\nLongest common part counting from the left:\n${common.first()}")
+                println("\nLongest common part:\n${common.first()}")
             }
         }
         assertEquals(expected, candidate)
@@ -59,7 +59,6 @@ internal class DslMapperTest {
     fun testCreatingANewTable() {
 
         val sql = Sql create DSLPersonB()
-
         val uid = UidBuilder.build(DSLPersonB::class)
         val candidate = mapper.map(sql)
 
@@ -71,16 +70,14 @@ internal class DslMapperTest {
     fun testCreatingANewTableWithOneToManyRelation() {
 
         val sql = Sql create DSLBuilding("some address", listOf(DSLFloor(1)))
-
         val buildingUid = UidBuilder.build(DSLBuilding::class)
         val floorUid = UidBuilder.build(DSLFloor::class)
-        val floorToBuildingUid = "${buildingUid}to${floorUid}"
 
         val candidate = mapper.map(sql)
 
         val expected = "CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, number MEDIUMINT NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $floorToBuildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${buildingUid}refid MEDIUMINT NOT NULL, ${floorUid}refid MEDIUMINT NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS $buildingUid$floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${buildingUid}refid MEDIUMINT NOT NULL, ${floorUid}refid MEDIUMINT NOT NULL)"
 
         expect(expected, candidate)
     }
@@ -89,14 +86,14 @@ internal class DslMapperTest {
     fun testCreatingANewTableWithOneToOneRelation() {
 
         val sql = Sql create DSLPlace(DSLAddress("somePlace"), 100000)
-
         val placeUid = UidBuilder.build(DSLPlace::class)
         val addressUid = UidBuilder.build(DSLAddress::class)
+
         val candidate = mapper.map(sql)
 
         val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
-                "ALTER TABLE $placeUid ADD COLUMN ${addressUid}refId MEDIUMINT NOT NULL"
+                "CREATE TABLE IF NOT EXISTS $placeUid$addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${placeUid}refid MEDIUMINT NOT NULL, ${addressUid}refid MEDIUMINT NOT NULL)"
 
         expect(expected, candidate)
     }
@@ -139,7 +136,7 @@ internal class DslMapperTest {
         val candidate: String = mapper.map(sql)
 
         val expected = "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');" +
-                "INSERT INTO $dslAddress2Uid (fullAddress,${dslPlace2Uid}refId) VALUES ('anAddress'," +
+                "INSERT INTO $dslAddress2Uid (fullAddress,${dslPlace2Uid}refid) VALUES ('anAddress'," +
                 "(SELECT id from $dslPlace2Uid WHERE rentInCents='80000'))"
 
         expect(expected, candidate)
@@ -162,19 +159,25 @@ internal class DslMapperTest {
         expect(expected, candidate)
     }
 
+    // FIXME: 101 move auto refs to a join-table car, window, jointable: carwindow
     @Test
     fun testBuildingSqlFromDslJoin_AutoRef() {
-        // SELECT p.address, p.rentInCents, a.fullAddress FROM Place1234556 p
-        // JOIN Address123565 a ON p.id = a.Place1234556refid
+        // SELECT p.address, p.rentInCents, a.fullAddress
+        // FROM Place1234556 p
+        // JOIN Place123456Address123456 p2 ON p2.place123456refid = p.id
+        // JOIN Address123565 a ON a.id = p2.address123456refid
+        //
         val dsl = Sql select DSLPlace()
         val candidate = mapper.map(dsl)
 
         val (placeUid, p) = buildUidAndAlias(DSLPlace())
         val (addressUid, a) = buildUidAndAlias(DSLAddress())
+        val joinTableAlias = AliasBuilder.build("$placeUid$addressUid")
 
         val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
-                " FROM $placeUid $p JOIN $addressUid $a" +
-                " ON $p.id = $a.${placeUid}RefId"
+                " FROM $placeUid $p" +
+                " JOIN $placeUid$addressUid $joinTableAlias ON $joinTableAlias.${placeUid}refid = $p.id" +
+                " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id"
 
         assertHasContent(candidate)
         expect(expected, candidate)
