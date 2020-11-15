@@ -21,8 +21,9 @@ internal class DslMapperTest {
             println("C:\n<$candidate>")
             if (expected is String && candidate is String) {
                 val common = longestCommonSubstrings(expected, candidate)
-                if (common.size > 0)
-                println("\nLongest common part:\n${common.first()}")
+                if (common.size > 0) {
+                    println("\nLongest common part:\n<${common.first()}>")
+                }
             }
         }
         assertEquals(expected, candidate)
@@ -162,11 +163,15 @@ internal class DslMapperTest {
     // FIXME: 101 move auto refs to a join-table car, window, jointable: carwindow
     @Test
     fun testBuildingSqlFromDslJoin_AutoRef() {
+
         // SELECT p.address, p.rentInCents, a.fullAddress
-        // FROM Place1234556 p
-        // JOIN Place123456Address123456 p2 ON p2.place123456refid = p.id
-        // JOIN Address123565 a ON a.id = p2.address123456refid
-        //
+        // FROM
+        //      Place1234556 p
+        // JOIN
+        //      Place123456Address123456 p2 ON p2.place123456refid = p.id
+        // JOIN
+        //      Address123565 a ON a.id = p2.address123456refid
+
         val dsl = Sql select DSLPlace()
         val candidate = mapper.map(dsl)
 

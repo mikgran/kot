@@ -17,8 +17,11 @@ sealed class Sql(val t: Any) {
             val updateFragments: MutableList<String> = mutableListOf(),
             val whereFragments: MutableList<String> = mutableListOf(),
             val joinTypes: MutableList<Any> = mutableListOf(),
-            val joinsMap: MutableMap<Any, Any> = mutableMapOf()
+            val joinsMap: MutableMap<Any, Any> = mutableMapOf(),
+            var isManuallyJoined: Boolean = false
     ) {
+
+
         override fun toString(): String {
             // add some clarity to the bulky data class:
             return StringBuilder("\nParameters:").append(
@@ -32,7 +35,8 @@ sealed class Sql(val t: Any) {
                             "\nupdateFragments=${updateFragments}" +
                             "\nwhereFragments=${whereFragments}" +
                             "\njoinTypes=${joinTypes}" +
-                            "\njoinsMap=${joinsMap}"
+                            "\njoinsMap=${joinsMap}" +
+                            "\nisManuallyJoined=${isManuallyJoined}"
             ).toString()
         }
     }

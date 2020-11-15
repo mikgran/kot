@@ -66,7 +66,7 @@ class MySqlImpl {
 
             sqls += getFieldsWithCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
-                    .map { type -> buildInsertSqlOneToOne(type, t, p) }
+                    .map { type -> buildInsertSqlOneToOne(type, t) }
 
             sqls += getFieldsWithListOfCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
@@ -80,7 +80,7 @@ class MySqlImpl {
                     "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
                 }
 
-        private fun buildInsertSqlOneToOne(type: Any, parentType: Any, p: Parameters): String =
+        private fun buildInsertSqlOneToOne(type: Any, parentType: Any): String =
                 buildInsertSql(type) { typeUid, fields, fieldsValues ->
 
                     val parentUid = UidBuilder.buildUniqueId(parentType)
@@ -114,10 +114,9 @@ class MySqlImpl {
         }
 
         private fun getMemberProperties(type: Any): Opt2<List<KProperty1<out Any, *>>> {
-            val properties = type.toOpt()
+            return type.toOpt()
                     .map { it::class.memberProperties.toCollection(ArrayList()) }
                     .lfilter { p: KProperty1<out Any, *> -> !isCustom(p.javaField!!) }
-            return properties
         }
     }
 
@@ -148,12 +147,16 @@ class MySqlImpl {
         }
     }
 
+    // FIXME: 104 SELECT natural vs manual
     class Select(t: Any) : Sql.Select(t) {
         override fun build(p: Parameters): String {
             p.tableFragments.add(0, buildTableFragment(t))
             p.joinsMap.putAll(buildJoinsMap(t, p))
 
-            buildJoinsForNaturalRefs(p).toOpt()
+            p.toOpt()
+                    .case({ it.isManuallyJoined }, { buildJoinsForManualRefs(it) })
+                    .caseDefault { buildJoinsForNaturalRefs(it) }
+                    .result()
                     .filter(String::isNotEmpty)
                     .map(p.joinFragments::add)
 
@@ -175,9 +178,9 @@ class MySqlImpl {
 
         private fun buildJoinsMap(root: Any, p: Parameters): MutableMap<Any, List<Any>> {
             val joinsMap = mutableMapOf<Any, List<Any>>()
-            of(root)
+            root.toOpt()
                     .map {
-                        val list = linksForParent(it)
+                        val list = childrenForParent(it)
                         if (list.isNotEmpty()) {
                             joinsMap[it] = list
                         }
@@ -187,7 +190,7 @@ class MySqlImpl {
             return joinsMap
         }
 
-        private fun linksForParent(type: Any): List<Any> {
+        private fun childrenForParent(type: Any): List<Any> {
             return type::class.java.declaredFields.toList()
                     .toOpt()
                     .lfilter(::isCustom or ::isList)
@@ -212,6 +215,7 @@ class MySqlImpl {
 
         class Join(t: Any) : Select.Join(t) {
             override fun build(p: Parameters): String {
+                p.isManuallyJoined = true
                 p.columnFragments += buildFieldFragment(t)
                 p.joinFragments += "JOIN ${buildTableFragment(t)}"
                 return ""
@@ -330,21 +334,51 @@ class MySqlImpl {
             return type::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name}" }
         }
 
-        private fun buildJoinsForNaturalRefs(p: Sql.Parameters): String {
-            return of(p.joinsMap)
+        private fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {
+            return parameters
+                    .joinsMap
+                    .toOpt()
                     .xmap { map { buildJoinsOnNaturalRefs(it) }.joinToString(" AND ") }
+                    .filter(::hasContent)
+                    .getOrElse { "" }
+        }
+
+        private fun buildJoinsForManualRefs(parameters: Sql.Parameters): String {
+            return parameters
+                    .joinsMap
+                    .toOpt()
+                    .xmap { map { buildJoinsOnManualRefs(it) }.joinToString(" AND ") }
                     .filter(::hasContent)
                     .map { "JOIN $it" }
                     .filter(String::isNotEmpty)
                     .getOrElse { "" }
         }
 
-        private fun buildJoinsOnNaturalRefs(entry: Map.Entry<Any, Any>): String {
-            val (uidRoot, aliasRoot) = buildUidAndAlias(entry.key)
-            return of(entry.value as? List<*>)
-                    .lmap { type: Any ->
-                        val (uidRef, aliasRef) = buildUidAndAlias(type)
-                        "$uidRef $aliasRef ON ${aliasRoot}.id = ${aliasRef}.${uidRoot}RefId"
+        /*
+        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
+            " FROM $placeUid $p" +
+            " JOIN $placeUid$addressUid $joinTableAlias ON $joinTableAlias.${placeUid}refid = $p.id" +
+            " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id"
+         */
+        private fun buildJoinsOnNaturalRefs(parentKeyChildValues: Map.Entry<Any, Any>): String {
+            val (parentUid, parentAlias) = buildUidAndAlias(parentKeyChildValues.key)
+            return (parentKeyChildValues.value as? List<*>).toOpt()
+                    .lmap { child: Any ->
+                        val (childUid, childAlias) = buildUidAndAlias(child)
+                        val joinTableAlias = AliasBuilder.build("$parentUid$childUid")
+                        "JOIN $parentUid$childUid $joinTableAlias ON $joinTableAlias.${parentUid}refid = $parentAlias.id" +
+                                " JOIN $childUid $childAlias ON $joinTableAlias.${childUid}refid = $childAlias.id"
+                    }
+                    .xmap { joinToString(" AND ") }
+                    .getOrElse("")
+        }
+
+        private fun buildJoinsOnManualRefs(parentKeyChildValues: Map.Entry<Any, Any>): String {
+            val (parentUid, parentAlias) = buildUidAndAlias(parentKeyChildValues.key)
+            return (parentKeyChildValues.value as? List<*>).toOpt()
+                    .lmap { child: Any ->
+                        val (childUid, childAlias) = buildUidAndAlias(child)
+                        "$childUid $childAlias ON ${parentAlias}.id = ${childAlias}.${parentUid}RefId"
                     }
                     .xmap { joinToString(" AND ") }
                     .getOrElse("")
