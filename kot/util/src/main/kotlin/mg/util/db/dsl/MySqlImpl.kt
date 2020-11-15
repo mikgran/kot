@@ -234,7 +234,7 @@ class MySqlImpl {
                         val ref = t as KProperty1<*, *>
                         val uid = UidBuilder.build(ref.javaField?.declaringClass?.kotlin ?: Any::class)
                         val alias = AliasBuilder.build(uid)
-                        p.joinFragments += "= $alias.${ref.name}"
+                        p.joinFragments += "= $alias.${ref.name.toLowerCase()}"
                         return ""
                     }
 
@@ -378,7 +378,7 @@ class MySqlImpl {
             return (parentKeyChildValues.value as? List<*>).toOpt()
                     .lmap { child: Any ->
                         val (childUid, childAlias) = buildUidAndAlias(child)
-                        "$childUid $childAlias ON ${parentAlias}.id = ${childAlias}.${parentUid}RefId"
+                        "$childUid $childAlias ON ${parentAlias}.id = ${childAlias}.${parentUid}refid"
                     }
                     .xmap { joinToString(" AND ") }
                     .getOrElse("")
@@ -406,7 +406,7 @@ class MySqlImpl {
 
         private fun buildFieldFragment(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
-            return type::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name}" }
+            return type::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name.toLowerCase()}" }
         }
 
         private fun buildTableFragment(type: Any): String {

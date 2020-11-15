@@ -213,10 +213,10 @@ internal class DslMapperTest {
         val (uidAddress, a) = buildUidAndAlias(DSLAddress())
         val (uidDesc, p2) = buildUidAndAlias(DSLPlaceDescriptor())
 
-        val expected = "SELECT $p2.description, ${p2}.placeRefId, $p.address, $p.rentInCents, $a.fullAddress" +
+        val expected = "SELECT $p2.description, ${p2}.placerefid, $p.address, $p.rentInCents, $a.fullAddress" +
                 " FROM $uidPlace $p" +
-                " JOIN $uidDesc $p2 ON $p.id = $p2.placeRefId" +
-                " JOIN $uidAddress $a ON $p.id = $a.${uidPlace}RefId"
+                " JOIN $uidDesc $p2 ON $p.id = $p2.placerefid" +
+                " JOIN $uidAddress $a ON $p.id = $a.${uidPlace}refid"
 
         assertHasContent(candidate)
         expect(expected, candidate)
