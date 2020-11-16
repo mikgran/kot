@@ -153,6 +153,10 @@ class MySqlImpl {
             p.tableFragments.add(0, buildTableFragment(t))
             p.joinsMap.putAll(buildJoinsMap(t, p))
 
+//            p.joinsMap
+//                    .map { "\n ${it.key::class.simpleName} -> ${it.value::class.simpleName} " }
+//                    .forEach(::println)
+
             p.toOpt()
                     .map { buildJoinsForNaturalRefs(it) }
                     .filter(String::isNotEmpty)
@@ -202,16 +206,37 @@ class MySqlImpl {
 
         private fun collectUniqueTypesFrom(action: Sql?, joinsMap: MutableMap<*, *>): MutableSet<Any> {
             val uniques = mutableSetOf<Any>()
-            action?.t
-                    .toOpt()
+            action?.t.toOpt()
                     .map(uniques::add)
             joinsMap.iterator()
                     .toOpt()
                     .lmap { entry: MutableMap.MutableEntry<Any, Any> ->
-                        uniques += entry.key
-                        (entry.value as? List<*>)?.filterNotNull()?.forEach { uniques += it }
+
+                        // place: [
+                        //      DSLAddress3,
+                        //      DSLName3,
+                        //      floors: [
+                        //          DSLFloor3,
+                        //          DSLFloor3,
+                        //      ]
+                        // ]
+                        // -> DSLAddress3, DSLFloor3
+                        // println("custom object: ${entry.value}")
+
+                        when (entry.value) {
+                            !is List<*> -> uniques.add(entry.value)
+                            is List<*> -> {
+                                when (val e = (entry.value as List<*>)[0]) {
+                                    is List<*> -> e[0]?.let { uniques.add(it) }
+                                    else -> e?.let { uniques.add(it) }
+                                }
+                            }
+                        }
                         entry
                     }
+            println("uniques:")
+            uniques.forEach { println(it::class.simpleName) }
+
             return uniques
         }
 

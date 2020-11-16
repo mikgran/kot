@@ -213,15 +213,16 @@ internal class DslMapperTest {
         val (placeUid, p) = buildUidAndAlias(DSLPlace3())
         val (addressUid, a) = buildUidAndAlias(DSLAddress3())
         val (floorUid, f) = buildUidAndAlias(DSLFloor3())
-        val placeUidAddressAlias = AliasBuilder.build("$placeUid$addressUid")
-        val placeUidFloorAlias = AliasBuilder.build("$placeUid$floorUid")
+        val pa = AliasBuilder.build("$placeUid$addressUid")
+        val pf = AliasBuilder.build("$placeUid$floorUid")
 
-        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
+        val expected = "SELECT " +
+                "$p.address, $p.rentInCents, $a.fullAddress, $f.number" +
                 " FROM $placeUid $p" +
-                " JOIN $placeUid$addressUid $placeUidAddressAlias ON $placeUidAddressAlias.${placeUid}refid = $p.id" +
-                " JOIN $addressUid $a ON ${placeUidAddressAlias}.${addressUid}refid = $a.id" +
-                " JOIN $placeUid$floorUid $placeUidFloorAlias ON $placeUidFloorAlias.${placeUid}refid = $p.id" +
-                " JOIN $floorUid $f ON ${placeUidAddressAlias}.${floorUid}refid = $f.id"
+                " JOIN $placeUid$addressUid $pa ON $pa.${placeUid}refid = $p.id" +
+                " JOIN $addressUid $a ON ${pa}.${addressUid}refid = $a.id" +
+                " JOIN $placeUid$floorUid $pf ON $pf.${placeUid}refid = $p.id" +
+                " JOIN $floorUid $f ON ${pf}.${floorUid}refid = $f.id"
 
         assertHasContent(candidate)
         expect(expected, candidate)
