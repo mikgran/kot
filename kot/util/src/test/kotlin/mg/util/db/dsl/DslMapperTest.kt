@@ -163,15 +163,16 @@ internal class DslMapperTest {
     // FIXME: 101 move auto refs to a join-table car, window, jointable: carwindow
     @Test
     fun testBuildingSqlFromDslJoinByNaturalReference() {
-
-        // SELECT p.address, p.rentInCents, a.fullAddress
-        // FROM
-        //      Place1234556 p
-        // JOIN
-        //      Place123456Address123456 p2 ON p2.place123456refid = p.id
-        // JOIN
-        //      Address123565 a ON a.id = p2.address123456refid
-
+        /*
+            SELECT
+                d9.address, d9.rentInCents, d10.fullAddress
+            FROM
+                DSLPlace536353721 d9
+            JOIN
+                DSLPlace536353721DSLAddress2002641509 d14 ON d14.DSLPlace536353721refid = d9.id
+            JOIN
+                DSLAddress2002641509 d10 ON d14.DSLAddress2002641509refid = d10.id
+         */
         val dsl = Sql select DSLPlace()
         val candidate = mapper.map(dsl)
 
@@ -189,24 +190,25 @@ internal class DslMapperTest {
     }
 
     @Test
+    fun testBuildingSqlFromDslJoinByTwoNaturalRefs() {
+
+
+    }
+
+    @Test
     fun testBuildingSqlFromDslJoinByGivenReference() {
-
-        // SELECT p.id, p.rentInCents,
-        //        a.id, a.fullAddress,
-        //        p2.id, p2.description
-        // FROM
-        //      Place1234556 p
-        // JOIN
-        //      Place123456Address123456 p2 ON p2.place123456refid = p.id
-        // JOIN
-        //      Address123565 a ON a.id = p2.address123456refid
-        // JOIN
-        //      PlaceDescriptor123456 p3 ON p.id = p2.Place1234556refId
-
-        // ResultSet:
-        // p.id, p.rentincents, a.id, a.fulladdress, a.placerefid, p2.id, p2.description, p2.placerefid
-        // 1     150000         15    StreetName     1             2053   Some Desc       1
-        // 2     160000         16    A Street       2             6342   Something..     2
+        /*
+            SELECT
+                d9.address, d9.rentInCents, d10.fullAddress
+            FROM
+                DSLPlace536353721 d9
+            JOIN
+                DSLPlace536353721DSLAddress2002641509 d14 ON d14.DSLPlace536353721refid = d9.id
+            JOIN
+                DSLAddress2002641509 d10 ON d14.DSLAddress2002641509refid = d10.id
+            JOIN
+                DSLPlaceDescriptor1660249411 d15 ON d9.id = d15.placerefid
+         */
 
         val dsl = Sql select DSLPlace() join DSLPlaceDescriptor() on DSLPlace::class eq DSLPlaceDescriptor::placeRefId
         val candidate = mapper.map(dsl)
@@ -222,8 +224,9 @@ internal class DslMapperTest {
                 " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id" +
                 " JOIN $placeDescriptorUid $p2 ON $p.id = $p2.placerefid"
 
+        println("XX::$expected")
 
-                assertHasContent(candidate)
+        assertHasContent(candidate)
         expect(expected, candidate)
     }
 
