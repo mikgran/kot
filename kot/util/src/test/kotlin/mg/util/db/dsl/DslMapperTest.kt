@@ -189,10 +189,42 @@ internal class DslMapperTest {
         expect(expected, candidate)
     }
 
+    // FIXME: 104 two natural refs -> coverage
     @Test
     fun testBuildingSqlFromDslJoinByTwoNaturalRefs() {
+        /*
+            SELECT
+                d9.address, d9.rentInCents, d10.fullAddress
+            FROM
+                DSLPlace536353721 d9
+            JOIN
+                DSLPlace536353721DSLAddress2002641509 d14 ON d14.DSLPlace536353721refid = d9.id
+            JOIN
+                DSLAddress2002641509 d10 ON d14.DSLAddress2002641509refid = d10.id
+            JOIN
+                ...
+            JOIN
+                ...
+         */
 
+        val dsl = Sql select DSLPlace3()
+        val candidate = mapper.map(dsl)
 
+        val (placeUid, p) = buildUidAndAlias(DSLPlace3())
+        val (addressUid, a) = buildUidAndAlias(DSLAddress3())
+        val (floorUid, f) = buildUidAndAlias(DSLFloor3())
+        val placeUidAddressAlias = AliasBuilder.build("$placeUid$addressUid")
+        val placeUidFloorAlias = AliasBuilder.build("$placeUid$floorUid")
+
+        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
+                " FROM $placeUid $p" +
+                " JOIN $placeUid$addressUid $placeUidAddressAlias ON $placeUidAddressAlias.${placeUid}refid = $p.id" +
+                " JOIN $addressUid $a ON ${placeUidAddressAlias}.${addressUid}refid = $a.id" +
+                " JOIN $placeUid$floorUid $placeUidFloorAlias ON $placeUidFloorAlias.${placeUid}refid = $p.id" +
+                " JOIN $floorUid $f ON ${placeUidAddressAlias}.${floorUid}refid = $f.id"
+
+        assertHasContent(candidate)
+        expect(expected, candidate)
     }
 
     @Test
@@ -223,8 +255,6 @@ internal class DslMapperTest {
                 " JOIN $placeUid$addressUid $joinTableAlias ON $joinTableAlias.${placeUid}refid = $p.id" +
                 " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id" +
                 " JOIN $placeDescriptorUid $p2 ON $p.id = $p2.placerefid"
-
-        println("XX::$expected")
 
         assertHasContent(candidate)
         expect(expected, candidate)
