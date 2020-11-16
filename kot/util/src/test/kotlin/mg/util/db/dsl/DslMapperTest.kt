@@ -162,7 +162,7 @@ internal class DslMapperTest {
 
     // FIXME: 101 move auto refs to a join-table car, window, jointable: carwindow
     @Test
-    fun testBuildingSqlFromDslJoin_AutoRef() {
+    fun testBuildingSqlFromDslJoinByNaturalReference() {
 
         // SELECT p.address, p.rentInCents, a.fullAddress
         // FROM
@@ -189,17 +189,19 @@ internal class DslMapperTest {
     }
 
     @Test
-    fun testBuildingSqlFromDslJoin_GivenRef() {
+    fun testBuildingSqlFromDslJoinByGivenReference() {
 
         // SELECT p.id, p.rentInCents,
-        //        a.id, a.fullAddress, a.Place1234556refid,
-        //        p2.id, p2.description, p2.Place1234556refid
+        //        a.id, a.fullAddress,
+        //        p2.id, p2.description
         // FROM
-        //        Place1234556 p
+        //      Place1234556 p
         // JOIN
-        //        Address123565 a ON p.id = a.Place1234556refid
+        //      Place123456Address123456 p2 ON p2.place123456refid = p.id
         // JOIN
-        //        PlaceDescriptor123456 p2 ON p.id = p2.Place1234556refId
+        //      Address123565 a ON a.id = p2.address123456refid
+        // JOIN
+        //      PlaceDescriptor123456 p3 ON p.id = p2.Place1234556refId
 
         // ResultSet:
         // p.id, p.rentincents, a.id, a.fulladdress, a.placerefid, p2.id, p2.description, p2.placerefid
@@ -209,16 +211,19 @@ internal class DslMapperTest {
         val dsl = Sql select DSLPlace() join DSLPlaceDescriptor() on DSLPlace::class eq DSLPlaceDescriptor::placeRefId
         val candidate = mapper.map(dsl)
 
-        val (uidPlace, p) = buildUidAndAlias(DSLPlace())
-        val (uidAddress, a) = buildUidAndAlias(DSLAddress())
-        val (uidDesc, p2) = buildUidAndAlias(DSLPlaceDescriptor())
+        val (placeUid, p) = buildUidAndAlias(DSLPlace())
+        val (addressUid, a) = buildUidAndAlias(DSLAddress())
+        val (placeDescriptorUid, p2) = buildUidAndAlias(DSLPlaceDescriptor())
+        val joinTableAlias = AliasBuilder.build("$placeUid$addressUid")
 
         val expected = "SELECT $p2.description, ${p2}.placerefid, $p.address, $p.rentInCents, $a.fullAddress" +
-                " FROM $uidPlace $p" +
-                " JOIN $uidDesc $p2 ON $p.id = $p2.placerefid" +
-                " JOIN $uidAddress $a ON $p.id = $a.${uidPlace}refid"
+                " FROM $placeUid $p" +
+                " JOIN $placeUid$addressUid $joinTableAlias ON $joinTableAlias.${placeUid}refid = $p.id" +
+                " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id" +
+                " JOIN $placeDescriptorUid $p2 ON $p.id = $p2.placerefid"
 
-        assertHasContent(candidate)
+
+                assertHasContent(candidate)
         expect(expected, candidate)
     }
 

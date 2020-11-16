@@ -154,9 +154,7 @@ class MySqlImpl {
             p.joinsMap.putAll(buildJoinsMap(t, p))
 
             p.toOpt()
-                    .case({ it.isManuallyJoined }, { buildJoinsForManualRefs(it) })
-                    .caseDefault { buildJoinsForNaturalRefs(it) }
-                    .result()
+                    .map { buildJoinsForNaturalRefs(it) }
                     .filter(String::isNotEmpty)
                     .map(p.joinFragments::add)
 
@@ -167,9 +165,13 @@ class MySqlImpl {
                     "SELECT ${p.columnFragments.joinToString(", ")}" +
                     " FROM ${p.tableFragments.joinToString(", ")}" +
                     buildWherePart(p) +
-                    buildJoinPart(p)
+                    buildJoinPart(p) +
+                    buildManualJoinPart(p)
             return sb.toString()
         }
+
+        private fun buildManualJoinPart(p: Parameters): String =
+                if (p.manualJoinFragments.isNotEmpty()) " ${p.manualJoinFragments.joinToString(" ")}" else ""
 
         private fun buildTableFragment(type: Any): String {
             val (uid, alias) = buildUidAndAlias(type)
@@ -217,7 +219,7 @@ class MySqlImpl {
             override fun build(p: Parameters): String {
                 p.isManuallyJoined = true
                 p.columnFragments += buildFieldFragment(t)
-                p.joinFragments += "JOIN ${buildTableFragment(t)}"
+                p.manualJoinFragments += "JOIN ${buildTableFragment(t)}"
                 return ""
             }
 
@@ -225,7 +227,7 @@ class MySqlImpl {
                 override fun build(p: Parameters): String {
                     val uid = UidBuilder.build(t as KClass<*>)
                     val alias = AliasBuilder.build(uid)
-                    p.joinFragments += "ON ${alias}.id"
+                    p.manualJoinFragments += "ON ${alias}.id"
                     return ""
                 }
 
@@ -234,7 +236,7 @@ class MySqlImpl {
                         val ref = t as KProperty1<*, *>
                         val uid = UidBuilder.build(ref.javaField?.declaringClass?.kotlin ?: Any::class)
                         val alias = AliasBuilder.build(uid)
-                        p.joinFragments += "= $alias.${ref.name.toLowerCase()}"
+                        p.manualJoinFragments += "= $alias.${ref.name.toLowerCase()}"
                         return ""
                     }
 
@@ -343,17 +345,6 @@ class MySqlImpl {
                     .getOrElse { "" }
         }
 
-        private fun buildJoinsForManualRefs(parameters: Sql.Parameters): String {
-            return parameters
-                    .joinsMap
-                    .toOpt()
-                    .xmap { map { buildJoinsOnManualRefs(it) }.joinToString(" AND ") }
-                    .filter(::hasContent)
-                    .map { "JOIN $it" }
-                    .filter(String::isNotEmpty)
-                    .getOrElse { "" }
-        }
-
         /*
         val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
             " FROM $placeUid $p" +
@@ -368,17 +359,6 @@ class MySqlImpl {
                         val joinTableAlias = AliasBuilder.build("$parentUid$childUid")
                         "JOIN $parentUid$childUid $joinTableAlias ON $joinTableAlias.${parentUid}refid = $parentAlias.id" +
                                 " JOIN $childUid $childAlias ON $joinTableAlias.${childUid}refid = $childAlias.id"
-                    }
-                    .xmap { joinToString(" AND ") }
-                    .getOrElse("")
-        }
-
-        private fun buildJoinsOnManualRefs(parentKeyChildValues: Map.Entry<Any, Any>): String {
-            val (parentUid, parentAlias) = buildUidAndAlias(parentKeyChildValues.key)
-            return (parentKeyChildValues.value as? List<*>).toOpt()
-                    .lmap { child: Any ->
-                        val (childUid, childAlias) = buildUidAndAlias(child)
-                        "$childUid $childAlias ON ${parentAlias}.id = ${childAlias}.${parentUid}refid"
                     }
                     .xmap { joinToString(" AND ") }
                     .getOrElse("")

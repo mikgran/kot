@@ -14,6 +14,7 @@ sealed class Sql(val t: Any) {
             val columnFragments: MutableList<String> = mutableListOf(),
             val tableFragments: MutableList<String> = mutableListOf(),
             val joinFragments: MutableList<String> = mutableListOf(),
+            val manualJoinFragments: MutableList<String> = mutableListOf(),
             val updateFragments: MutableList<String> = mutableListOf(),
             val whereFragments: MutableList<String> = mutableListOf(),
             val joinTypes: MutableList<Any> = mutableListOf(),
