@@ -150,20 +150,21 @@ class MySqlImpl {
     // FIXME: 104 SELECT natural vs manual
     class Select(t: Any) : Sql.Select(t) {
         override fun build(p: Parameters): String {
+
             p.tableFragments.add(0, buildTableFragment(t))
             p.joinsMap.putAll(buildJoinsMap(t, p))
-
-//            p.joinsMap
-//                    .map { "\n ${it.key::class.simpleName} -> ${it.value::class.simpleName} " }
-//                    .forEach(::println)
 
             p.toOpt()
                     .map { buildJoinsForNaturalRefs(it) }
                     .filter(String::isNotEmpty)
                     .map(p.joinFragments::add)
 
+//            println(p.toString() + "\n")
+
             collectUniqueTypesFrom(p.action, p.joinsMap)
                     .forEach { p.columnFragments += buildFieldPart(it) }
+
+//            println(p)
 
             val sb = StringBuilder() +
                     "SELECT ${p.columnFragments.joinToString(", ")}" +
@@ -183,16 +184,25 @@ class MySqlImpl {
         }
 
         private fun buildJoinsMap(root: Any, p: Parameters): MutableMap<Any, List<Any>> {
+
             val joinsMap = mutableMapOf<Any, List<Any>>()
             root.toOpt()
                     .map {
-                        val list = childrenForParent(it)
-                        if (list.isNotEmpty()) {
+                        val list: List<Any> = childrenForParent(it)
+                        if (it !is List<*> && list.isNotEmpty()) {
+                            // println("it :: $it, ${it::class.simpleName}")
                             joinsMap[it] = list
                         }
                         list
                     }
-                    .xmap { forEach { buildJoinsMap(it, p) } }
+                    .xmap {
+                        forEach {
+                            if (it !is List<*>) {
+                                // println("it :: $it, ${it::class.simpleName}")
+                                buildJoinsMap(it, p)
+                            }
+                        }
+                    }
             return joinsMap
         }
 
@@ -208,36 +218,28 @@ class MySqlImpl {
             val uniques = mutableSetOf<Any>()
             action?.t.toOpt()
                     .map(uniques::add)
+
             joinsMap.iterator()
                     .toOpt()
-                    .lmap { entry: MutableMap.MutableEntry<Any, Any> ->
-
-                        // place: [
-                        //      DSLAddress3,
-                        //      DSLName3,
-                        //      floors: [
-                        //          DSLFloor3,
-                        //          DSLFloor3,
-                        //      ]
-                        // ]
-                        // -> DSLAddress3, DSLFloor3
-                        // println("custom object: ${entry.value}")
-
-                        when (entry.value) {
-                            !is List<*> -> uniques.add(entry.value)
-                            is List<*> -> {
-                                when (val e = (entry.value as List<*>)[0]) {
-                                    is List<*> -> e[0]?.let { uniques.add(it) }
-                                    else -> e?.let { uniques.add(it) }
-                                }
-                            }
-                        }
-                        entry
-                    }
-            println("uniques:")
-            uniques.forEach { println(it::class.simpleName) }
+                    .lmap { entry: MutableMap.MutableEntry<Any, Any> -> getUniques(entry, uniques) }
 
             return uniques
+        }
+
+        private fun getUniques(entry: MutableMap.MutableEntry<Any, Any>, uniques: MutableSet<Any>) {
+            when (val e = entry.value) {
+                is List<*> -> getUniques(e, uniques)
+                else -> uniques.add(e)
+            }
+        }
+
+        private fun getUniques(list: List<*>, uniques: MutableSet<Any>) {
+            list.forEach {
+                when (it) {
+                    is List<*> -> getUniques(it, uniques)
+                    else -> it?.let(uniques::add)
+                }
+            }
         }
 
         class Join(t: Any) : Select.Join(t) {
@@ -357,8 +359,13 @@ class MySqlImpl {
         }
 
         private fun buildFieldPart(type: Any): String {
+
             val (_, alias) = buildUidAndAlias(type)
-            return type::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name}" }
+            return type::class
+                    .declaredMemberProperties
+                    .filter { it !is Collection<*> }
+                    .map { println("XX: $it"); it }
+                    .joinToString(", ") { "${alias}.${it.name}" }
         }
 
         private fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {
