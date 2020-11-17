@@ -363,8 +363,7 @@ class MySqlImpl {
             val (_, alias) = buildUidAndAlias(type)
             return type::class
                     .declaredMemberProperties
-                    .filter { it !is Collection<*> }
-                    .map { println("XX: $it"); it }
+                    .filter { !it.returnType.toString().contains("collection") }
                     .joinToString(", ") { "${alias}.${it.name}" }
         }
 
