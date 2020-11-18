@@ -18,6 +18,7 @@ import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
@@ -159,12 +160,8 @@ class MySqlImpl {
                     .filter(String::isNotEmpty)
                     .map(p.joinFragments::add)
 
-//            println(p.toString() + "\n")
-
             collectUniqueTypesFrom(p.action, p.joinsMap)
                     .forEach { p.columnFragments += buildFieldPart(it) }
-
-//            println(p)
 
             val sb = StringBuilder() +
                     "SELECT ${p.columnFragments.joinToString(", ")}" +
@@ -189,20 +186,12 @@ class MySqlImpl {
             root.toOpt()
                     .map {
                         val list: List<Any> = childrenForParent(it)
-                        if (it !is List<*> && list.isNotEmpty()) {
-                            // println("it :: $it, ${it::class.simpleName}")
+                        if (list.isNotEmpty()) {
                             joinsMap[it] = list
                         }
                         list
                     }
-                    .xmap {
-                        forEach {
-                            if (it !is List<*>) {
-                                // println("it :: $it, ${it::class.simpleName}")
-                                buildJoinsMap(it, p)
-                            }
-                        }
-                    }
+                    .xmap { forEach { buildJoinsMap(it, p) } }
             return joinsMap
         }
 
@@ -359,7 +348,6 @@ class MySqlImpl {
         }
 
         private fun buildFieldPart(type: Any): String {
-
             val (_, alias) = buildUidAndAlias(type)
             return type::class
                     .declaredMemberProperties
@@ -371,7 +359,7 @@ class MySqlImpl {
             return parameters
                     .joinsMap
                     .toOpt()
-                    .xmap { map { buildJoinsOnNaturalRefs(it) }.joinToString(" AND ") }
+                    .xmap { map { buildJoinsOnNaturalRefs(it) }.joinToString(" ") }
                     .filter(::hasContent)
                     .getOrElse { "" }
         }
@@ -385,14 +373,24 @@ class MySqlImpl {
         private fun buildJoinsOnNaturalRefs(parentKeyChildValues: Map.Entry<Any, Any>): String {
             val (parentUid, parentAlias) = buildUidAndAlias(parentKeyChildValues.key)
             return (parentKeyChildValues.value as? List<*>).toOpt()
-                    .lmap { child: Any ->
-                        val (childUid, childAlias) = buildUidAndAlias(child)
+                    .lmap { child: Any -> buildNaturalRefForParent(child, parentUid, parentAlias) }
+                    .xmap { joinToString(" ") }
+                    .getOrElse { "" }
+        }
+
+        private fun buildNaturalRefForParent(t: Any, parentUid: String, parentAlias: String): String {
+
+            return t.toOpt()
+                    .mapTo(List::class)
+                    .map { it.first() }
+                    .ifEmpty { t }
+                    .map { element ->
+                        val (childUid, childAlias) = buildUidAndAlias(element)
                         val joinTableAlias = AliasBuilder.build("$parentUid$childUid")
                         "JOIN $parentUid$childUid $joinTableAlias ON $joinTableAlias.${parentUid}refid = $parentAlias.id" +
                                 " JOIN $childUid $childAlias ON $joinTableAlias.${childUid}refid = $childAlias.id"
                     }
-                    .xmap { joinToString(" AND ") }
-                    .getOrElse("")
+                    .getOrElse { "" }
         }
 
         private fun buildWherePart(p: Sql.Parameters): String {
