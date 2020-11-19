@@ -26,11 +26,6 @@ class MySqlImpl {
     class Create(t: Any) : Sql.Create(t) {
         // TODO: 1 does not include multilayer creates yet
         override fun build(p: Parameters): String {
-
-            // - inspect table columns or create table
-            // - creates and alters (depth?)
-            // p.action
-
             return MySqlCreateBuilder().buildCreate(p, this)
         }
     }
@@ -41,7 +36,6 @@ class MySqlImpl {
             return "SHOW COLUMNS FROM ${UidBuilder.buildUniqueId(t)}"
         }
     }
-
 
     class Drop(t: Any) : Sql.Drop(t) {
         override fun build(p: Parameters): String {

@@ -7,6 +7,7 @@ import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
+import kotlin.math.exp
 
 // FIXME: 50 Fix all select, select-join, multitable inserts, creates
 // TOIMPROVE: test coverage
@@ -105,20 +106,13 @@ internal class DslMapperTest {
 
         val sql = Sql insert DSLPerson("first", "last")
 
-        val (personUid, p) = buildUidAndAlias(DSLPerson())
+        val (personUid, _) = buildUidAndAlias(DSLPerson())
 
-        val expected = "INSERT INTO $personUid $p VALUES(10)" +
-                ";" +
-                ""
+        val expected = "INSERT INTO $personUid (firstName, lastName) VALUES ('first', 'last')"
 
+        val candidate = mapper.map(sql)
 
-    }
-
-    // FIXME: 99
-    @Test
-    fun testInsertOneToManyRelation() {
-
-
+        expect(expected, candidate)
     }
 
     @Test
@@ -134,12 +128,19 @@ internal class DslMapperTest {
 
         val candidate: String = mapper.map(sql)
 
-        // TODO: SUBSELECT should rely on the id instead?
+        // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
         val expected = "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');" +
                 "INSERT INTO $dslAddress2Uid (fullAddress,${dslPlace2Uid}refid) VALUES ('anAddress'," +
                 "(SELECT id from $dslPlace2Uid WHERE rentInCents='80000' ORDER BY id DESC LIMIT 1))"
 
         expect(expected, candidate)
+    }
+
+    // FIXME: 99
+    @Test
+    fun testInsertOneToManyRelation() {
+
+
     }
 
     @Test
@@ -161,12 +162,11 @@ internal class DslMapperTest {
 
     // FIXME: 94
     @Test
-    fun testUpdatingJoinedCustomObject() {
+    fun testUpdatingCustomJoinedObject() {
 
     }
 
-
-        @Test
+    @Test
     fun testBuildingSqlFromDslJoinByNaturalReference() {
         /*
             SELECT
