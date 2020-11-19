@@ -78,13 +78,17 @@ class MySqlImpl {
                 buildInsertSql(type) { typeUid, fields, fieldsValues ->
 
                     val parentUid = UidBuilder.buildUniqueId(parentType)
+                    val tableJoinUid = parentUid + typeUid
 
-                    val fieldsWithValues = getMemberProperties(parentType)
-                            .map { it.joinToString(", ") { p -> "${p.name}='${getFieldValueAsString(p, parentType)}'" } }
+//                    val fieldsWithValues = getMemberProperties(parentType)
+//                            .map { it.joinToString(", ") { p -> "${p.name}='${getFieldValueAsString(p, parentType)}'" } }
 
-                    val selectIdSql = "SELECT id from $parentUid WHERE $fieldsWithValues ORDER BY id DESC LIMIT 1"
+//                    println("fieldsWithValues::$fieldsWithValues")
 
-                    "INSERT INTO $typeUid ($fields,${parentUid}refid) VALUES ($fieldsValues,($selectIdSql))"
+                    "SELECT @placeLastId := LAST_INSERT_ID();" +
+                            "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues);" +
+                            "SELECT @addressLastId := LAST_INSERT_ID();" +
+                            "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@placeLastId, @addressLastId)"
                 }
 
         // FIXME: 90 add test coverage: one-to-many relation
@@ -111,7 +115,7 @@ class MySqlImpl {
         private fun getMemberProperties(type: Any): Opt2<List<KProperty1<out Any, *>>> {
             return type.toOpt()
                     .map { it::class.memberProperties.toCollection(ArrayList()) }
-                    .lfilter { p: KProperty1<out Any, *> -> !isCustom(p.javaField!!) }
+                    .lfilter { p: KProperty1<out Any, *> -> p.javaField != null && !isCustom(p.javaField!!) }
         }
     }
 

@@ -7,7 +7,6 @@ import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
-import kotlin.math.exp
 
 // FIXME: 50 Fix all select, select-join, multitable inserts, creates
 // TOIMPROVE: test coverage
@@ -100,7 +99,6 @@ internal class DslMapperTest {
         expect(expected, candidate)
     }
 
-    // FIXME 98: Insert-No-Custom-Object-Relations
     @Test
     fun testInsertNoCustomRelations() {
 
@@ -115,14 +113,16 @@ internal class DslMapperTest {
         expect(expected, candidate)
     }
 
+    // FIXME: 110
     @Test
     fun testInsertOneToOneRelation() {
 
         val dslAddress2 = DSLAddress2("anAddress")
         val dslPlace2 = DSLPlace2(dslAddress2, rentInCents = 80000)
 
-        val dslAddress2Uid = UidBuilder.buildUniqueId(dslAddress2)
         val dslPlace2Uid = UidBuilder.buildUniqueId(dslPlace2)
+        val dslAddress2Uid = UidBuilder.buildUniqueId(dslAddress2)
+        val tableJoinUid = dslPlace2Uid + dslAddress2Uid
 
         val sql = Sql insert dslPlace2
 
@@ -130,8 +130,10 @@ internal class DslMapperTest {
 
         // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
         val expected = "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');" +
-                "INSERT INTO $dslAddress2Uid (fullAddress,${dslPlace2Uid}refid) VALUES ('anAddress'," +
-                "(SELECT id from $dslPlace2Uid WHERE rentInCents='80000' ORDER BY id DESC LIMIT 1))"
+                "SELECT @placeLastId := LAST_INSERT_ID();" +
+                "INSERT INTO $dslAddress2Uid (fullAddress) VALUES ('anAddress');" +
+                "SELECT @addressLastId := LAST_INSERT_ID();" +
+                "INSERT INTO $tableJoinUid (${dslPlace2Uid}refid, ${dslAddress2Uid}refid) VALUES (@placeLastId, @addressLastId)"
 
         expect(expected, candidate)
     }
@@ -140,7 +142,24 @@ internal class DslMapperTest {
     @Test
     fun testInsertOneToManyRelation() {
 
-
+//        val dslAddress3 = DSLAddress3("anAddress")
+//        val dslFloors3 = listOf(DSLFloor3(1), DSLFloor3(2))
+//        val dslPlace3 = DSLPlace3(dslAddress3, dslFloors3, rentInCents = 80000)
+//
+//        val dslAddress3Uid = UidBuilder.buildUniqueId(dslAddress3)
+//        val dslPlace3Uid = UidBuilder.buildUniqueId(dslPlace3)
+//
+//        // val parentIdSelectSql = "(SELECT id from $dslPlace3Uid WHERE rentInCents='80000' ORDER BY id DESC LIMIT 1)"
+//
+//        val sql = Sql insert dslPlace3
+//        val candidate: String = mapper.map(sql)
+//
+//        // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
+//        val expected = "INSERT INTO $dslPlace3Uid (rentInCents) VALUES ('80000');" +
+//                "SELECT @lastid := LAST_INSERT_ID();" +
+//                "INSERT INTO $dslAddress3Uid (fullAddress,${dslPlace3Uid}refid) VALUES ('anAddress',@lastid)"
+//
+//        expect(expected, candidate)
     }
 
     @Test
