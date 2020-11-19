@@ -121,8 +121,6 @@ internal class DslMapperTest {
 
     }
 
-    // FIXME: 100 Insert and multi level insert?
-    // limit to just one layer?
     @Test
     fun testInsertOneToOneRelation() {
 
@@ -136,9 +134,10 @@ internal class DslMapperTest {
 
         val candidate: String = mapper.map(sql)
 
+        // TODO: SUBSELECT should rely on the id instead?
         val expected = "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');" +
                 "INSERT INTO $dslAddress2Uid (fullAddress,${dslPlace2Uid}refid) VALUES ('anAddress'," +
-                "(SELECT id from $dslPlace2Uid WHERE rentInCents='80000'))"
+                "(SELECT id from $dslPlace2Uid WHERE rentInCents='80000' ORDER BY id DESC LIMIT 1))"
 
         expect(expected, candidate)
     }
@@ -160,8 +159,14 @@ internal class DslMapperTest {
         expect(expected, candidate)
     }
 
-    // FIXME: 101 move auto refs to a join-table car, window, jointable: carwindow
+    // FIXME: 94
     @Test
+    fun testUpdatingJoinedCustomObject() {
+
+    }
+
+
+        @Test
     fun testBuildingSqlFromDslJoinByNaturalReference() {
         /*
             SELECT
@@ -189,7 +194,6 @@ internal class DslMapperTest {
         expect(expected, candidate)
     }
 
-    // FIXME: 104 two natural refs -> coverage
     @Test
     fun testBuildingSqlFromDslJoinByTwoNaturalRefs() {
         /*

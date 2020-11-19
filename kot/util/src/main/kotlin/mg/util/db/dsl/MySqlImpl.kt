@@ -88,11 +88,12 @@ class MySqlImpl {
                     val fieldsWithValues = getMemberProperties(parentType)
                             .map { it.joinToString(", ") { p -> "${p.name}='${getFieldValueAsString(p, parentType)}'" } }
 
-                    val selectIdSql = "SELECT id from $parentUid WHERE $fieldsWithValues"
+                    val selectIdSql = "SELECT id from $parentUid WHERE $fieldsWithValues ORDER BY id DESC LIMIT 1"
 
                     "INSERT INTO $typeUid ($fields,${parentUid}refid) VALUES ($fieldsValues,($selectIdSql))"
                 }
 
+        // FIXME: 90 add test coverage: one-to-many relation
         private fun buildInsertSqlOneToMany(type: Any): String =
                 buildInsertSql(type) { typeUid, fields, fieldsValues ->
                     "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
