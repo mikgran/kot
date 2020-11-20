@@ -20,7 +20,7 @@ internal class DslMapperTest {
             println("\nE:\n<$expected>")
             println("C:\n<$candidate>")
             if (expected is String && candidate is String) {
-                val common = longestCommonSubstrings(expected, candidate)
+                val common = longestCommonSubstring(expected, candidate)
                 if (common.size > 0) {
                     println("\nLongest common part:\n<${common.first()}>")
                 }
@@ -30,7 +30,7 @@ internal class DslMapperTest {
     }
 
     // ref: https://en.wikipedia.org/wiki/Longest_common_substring_problem
-    private fun longestCommonSubstrings(s: String, t: String): MutableSet<String> {
+    private fun longestCommonSubstring(s: String, t: String): MutableSet<String> {
         val table = Array(s.length) { IntArray(t.length) }
         var longest = 0
         val result: MutableSet<String> = HashSet()
