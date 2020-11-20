@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import java.util.*
 
 // FIXME: 50 Fix all select, select-join, multitable inserts, creates
-// TOIMPROVE: test coverage
 internal class DslMapperTest {
 
     private val mapper = DslMapperFactory.get()
