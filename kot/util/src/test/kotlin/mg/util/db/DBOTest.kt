@@ -130,20 +130,11 @@ internal class DBOTest {
         assertTrue(candidates.contains(testPerson2))
     }
 
-    // XXX: 10 fix this
-    // @Test
+    // XXX: 110 fix this, asserts
+    @Test
     fun testSaveWithComposition() {
 
         // TODO 1: use composition for testing
-
-        val b = buildUniqueId(DBOBilling2())
-        val p = buildUniqueId(DBOPerson3())
-        val b2 = build(b)
-        val p2 = build(p)
-
-        val sql = "SELECT * FROM $p $p2 JOIN $b $b2 ON $p2.id = $b2.${p}refid"
-
-//        println("sql: $sql")
 
         val connection = dbConfig.connection
         dbo.ensureTable(DBOBilling2(), connection)
@@ -155,11 +146,11 @@ internal class DBOTest {
 //        println("billing2:")
 //        dbo.showColumns(DBOBilling2(), connection).forEach(::println)
 
-        val candidate = of(dbConfig.connection)
-                .map(Connection::createStatement)
-                .map { it.executeQuery(sql) }
+//        val candidate = of(dbConfig.connection)
+//                .map(Connection::createStatement)
+//                .map { it.executeQuery(sql) }
 
-        assertTrue(candidate.get()!!.next())
+//        assertTrue(candidate.get()!!.next())
     }
 
     @Test

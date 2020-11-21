@@ -80,14 +80,9 @@ class MySqlImpl {
                     val parentUid = UidBuilder.buildUniqueId(parentType)
                     val tableJoinUid = parentUid + typeUid
 
-//                    val fieldsWithValues = getMemberProperties(parentType)
-//                            .map { it.joinToString(", ") { p -> "${p.name}='${getFieldValueAsString(p, parentType)}'" } }
-
-//                    println("fieldsWithValues::$fieldsWithValues")
-
-                    "SELECT @placeLastId := LAST_INSERT_ID();" +
+                    "SELECT LAST_INSERT_ID() INTO @placeLastId;" +
                             "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues);" +
-                            "SELECT @addressLastId := LAST_INSERT_ID();" +
+                            "SELECT LAST_INSERT_ID() INTO @addressLastId;" +
                             "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@placeLastId, @addressLastId)"
                 }
 

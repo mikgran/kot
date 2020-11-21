@@ -50,6 +50,8 @@ class DBO(private val mapper: DefaultDslMapper) {
                 .map(mapper::buildInsert)
                 .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
+        insertSql?.split(";")?.forEach(::println)
+
         getStatement(connection).toOpt()
                 .map { s -> s.executeUpdate(insertSql) }
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
@@ -61,6 +63,7 @@ class DBO(private val mapper: DefaultDslMapper) {
                 .map(this::buildRelationMap)
 
     }
+
     private fun <T : Any> buildRelationMap(t: T): HashMap<T, Set<Any>> {
 
         // Car(name: String, tires: List<Tire>, windows: List<Window>)
@@ -70,8 +73,6 @@ class DBO(private val mapper: DefaultDslMapper) {
         // 1. insert into car -> carid
         // 2. insert into tire with carid
         // 3. insert into window with carid
-
-
 
 
         val relations = hashMapOf<T, Set<Any>>()

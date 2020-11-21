@@ -112,7 +112,6 @@ internal class DslMapperTest {
         expect(expected, candidate)
     }
 
-    // FIXME: 110
     @Test
     fun testInsertOneToOneRelation() {
 
