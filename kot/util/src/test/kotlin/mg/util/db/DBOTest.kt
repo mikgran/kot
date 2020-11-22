@@ -7,9 +7,16 @@ import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
 import mg.util.db.dsl.DefaultDslMapper
+import mg.util.db.dsl.DslMapperFactory
+import mg.util.db.dsl.Sql
+import mg.util.db.dsl.Sql.Select
 import mg.util.db.functional.ResultSetIterator.Companion.iof
+import mg.util.db.functional.toResultSetIterator
+import mg.util.db.persist.ResultSetLazyMapper
+import mg.util.db.persist.ResultSetMapper
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -140,17 +147,42 @@ internal class DBOTest {
         dbo.ensureTable(DBOBilling2(), connection)
         dbo.save(DBOBilling2("10", DBOPerson3("fff", "lll")), connection)
 
-//        println("person3:")
-//        dbo.showColumns(DBOPerson3(), connection).forEach(::println)
+        val dboBilling = buildUniqueId(DBOBilling2())
+        val dboPerson = buildUniqueId(DBOPerson3())
+        val joinTable = "$dboBilling$dboPerson"
+
+        val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10 and DBOPerson3::firstName eq "fff" and DBOPerson3::lastName eq "lll"
+
+        val sqlStr = DslMapperFactory.get().map(sql)
+
+        val aa: List<String> = sqlStr.split("JOIN")
+        val bb = aa.joinToString("\nJOIN")
+        println(bb)
+
+
+
+//        val sql = "SELECT * FROM $dboBilling" +
+//                " JOIN $joinTable ON $joinTable.${dboBilling}refid = $dboBilling.id" +
+//                " JOIN $dboPerson ON $joinTable.${dboPerson}refid = $dboPerson.id"
 //
-//        println("billing2:")
-//        dbo.showColumns(DBOBilling2(), connection).forEach(::println)
+        val candidate = of(dbConfig.connection)
+                .map(Connection::createStatement)
+                .map { it.executeQuery(sqlStr) }
 
-//        val candidate = of(dbConfig.connection)
-//                .map(Connection::createStatement)
-//                .map { it.executeQuery(sql) }
-
-//        assertTrue(candidate.get()!!.next())
+//        // FIXME: 200 asserts
+//        var isColumnsPrinted = false
+//        candidate.map(ResultSet::toResultSetIterator)
+//                .xmap {
+//                    forEach { rs ->
+//                        if (!isColumnsPrinted) {
+//                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
+//                            println()
+//                            isColumnsPrinted = true
+//                        }
+//                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
+//                        println()
+//                    }
+//                }
     }
 
     @Test

@@ -128,9 +128,9 @@ internal class DslMapperTest {
 
         // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
         val expected = "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');" +
-                "SELECT @placeLastId := LAST_INSERT_ID();" +
+                "SELECT LAST_INSERT_ID() INTO @placeLastId;" +
                 "INSERT INTO $dslAddress2Uid (fullAddress) VALUES ('anAddress');" +
-                "SELECT @addressLastId := LAST_INSERT_ID();" +
+                "SELECT LAST_INSERT_ID() INTO @addressLastId;" +
                 "INSERT INTO $tableJoinUid (${dslPlace2Uid}refid, ${dslAddress2Uid}refid) VALUES (@placeLastId, @addressLastId)"
 
         expect(expected, candidate)
@@ -202,7 +202,7 @@ internal class DslMapperTest {
         val (addressUid, a) = buildUidAndAlias(DSLAddress())
         val joinTableAlias = AliasBuilder.build("$placeUid$addressUid")
 
-        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
+        val expected = "SELECT $p.rentInCents, $a.fullAddress" +
                 " FROM $placeUid $p" +
                 " JOIN $placeUid$addressUid $joinTableAlias ON $joinTableAlias.${placeUid}refid = $p.id" +
                 " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id"
@@ -215,7 +215,7 @@ internal class DslMapperTest {
     fun testBuildingSqlFromDslJoinByTwoNaturalRefs() {
         /*
             SELECT
-                d9.address, d9.rentInCents, d10.fullAddress
+                d9.rentInCents, d10.fullAddress
             FROM
                 DSLPlace536353721 d9
             JOIN
@@ -238,7 +238,7 @@ internal class DslMapperTest {
         val pf = AliasBuilder.build("$placeUid$floorUid")
 
         val expected = "SELECT " +
-                "$p.address, $p.rentInCents, $a.fullAddress, $f.number" +
+                "$p.rentInCents, $a.fullAddress, $f.number" +
                 " FROM $placeUid $p" +
                 " JOIN $placeUid$addressUid $pa ON $pa.${placeUid}refid = $p.id" +
                 " JOIN $addressUid $a ON ${pa}.${addressUid}refid = $a.id" +
@@ -253,7 +253,7 @@ internal class DslMapperTest {
     fun testBuildingSqlFromDslJoinByGivenReference() {
         /*
             SELECT
-                d9.address, d9.rentInCents, d10.fullAddress
+                d9.rentInCents, d10.fullAddress
             FROM
                 DSLPlace536353721 d9
             JOIN
@@ -272,7 +272,7 @@ internal class DslMapperTest {
         val (placeDescriptorUid, p2) = buildUidAndAlias(DSLPlaceDescriptor())
         val joinTableAlias = AliasBuilder.build("$placeUid$addressUid")
 
-        val expected = "SELECT $p2.description, ${p2}.placerefid, $p.address, $p.rentInCents, $a.fullAddress" +
+        val expected = "SELECT $p2.description, ${p2}.placerefid, $p.rentInCents, $a.fullAddress" +
                 " FROM $placeUid $p" +
                 " JOIN $placeUid$addressUid $joinTableAlias ON $joinTableAlias.${placeUid}refid = $p.id" +
                 " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id" +

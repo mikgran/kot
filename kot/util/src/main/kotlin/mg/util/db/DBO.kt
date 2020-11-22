@@ -50,7 +50,7 @@ class DBO(private val mapper: DefaultDslMapper) {
                 .map(mapper::buildInsert)
                 .getOrElseThrow { Exception("$UNABLE_TO_BUILD_INSERT$t") }
 
-        insertSql?.split(";")?.forEach(::println)
+        // insertSql?.split(";")?.forEach(::println)
 
         getStatement(connection).toOpt()
                 .map { s -> s.executeUpdate(insertSql) }

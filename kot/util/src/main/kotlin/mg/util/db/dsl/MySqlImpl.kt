@@ -159,9 +159,9 @@ class MySqlImpl {
             val sb = StringBuilder() +
                     "SELECT ${p.columnFragments.joinToString(", ")}" +
                     " FROM ${p.tableFragments.joinToString(", ")}" +
-                    buildWherePart(p) +
                     buildJoinPart(p) +
-                    buildManualJoinPart(p)
+                    buildManualJoinPart(p) +
+                    buildWherePart(p)
             return sb.toString()
         }
 
@@ -340,11 +340,25 @@ class MySqlImpl {
             return field.get(type)
         }
 
+        private var numberOfTimesCalled = 0
+
         private fun buildFieldPart(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
+
+            val listOfStrings: List<String> = listOf("kotlin.", "java.", "int")
+
+            // FIXME 300
+            println(listOfStrings.any { it.contains("Int", ignoreCase = true) })
+
             return type::class
                     .declaredMemberProperties
-                    .filter { !it.returnType.toString().contains("collection") }
+                    .filter { p ->
+                        p.javaField?.let { field ->
+                            listOf("kotlin.", "java.", "int").any { field.type.name.contains(it, ignoreCase = true) }
+                                    &&
+                                    !listOf("util.", "collection").any { field.type.name.contains(it, ignoreCase = true) }
+                        } ?: false
+                    }
                     .joinToString(", ") { "${alias}.${it.name}" }
         }
 

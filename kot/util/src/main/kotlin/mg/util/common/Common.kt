@@ -32,6 +32,7 @@ object Common {
     fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
     private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.") // or startsWith
     private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
+    // FIXME: -1 add testing, doesn't take primitives into count
     fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
 }
 
