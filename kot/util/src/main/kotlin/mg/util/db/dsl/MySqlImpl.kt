@@ -20,6 +20,7 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.javaGetter
 
 class MySqlImpl {
 
@@ -62,6 +63,7 @@ class MySqlImpl {
                     .map { field -> fieldGet(field, dp.typeT) }
                     .map { type -> buildInsertSqlOneToOne(type, t) }
 
+            // XXX
             sqls += getFieldsWithListOfCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
                     .map { type -> buildInsertSqlOneToMany(type) }
@@ -87,10 +89,12 @@ class MySqlImpl {
                 }
 
         // FIXME: 90 add test coverage: one-to-many relation
-        private fun buildInsertSqlOneToMany(type: Any): String =
-                buildInsertSql(type) { typeUid, fields, fieldsValues ->
-                    "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
-                }
+        private fun buildInsertSqlOneToMany(type: Any): String {
+
+            return buildInsertSql(type) { typeUid, fields, fieldsValues ->
+                "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
+            }
+        }
 
         private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
 
@@ -101,16 +105,21 @@ class MySqlImpl {
             val fields = properties
                     .map { it.joinToString(", ") { p -> p.name } }
 
+            // XXX fixme: filter out non list fields
             val fieldsValues = properties
-                    .map { it.joinToString(", ") { p -> "'${getFieldValueAsString(p, type)}'" } }
+                    .map { list: List<KProperty1<*, *>> ->
+                        list.joinToString(", ") {
+                            "'${getFieldValueAsString(it, type)}'"
+                        }
+                    }
 
             return insertCreateFunction(typeUid, fields, fieldsValues)
         }
 
-        private fun getMemberProperties(type: Any): Opt2<List<KProperty1<out Any, *>>> {
+        private fun getMemberProperties(type: Any): Opt2<List<KProperty1<*, *>>> {
             return type.toOpt()
                     .map { it::class.memberProperties.toCollection(ArrayList()) }
-                    .lfilter { p: KProperty1<out Any, *> -> p.javaField != null && !isCustom(p.javaField!!) }
+                    .lfilter { p: KProperty1<*, *> -> p.javaField != null && !isCustom(p.javaField!!) }
         }
     }
 
@@ -340,27 +349,34 @@ class MySqlImpl {
             return field.get(type)
         }
 
-        private var numberOfTimesCalled = 0
-
         private fun buildFieldPart(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
 
-            val listOfStrings: List<String> = listOf("kotlin.", "java.", "int")
-
             // FIXME 300
-            println(listOfStrings.any { it.contains("Int", ignoreCase = true) })
+            println(includedTypes.any { it.contains("Int", ignoreCase = true) })
 
             return type::class
                     .declaredMemberProperties
-                    .filter { p ->
-                        p.javaField?.let { field ->
-                            listOf("kotlin.", "java.", "int").any { field.type.name.contains(it, ignoreCase = true) }
-                                    &&
-                                    !listOf("util.", "collection").any { field.type.name.contains(it, ignoreCase = true) }
-                        } ?: false
-                    }
+                    .filter(::isCustomField)
                     .joinToString(", ") { "${alias}.${it.name}" }
         }
+
+        private fun isCustomField(property: KProperty1<*, *>): Boolean {
+            val field = property.javaField
+            return field != null &&
+                    isFieldContainsAnyOf(field, includedTypes) &&
+                    !isFieldContainsAnyOf(field, excludedTypes)
+        }
+
+        private val primitiveTypes = listOf("int", "long")
+        private val excludedTypes = listOf("util.", "collection")
+        private val includedTypes = listOf("kotlin.", "java.", *(primitiveTypes.toTypedArray()))
+        private fun isFieldContains(field: Field, nameCaseIgnored: String): Boolean {
+            return field.type.typeName.contains(nameCaseIgnored, ignoreCase = true)
+        }
+
+        private fun isFieldContainsAnyOf(field: Field, listOfNamesCaseIgnored: List<String>): Boolean =
+                listOfNamesCaseIgnored.any { isFieldContains(field, it) }
 
         private fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {
             return parameters

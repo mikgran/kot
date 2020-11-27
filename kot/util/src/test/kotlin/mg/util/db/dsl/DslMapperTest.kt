@@ -140,24 +140,24 @@ internal class DslMapperTest {
     @Test
     fun testInsertOneToManyRelation() {
 
-//        val dslAddress3 = DSLAddress3("anAddress")
-//        val dslFloors3 = listOf(DSLFloor3(1), DSLFloor3(2))
-//        val dslPlace3 = DSLPlace3(dslAddress3, dslFloors3, rentInCents = 80000)
-//
-//        val dslAddress3Uid = UidBuilder.buildUniqueId(dslAddress3)
-//        val dslPlace3Uid = UidBuilder.buildUniqueId(dslPlace3)
-//
-//        // val parentIdSelectSql = "(SELECT id from $dslPlace3Uid WHERE rentInCents='80000' ORDER BY id DESC LIMIT 1)"
-//
-//        val sql = Sql insert dslPlace3
-//        val candidate: String = mapper.map(sql)
-//
-//        // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
-//        val expected = "INSERT INTO $dslPlace3Uid (rentInCents) VALUES ('80000');" +
-//                "SELECT @lastid := LAST_INSERT_ID();" +
-//                "INSERT INTO $dslAddress3Uid (fullAddress,${dslPlace3Uid}refid) VALUES ('anAddress',@lastid)"
-//
-//        expect(expected, candidate)
+        val dslAddress3 = DSLAddress3("anAddress")
+        val dslFloors3 = listOf(DSLFloor3(1), DSLFloor3(2))
+        val dslPlace3 = DSLPlace3(dslAddress3, dslFloors3, rentInCents = 80000)
+
+        val dslAddress3Uid = UidBuilder.buildUniqueId(dslAddress3)
+        val dslPlace3Uid = UidBuilder.buildUniqueId(dslPlace3)
+
+        // val parentIdSelectSql = "(SELECT id from $dslPlace3Uid WHERE rentInCents='80000' ORDER BY id DESC LIMIT 1)"
+
+        val sql = Sql insert dslPlace3
+        val candidate: String = mapper.map(sql)
+
+        // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
+        val expected = "INSERT INTO $dslPlace3Uid (rentInCents) VALUES ('80000');" +
+                "SELECT @lastid := LAST_INSERT_ID();" +
+                "INSERT INTO $dslAddress3Uid (fullAddress,${dslPlace3Uid}refid) VALUES ('anAddress',@lastid)"
+
+        expect(expected, candidate)
     }
 
     @Test

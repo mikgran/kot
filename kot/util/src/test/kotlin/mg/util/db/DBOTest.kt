@@ -1,6 +1,5 @@
 package mg.util.db
 
-import mg.util.db.AliasBuilder.build
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder.build
 import mg.util.db.UidBuilder.buildUniqueId
@@ -9,14 +8,9 @@ import mg.util.db.config.TestConfig
 import mg.util.db.dsl.DefaultDslMapper
 import mg.util.db.dsl.DslMapperFactory
 import mg.util.db.dsl.Sql
-import mg.util.db.dsl.Sql.Select
 import mg.util.db.functional.ResultSetIterator.Companion.iof
-import mg.util.db.functional.toResultSetIterator
-import mg.util.db.persist.ResultSetLazyMapper
-import mg.util.db.persist.ResultSetMapper
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
-import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
