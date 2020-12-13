@@ -20,7 +20,6 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
-import kotlin.reflect.jvm.javaGetter
 
 class MySqlImpl {
 
@@ -82,10 +81,10 @@ class MySqlImpl {
                     val parentUid = UidBuilder.buildUniqueId(parentType)
                     val tableJoinUid = parentUid + typeUid
 
-                    "SELECT LAST_INSERT_ID() INTO @placeLastId;" +
+                    "SELECT LAST_INSERT_ID() INTO @parentLastId;" +
                             "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues);" +
-                            "SELECT LAST_INSERT_ID() INTO @addressLastId;" +
-                            "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@placeLastId, @addressLastId)"
+                            "SELECT LAST_INSERT_ID() INTO @childLastId;" +
+                            "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@parentLastId, @childLastId)"
                 }
 
         // FIXME: 90 add test coverage: one-to-many relation
@@ -98,9 +97,16 @@ class MySqlImpl {
 
         private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
 
+            if (type::class.simpleName?.contains("array", ignoreCase = true) == true) {
+                return ""
+            }
+
             val typeUid = UidBuilder.buildUniqueId(type)
 
-            val properties = getMemberProperties(type)
+            val properties = getNonCollectionMemberProperties(type)
+                    .lfilter { kProperty1: KProperty1<*, *> ->
+                        !kProperty1::returnType.name.contains("Array")
+                    }
 
             val fields = properties
                     .map { it.joinToString(", ") { p -> p.name } }
@@ -116,7 +122,7 @@ class MySqlImpl {
             return insertCreateFunction(typeUid, fields, fieldsValues)
         }
 
-        private fun getMemberProperties(type: Any): Opt2<List<KProperty1<*, *>>> {
+        private fun getNonCollectionMemberProperties(type: Any): Opt2<List<KProperty1<*, *>>> {
             return type.toOpt()
                     .map { it::class.memberProperties.toCollection(ArrayList()) }
                     .lfilter { p: KProperty1<*, *> -> p.javaField != null && !isCustom(p.javaField!!) }
@@ -353,30 +359,26 @@ class MySqlImpl {
             val (_, alias) = buildUidAndAlias(type)
 
             // FIXME 300
-            println(includedTypes.any { it.contains("Int", ignoreCase = true) })
+            // println("includedTypes contains:: " + includedTypes.any { it.contains("Int", ignoreCase = true) })
 
             return type::class
                     .declaredMemberProperties
+                    .mapNotNull { it.javaField }
                     .filter(::isCustomField)
                     .joinToString(", ") { "${alias}.${it.name}" }
         }
 
-        private fun isCustomField(property: KProperty1<*, *>): Boolean {
-            val field = property.javaField
-            return field != null &&
-                    isFieldContainsAnyOf(field, includedTypes) &&
-                    !isFieldContainsAnyOf(field, excludedTypes)
+        private fun isCustomField(field: Field): Boolean {
+            return includedTypes.any { isFieldTypeName(field, it) } &&
+                    !excludedTypes.any { isFieldTypeName(field, it) }
         }
+
+        private fun isFieldTypeName(field: Field, it: String) =
+                field.type.typeName.contains(it, ignoreCase = true)
 
         private val primitiveTypes = listOf("int", "long")
         private val excludedTypes = listOf("util.", "collection")
         private val includedTypes = listOf("kotlin.", "java.", *(primitiveTypes.toTypedArray()))
-        private fun isFieldContains(field: Field, nameCaseIgnored: String): Boolean {
-            return field.type.typeName.contains(nameCaseIgnored, ignoreCase = true)
-        }
-
-        private fun isFieldContainsAnyOf(field: Field, listOfNamesCaseIgnored: List<String>): Boolean =
-                listOfNamesCaseIgnored.any { isFieldContains(field, it) }
 
         private fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {
             return parameters

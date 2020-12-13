@@ -13,27 +13,27 @@ class FieldAccessor private constructor() {
             return field.get(type)
         }
 
-        fun getFieldsWithCustoms(dp: DslParameters): List<Field> {
-            return dp.typeT!!::class.java
-                    .declaredFields
-                    .filterNotNull()
-                    .filter(::isCustom)
-        }
+        fun getFieldsWithCustoms(dp: DslParameters): List<Field> =
+                dp.typeT!!::class.java
+                        .declaredFields
+                        .filterNotNull()
+                        .filter(::isCustom)
 
-        fun getFieldsWithListOfCustoms(dp: DslParameters): List<Field> {
-            return dp.typeT!!::class.java
-                    .declaredFields
-                    .filterNotNull()
-                    .filter(::isList)
-                    .filter { isSingleTypeList(it, dp) } // multiple type lists not supported atm.
-        }
+        fun getFieldsWithListOfCustoms(dp: DslParameters): List<Field> =
+                getFieldsWithListOfCustoms(dp.typeT!!)
 
-        private fun isSingleTypeList(field: Field, dp: DslParameters): Boolean {
-            return (fieldGet(field, dp.typeT) as List<*>)
-                    .filterNotNull()
-                    .distinctBy { i -> "${i::class.java.packageName}.${i::class.java.simpleName}" }
-                    .size == 1
-        }
+        fun getFieldsWithListOfCustoms(type: Any): List<Field> =
+                type::class.java
+                        .declaredFields
+                        .filterNotNull()
+                        .filter(::isList)
+                        .filter { isSingleTypeList(it, type) } // multiple type lists not supported atm.
+
+        private fun isSingleTypeList(field: Field, type: Any): Boolean =
+                (fieldGet(field, type) as List<*>)
+                        .filterNotNull()
+                        .distinctBy { i -> "${i::class.java.packageName}.${i::class.java.simpleName}" }
+                        .size == 1
 
     }
 }

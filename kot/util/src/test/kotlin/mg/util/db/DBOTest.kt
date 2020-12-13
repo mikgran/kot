@@ -149,9 +149,9 @@ internal class DBOTest {
 
         val sqlStr = DslMapperFactory.get().map(sql)
 
-        val aa: List<String> = sqlStr.split("JOIN")
-        val bb = aa.joinToString("\nJOIN")
-        println(bb)
+//        val aa: List<String> = sqlStr.split("JOIN")
+//        val bb = aa.joinToString("\nJOIN")
+//        println(bb)
 
 
 

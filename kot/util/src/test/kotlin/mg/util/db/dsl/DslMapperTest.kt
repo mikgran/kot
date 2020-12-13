@@ -128,10 +128,10 @@ internal class DslMapperTest {
 
         // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
         val expected = "INSERT INTO $dslPlace2Uid (rentInCents) VALUES ('80000');" +
-                "SELECT LAST_INSERT_ID() INTO @placeLastId;" +
+                "SELECT LAST_INSERT_ID() INTO @parentLastId;" +
                 "INSERT INTO $dslAddress2Uid (fullAddress) VALUES ('anAddress');" +
-                "SELECT LAST_INSERT_ID() INTO @addressLastId;" +
-                "INSERT INTO $tableJoinUid (${dslPlace2Uid}refid, ${dslAddress2Uid}refid) VALUES (@placeLastId, @addressLastId)"
+                "SELECT LAST_INSERT_ID() INTO @childLastId;" +
+                "INSERT INTO $tableJoinUid (${dslPlace2Uid}refid, ${dslAddress2Uid}refid) VALUES (@parentLastId, @childLastId)"
 
         expect(expected, candidate)
     }
@@ -146,16 +146,26 @@ internal class DslMapperTest {
 
         val dslAddress3Uid = UidBuilder.buildUniqueId(dslAddress3)
         val dslPlace3Uid = UidBuilder.buildUniqueId(dslPlace3)
-
-        // val parentIdSelectSql = "(SELECT id from $dslPlace3Uid WHERE rentInCents='80000' ORDER BY id DESC LIMIT 1)"
+        val dslFloor3Uid = UidBuilder.buildUniqueId(DSLFloor3())
+        val placeAddressJoinUid = dslPlace3Uid + dslAddress3Uid
+        val placeFloorJoinUid = dslPlace3Uid + dslFloor3Uid
 
         val sql = Sql insert dslPlace3
         val candidate: String = mapper.map(sql)
 
         // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
         val expected = "INSERT INTO $dslPlace3Uid (rentInCents) VALUES ('80000');" +
-                "SELECT @lastid := LAST_INSERT_ID();" +
-                "INSERT INTO $dslAddress3Uid (fullAddress,${dslPlace3Uid}refid) VALUES ('anAddress',@lastid)"
+                "SELECT LAST_INSERT_ID() INTO @parentLastId;" +
+                "INSERT INTO $dslAddress3Uid (fullAddress) VALUES ('anAddress');" +
+                "SELECT LAST_INSERT_ID() INTO @childLastId;" +
+                "INSERT INTO $placeAddressJoinUid (${dslPlace3Uid}refid, ${dslAddress3Uid}refid) VALUES (@parentLastId, @childLastId);" +
+                "INSERT INTO $dslFloor3Uid (floor) VALUES (1);" +
+                "SELECT LAST_INSERT_ID() INTO @childLastId;" +
+                "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId);" +
+                "INSERT INTO $dslFloor3Uid (floor) VALUES (2);" +
+                "SELECT LAST_INSERT_ID() INTO @childLastId;" +
+                "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId);"
+
 
         expect(expected, candidate)
     }
