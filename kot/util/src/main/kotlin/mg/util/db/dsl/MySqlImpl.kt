@@ -103,29 +103,31 @@ class MySqlImpl {
 
             val typeUid = UidBuilder.buildUniqueId(type)
 
-            val properties = getNonCollectionMemberProperties(type)
-                    .lfilter { kProperty1: KProperty1<*, *> ->
-                        !kProperty1::returnType.name.contains("Array")
-                    }
+            val properties = getNonArrayNonCollectionMemberProperties(type)
 
-            val fields = properties
-                    .map { it.joinToString(", ") { p -> p.name } }
+            val fields = properties.map { it.joinToString(", ") { p -> p.name } }
 
             // XXX fixme: filter out non list fields
-            val fieldsValues = properties
-                    .map { list: List<KProperty1<*, *>> ->
-                        list.joinToString(", ") {
-                            "'${getFieldValueAsString(it, type)}'"
-                        }
-                    }
+            val fieldsValues = getFieldsValuesAsStringCommaSeparated(properties, type)
 
             return insertCreateFunction(typeUid, fields, fieldsValues)
         }
 
-        private fun getNonCollectionMemberProperties(type: Any): Opt2<List<KProperty1<*, *>>> {
+        private fun getFieldsValuesAsStringCommaSeparated(properties: Opt2<List<KProperty1<*, *>>>, type: Any): Opt2<String> =
+                properties.map { list: List<KProperty1<*, *>> ->
+                    list.joinToString(", ") {
+                        "'${getFieldValueAsString(it, type)}'"
+                    }
+                }
+
+        private fun getNonArrayNonCollectionMemberProperties(type: Any): Opt2<List<KProperty1<*, *>>> {
             return type.toOpt()
-                    .map { it::class.memberProperties.toCollection(ArrayList()) }
-                    .lfilter { p: KProperty1<*, *> -> p.javaField != null && !isCustom(p.javaField!!) }
+                    .map { it::class.memberProperties }
+                    .lfilter { p: KProperty1<*, *> ->
+                        p.javaField != null
+                                && !isCustom(p.javaField!!)
+                                && !p::returnType.name.contains("Array")
+                    }
         }
     }
 
