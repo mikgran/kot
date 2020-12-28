@@ -141,8 +141,14 @@ internal class DslMapperTest {
     fun testInsertOneToManyRelation() {
 
         val dslAddress3 = DSLAddress3("anAddress")
-        val dslFloors3 = listOf(DSLFloor3(1), DSLFloor3(2))
+        val dslFloors3 = listOf(DSLFloor3(10), DSLFloor3(20))
         val dslPlace3 = DSLPlace3(dslAddress3, dslFloors3, rentInCents = 80000)
+
+        val myval = DSLPlace3(
+                DSLAddress3("myAddress 1 A 2"),
+                listOf(DSLFloor3(1)),
+                rentInCents = 100000
+        )
 
         val dslAddress3Uid = UidBuilder.buildUniqueId(dslAddress3)
         val dslPlace3Uid = UidBuilder.buildUniqueId(dslPlace3)

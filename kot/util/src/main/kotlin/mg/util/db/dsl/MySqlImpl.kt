@@ -52,6 +52,20 @@ class MySqlImpl {
                 uniqueIdAlias = AliasBuilder.build(uniqueId!!)
             }
 
+            // - collect list of map of parent-child combinations
+            // - none of the parent, parent-child contains any arrays, collections, sets
+            // - insert parent
+            // - insert any children with parent refs
+            /*
+            building - floor, floor, floor
+            building - address
+            address - street
+             */
+
+            
+
+
+
             val sqls = mutableListOf<String>()
 
             // FIXME 103 parent relation needs to be in the database before one-to-one or one-to-many
@@ -65,7 +79,7 @@ class MySqlImpl {
             // XXX
             sqls += getFieldsWithListOfCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
-                    .map { type -> buildInsertSqlOneToMany(type) }
+                    .map { type ->  buildInsertSqlOneToMany(type) }
 
             return sqls.joinToString(";")
         }
