@@ -14,7 +14,10 @@ class FieldAccessor private constructor() {
         }
 
         fun getFieldsWithCustoms(dp: DslParameters): List<Field> =
-                dp.typeT!!::class.java
+                getFieldsWithCustoms(dp.typeT!!)
+
+        fun getFieldsWithCustoms(type: Any): List<Field> =
+                type::class.java
                         .declaredFields
                         .filterNotNull()
                         .filter(::isCustom)

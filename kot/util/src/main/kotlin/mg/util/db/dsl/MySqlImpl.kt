@@ -52,7 +52,7 @@ class MySqlImpl {
                 uniqueIdAlias = AliasBuilder.build(uniqueId!!)
             }
 
-            // - collect list of map of parent-child combinations
+            // - collect map of lists of parent-child combinations
             // - none of the parent, parent-child contains any arrays, collections, sets
             // - insert parent
             // - insert any children with parent refs
@@ -62,24 +62,22 @@ class MySqlImpl {
             address - street
              */
 
-            
-
-
-
             val sqls = mutableListOf<String>()
 
-            // FIXME 103 parent relation needs to be in the database before one-to-one or one-to-many
+            // FIXME 103
             // change to case a, b or c
             sqls += buildInsertSql(t)
 
             sqls += getFieldsWithCustoms(dp)
                     .map { field -> fieldGet(field, dp.typeT) }
-                    .map { type -> buildInsertSqlOneToOne(type, t) }
+                    .map { buildInsertSqlOneToOne(it, t) }
 
-            // XXX
+            // TODO fix the list processing and parentId usage
             sqls += getFieldsWithListOfCustoms(dp)
-                    .map { field -> fieldGet(field, dp.typeT) }
-                    .map { type ->  buildInsertSqlOneToMany(type) }
+                    .map { field -> fieldGet(field, dp.typeT) as List<*> }
+                    .flatten()
+                    .filterNotNull()
+                    .map { buildInsertSqlOneToOne(it, t) }
 
             return sqls.joinToString(";")
         }
@@ -101,17 +99,18 @@ class MySqlImpl {
                             "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@parentLastId, @childLastId)"
                 }
 
-        // FIXME: 90 add test coverage: one-to-many relation
-        private fun buildInsertSqlOneToMany(type: Any): String {
-
+        // TODO: 90 add test coverage: one-to-many relation
+        private fun buildInsertSqlOneToMany(children: List<Any>, type: Any): String {
             return buildInsertSql(type) { typeUid, fields, fieldsValues ->
+
                 "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
             }
         }
 
         private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
 
-            if (type::class.simpleName?.contains("array", ignoreCase = true) == true) {
+            val typeName = type::class.simpleName
+            if (typeName?.contains("array", ignoreCase = true) == true) {
                 return ""
             }
 
@@ -121,7 +120,6 @@ class MySqlImpl {
 
             val fields = properties.map { it.joinToString(", ") { p -> p.name } }
 
-            // XXX fixme: filter out non list fields
             val fieldsValues = getFieldsValuesAsStringCommaSeparated(properties, type)
 
             return insertCreateFunction(typeUid, fields, fieldsValues)

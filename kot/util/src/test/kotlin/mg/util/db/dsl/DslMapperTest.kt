@@ -1,55 +1,17 @@
 package mg.util.db.dsl
 
 import mg.util.common.Common
+import mg.util.common.TestUtil
 import mg.util.db.AliasBuilder
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.util.*
 
 // FIXME: 50 Fix all select, select-join, multitable inserts, creates
 internal class DslMapperTest {
 
     private val mapper = DslMapperFactory.get()
-
-    private fun <T : Any> expect(expected: T, candidate: T) {
-        assertNotNull(candidate)
-        if (expected != candidate) {
-            println("\nE:\n<$expected>")
-            println("C:\n<$candidate>")
-            if (expected is String && candidate is String) {
-                val common = longestCommonSubstring(expected, candidate)
-                if (common.size > 0) {
-                    println("\nLongest common part:\n<${common.first()}>")
-                }
-            }
-        }
-        assertEquals(expected, candidate)
-    }
-
-    // ref: https://en.wikipedia.org/wiki/Longest_common_substring_problem
-    private fun longestCommonSubstring(s: String, t: String): MutableSet<String> {
-        val table = Array(s.length) { IntArray(t.length) }
-        var longest = 0
-        val result: MutableSet<String> = HashSet()
-        for (i in s.indices) {
-            for (j in t.indices) {
-                if (s[i] != t[j]) {
-                    continue
-                }
-                table[i][j] = if (i == 0 || j == 0) 1 else 1 + table[i - 1][j - 1]
-                if (table[i][j] > longest) {
-                    longest = table[i][j]
-                    result.clear()
-                }
-                if (table[i][j] == longest) {
-                    result.add(s.substring(i - longest + 1, i + 1))
-                }
-            }
-        }
-        return result
-    }
 
     private fun assertHasContent(candidate: String) {
         assertTrue(Common.hasContent(candidate), "no mapped content")
@@ -63,7 +25,7 @@ internal class DslMapperTest {
         val candidate = mapper.map(sql)
 
         val expected = "CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)"
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -79,7 +41,7 @@ internal class DslMapperTest {
                 "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, number MEDIUMINT NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $buildingUid$floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${buildingUid}refid MEDIUMINT NOT NULL, ${floorUid}refid MEDIUMINT NOT NULL)"
 
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -95,7 +57,7 @@ internal class DslMapperTest {
                 "CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
                 "CREATE TABLE IF NOT EXISTS $placeUid$addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${placeUid}refid MEDIUMINT NOT NULL, ${addressUid}refid MEDIUMINT NOT NULL)"
 
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -109,7 +71,7 @@ internal class DslMapperTest {
 
         val candidate = mapper.map(sql)
 
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -133,7 +95,7 @@ internal class DslMapperTest {
                 "SELECT LAST_INSERT_ID() INTO @childLastId;" +
                 "INSERT INTO $tableJoinUid (${dslPlace2Uid}refid, ${dslAddress2Uid}refid) VALUES (@parentLastId, @childLastId)"
 
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     // FIXME: 99
@@ -143,12 +105,6 @@ internal class DslMapperTest {
         val dslAddress3 = DSLAddress3("anAddress")
         val dslFloors3 = listOf(DSLFloor3(10), DSLFloor3(20))
         val dslPlace3 = DSLPlace3(dslAddress3, dslFloors3, rentInCents = 80000)
-
-        val myval = DSLPlace3(
-                DSLAddress3("myAddress 1 A 2"),
-                listOf(DSLFloor3(1)),
-                rentInCents = 100000
-        )
 
         val dslAddress3Uid = UidBuilder.buildUniqueId(dslAddress3)
         val dslPlace3Uid = UidBuilder.buildUniqueId(dslPlace3)
@@ -173,7 +129,7 @@ internal class DslMapperTest {
                 "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId);"
 
 
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -190,7 +146,7 @@ internal class DslMapperTest {
         val expected = "UPDATE $uid $alias SET firstName = 'newFirstName', lastName = 'newLastName'" +
                 " WHERE $alias.firstName = 'firstName'"
 
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     // FIXME: 94
@@ -224,7 +180,7 @@ internal class DslMapperTest {
                 " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id"
 
         assertHasContent(candidate)
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -262,7 +218,7 @@ internal class DslMapperTest {
                 " JOIN $floorUid $f ON ${pf}.${floorUid}refid = $f.id"
 
         assertHasContent(candidate)
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -295,7 +251,7 @@ internal class DslMapperTest {
                 " JOIN $placeDescriptorUid $p2 ON $p.id = $p2.placerefid"
 
         assertHasContent(candidate)
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -308,7 +264,7 @@ internal class DslMapperTest {
         val candidate = mapper.map(sql)
 
         assertHasContent(candidate)
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -321,7 +277,7 @@ internal class DslMapperTest {
         val candidate = mapper.map(sql)
 
         assertHasContent(candidate)
-        expect(expected, candidate)
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -332,7 +288,7 @@ internal class DslMapperTest {
 
         val sql = mapper.map(dsl)
 
-        expect("DELETE FROM $uid WHERE firstName = 'Something'", sql)
+        TestUtil.expect("DELETE FROM $uid WHERE firstName = 'Something'", sql)
     }
 
     private fun <T : Any> buildUidAndAlias(t: T): Pair<String, String> {
