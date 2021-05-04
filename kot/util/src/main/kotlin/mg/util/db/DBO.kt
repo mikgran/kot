@@ -107,13 +107,13 @@ class DBO(private val mapper: DefaultDslMapper) {
         getStatement(connection).toOpt()
                 .mapWith(listSqls) { stmt, sqls -> sqls.map { stmt.addBatch(it) }; stmt }
                 .map { it.executeBatch() }
-                .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
+                .getOrElseThrow { Exception("$UNABLE_TO_DO_UPDATE $listSqls") }
     }
 
     private fun singleUpdate(connection: Connection, listSqls: List<String>) {
         getStatement(connection).toOpt()
                 .mapWith(listSqls) { stmt, sqls -> stmt.executeUpdate(sqls[0]) }
-                .getOrElseThrow { Exception(UNABLE_TO_CREATE_TABLE) }
+                .getOrElseThrow { Exception("$UNABLE_TO_DO_UPDATE $listSqls") }
     }
 
     fun <T : Any> find(t: T, connection: Connection): List<T> {
@@ -165,6 +165,7 @@ class DBO(private val mapper: DefaultDslMapper) {
         const val UNABLE_TO_CREATE_STATEMENT = "Unable to build create statement"
         const val UNABLE_TO_BUILD_CREATE_TABLE = "Unable to build create table"
         const val UNABLE_TO_CREATE_TABLE = "Unable to create a new table"
+        const val UNABLE_TO_DO_UPDATE = "Unable to do update: "
         // const val UNABLE_TO_DO_DSL_FIND = "Unable to find an object with: "
     }
 }
