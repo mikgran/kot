@@ -23,7 +23,7 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
 
         val matchedRight = right.match(ref, filter, mapper)
 
-        return BiOpt.of(right, matchedRight.right()) as BiOpt<T, V>
+        return of(right, matchedRight.right()) as BiOpt<T, V>
     }
 
     fun caseOf(predicate: (T?) -> Boolean,
@@ -46,7 +46,7 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
     fun filter(filter: (T) -> Boolean): BiOpt<T, V> = when {
 
         left.isPresent() && filter(left.get() as T) -> this
-        else -> BiOpt.empty()
+        else -> empty()
     }
 
     fun getLeftOrElseThrow(exceptionProducer: () -> Throwable): T? {
