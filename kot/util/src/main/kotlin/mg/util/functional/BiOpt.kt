@@ -36,12 +36,7 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
             val newRight: V? = mapper(left.get())
             val oldLeft: T? = left.get()
 
-            val newBiOpt: BiOpt<out T, out V> = of(oldLeft, newRight)
-
-
-            return BiOpt.Factory.of(
-                    oldLeft,
-                    newRight)
+            return of(oldLeft, newRight)
         }
 
         return this
