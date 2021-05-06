@@ -33,8 +33,15 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
                 left.isPresent() &&
                 predicate(left.get())) {
 
-            val newRight = mapper(left.get())
-            return BiOpt.of(left.get(), newRight)
+            val newRight: V? = mapper(left.get())
+            val oldLeft: T? = left.get()
+
+            val newBiOpt: BiOpt<out T, out V> = of(oldLeft, newRight)
+
+
+            return BiOpt.Factory.of(
+                    oldLeft,
+                    newRight)
         }
 
         return this
@@ -63,17 +70,15 @@ class BiOpt<T, V>(l: Opt<T?>, r: Opt<V?>) {
 
     companion object Factory {
 
-        @JvmStatic
-        fun <T, V> of(t: T?, v: V?) = when (t) {
-            null -> empty()
-            else -> BiOpt(Opt.of(t), Opt.of(v))
-        }
+        fun <T, V> of(t: T?, v: V?): BiOpt<T, V> = when (t) {
+                null -> empty()
+                else -> BiOpt(Opt.of(t), Opt.of(v))
+            }
 
-        @JvmStatic
-        fun <T, V> of(t: Opt<T?>, v: Opt<V?>) = when {
-            t.isPresent() || v.isPresent() -> BiOpt(t, v)
-            else -> empty()
-        }
+        fun <T, V> of(t: Opt<T?>, v: Opt<V?>): BiOpt<T, V> = when {
+                t.isPresent() || v.isPresent() -> BiOpt(t, v)
+                else -> empty()
+            }
 
         @JvmStatic
         fun <T, V> empty() = BiOpt(Opt.empty<T>(), Opt.empty<V>())

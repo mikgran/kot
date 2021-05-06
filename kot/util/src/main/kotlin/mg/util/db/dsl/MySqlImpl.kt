@@ -116,14 +116,16 @@ class MySqlImpl {
 
             val typeUid = UidBuilder.buildUniqueId(type)
 
-            println()
-            println("type: ${type::class.simpleName}")
-            type::class.memberProperties.forEach { println("${it.javaField?.type?.simpleName}, ${it.name}") }
+//            println()
+//            println("type: ${type::class.simpleName}")
+//            type::class.memberProperties.forEach { println("${it.javaField?.type?.simpleName}, ${it.name}") }
+
+
 
             val properties = getNonArrayNonCollectionMemberProperties(type)
 
-            println("properties:")
-            properties.get()?.forEach { println("${it.javaField?.type?.simpleName}, ${it.name}") }
+//            println("properties:")
+//            properties.get()?.forEach { println("${it.javaField?.type?.simpleName}, ${it.name}") }
 
 
             val fields = properties.map { it.joinToString(", ") { p -> p.name } }
@@ -144,11 +146,13 @@ class MySqlImpl {
             return type.toOpt()
                     .map { it::class.memberProperties }
                     .lfilter { p: KProperty1<*, *> ->
-                        //println("property: ${p.name}, type: ${p.javaField?.type}")
+
+                        val typeName = p.javaField?.type?.toString() ?: ""
+
                         p.javaField != null
                                 && !isCustom(p.javaField!!)
-                                && !(p.javaField?.type?.toString()?.contains("Array", ignoreCase = true) ?: false)
-                                && !(p.javaField?.type?.toString()?.contains("list", ignoreCase = true) ?: false)
+                                && "Array" !in typeName
+                                && "List" !in typeName
                     }
         }
     }
