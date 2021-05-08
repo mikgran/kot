@@ -57,9 +57,9 @@ class MySqlImpl {
             // - insert parent
             // - insert any children with parent refs
             /*
-            building - floor, floor, floor
-            building - address
-            address - street
+            building - floor, floor, floor -> one to many
+            building - address -> one to one
+            address - street -> one to one
              */
 
             val sqls = mutableListOf<String>()
@@ -68,16 +68,21 @@ class MySqlImpl {
             // change to case a, b or c
             sqls += buildInsertSql(t)
 
-            sqls += getFieldsWithCustoms(dp)
+            val customFields = getFieldsWithCustoms(dp)
+            val listsWithCustoms = getFieldsWithListOfCustoms(dp)
+
+            if (customFields.size + listsWithCustoms.size > 0) {
+                sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId"
+            }
+
+            sqls += customFields
                     .map { field -> fieldGet(field, dp.typeT) }
                     .map { buildInsertSqlOneToOne(it, t) }
 
             // TODO fix the list processing and parentId usage
-            sqls += getFieldsWithListOfCustoms(dp)
-                    .map { field -> fieldGet(field, dp.typeT) as List<*> }
-                    .flatten()
-                    .filterNotNull()
-                    .map { buildInsertSqlOneToOne(it, t) }
+//            sqls += fieldsWithListOfCustoms
+//                    .mapNotNull { field -> fieldGet(field, dp.typeT) as List<*> }
+//                    .map { buildInsertSqlOneToMany(it, t) }
 
             return sqls.joinToString(";")
         }
@@ -93,17 +98,22 @@ class MySqlImpl {
                     val parentUid = UidBuilder.buildUniqueId(parentType)
                     val tableJoinUid = parentUid + typeUid
 
-                    "SELECT LAST_INSERT_ID() INTO @parentLastId;" +
-                            "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues);" +
+                    "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues);" +
                             "SELECT LAST_INSERT_ID() INTO @childLastId;" +
                             "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@parentLastId, @childLastId)"
                 }
 
         // TODO: 90 add test coverage: one-to-many relation
-        private fun buildInsertSqlOneToMany(children: List<Any>, type: Any): String {
-            return buildInsertSql(type) { typeUid, fields, fieldsValues ->
+        private fun buildInsertSqlOneToMany(children: List<*>, parentType: Any): String {
 
-                "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
+            return children.joinToString(";") {
+
+                buildInsertSql(parentType) { typeUid, fields, fieldsValues ->
+
+                            "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
+
+                    xxx // replace with buildInsertSqlToRef?
+                }
             }
         }
 
@@ -121,12 +131,10 @@ class MySqlImpl {
 //            type::class.memberProperties.forEach { println("${it.javaField?.type?.simpleName}, ${it.name}") }
 
 
-
             val properties = getNonArrayNonCollectionMemberProperties(type)
 
 //            println("properties:")
 //            properties.get()?.forEach { println("${it.javaField?.type?.simpleName}, ${it.name}") }
-
 
             val fields = properties.map { it.joinToString(", ") { p -> p.name } }
 
@@ -148,6 +156,8 @@ class MySqlImpl {
                     .lfilter { p: KProperty1<*, *> ->
 
                         val typeName = p.javaField?.type?.toString() ?: ""
+
+                        println("typeName: $typeName")
 
                         p.javaField != null
                                 && !isCustom(p.javaField!!)
