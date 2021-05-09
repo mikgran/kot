@@ -52,20 +52,8 @@ class MySqlImpl {
                 uniqueIdAlias = AliasBuilder.build(uniqueId!!)
             }
 
-            // - collect map of lists of parent-child combinations
-            // - none of the parent, parent-child contains any arrays, collections, sets
-            // - insert parent
-            // - insert any children with parent refs
-            /*
-            building - floor, floor, floor -> one to many
-            building - address -> one to one
-            address - street -> one to one
-             */
-
             val sqls = mutableListOf<String>()
 
-            // FIXME 103
-            // change to case a, b or c
             sqls += buildInsertSql(t)
 
             val customFields = getFieldsWithCustoms(dp)
@@ -81,7 +69,7 @@ class MySqlImpl {
 
             // TODO fix the list processing and parentId usage
             sqls += listsWithCustoms
-                    .mapNotNull { field -> fieldGet(field, dp.typeT) as List<*> }
+                    .map { field -> fieldGet(field, dp.typeT) as List<*> }
                     .map { buildInsertSqlOneToMany(it, t) }
 
             return sqls.joinToString(";")
@@ -288,7 +276,7 @@ class MySqlImpl {
                         val ref = t as KProperty1<*, *>
                         val uid = UidBuilder.build(ref.javaField?.declaringClass?.kotlin ?: Any::class)
                         val alias = AliasBuilder.build(uid)
-                        p.manualJoinFragments += "= $alias.${ref.name.toLowerCase()}"
+                        p.manualJoinFragments += "= $alias.${ref.name.lowercase()}"
                         return ""
                     }
 
@@ -468,7 +456,7 @@ class MySqlImpl {
 
         private fun buildFieldFragment(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
-            return type::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name.toLowerCase()}" }
+            return type::class.declaredMemberProperties.joinToString(", ") { "${alias}.${it.name.lowercase()}" }
         }
 
         private fun buildTableFragment(type: Any): String {
