@@ -80,9 +80,9 @@ class MySqlImpl {
                     .map { buildInsertSqlOneToOne(it, t) }
 
             // TODO fix the list processing and parentId usage
-//            sqls += fieldsWithListOfCustoms
-//                    .mapNotNull { field -> fieldGet(field, dp.typeT) as List<*> }
-//                    .map { buildInsertSqlOneToMany(it, t) }
+            sqls += listsWithCustoms
+                    .mapNotNull { field -> fieldGet(field, dp.typeT) as List<*> }
+                    .map { buildInsertSqlOneToMany(it, t) }
 
             return sqls.joinToString(";")
         }
@@ -94,27 +94,27 @@ class MySqlImpl {
 
         private fun buildInsertSqlOneToOne(type: Any, parentType: Any): String =
                 buildInsertSql(type) { typeUid, fields, fieldsValues ->
-
-                    val parentUid = UidBuilder.buildUniqueId(parentType)
-                    val tableJoinUid = parentUid + typeUid
-
-                    "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues);" +
-                            "SELECT LAST_INSERT_ID() INTO @childLastId;" +
-                            "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@parentLastId, @childLastId)"
+                    buildInsertForParentToChildRelation(parentType, typeUid, fields, fieldsValues)
                 }
 
         // TODO: 90 add test coverage: one-to-many relation
         private fun buildInsertSqlOneToMany(children: List<*>, parentType: Any): String {
+            return children
+                    .filterNotNull()
+                    .joinToString(";") {
+                        buildInsertSql(it) { typeUid, fields, fieldsValues ->
+                            buildInsertForParentToChildRelation(parentType, typeUid, fields, fieldsValues)
+                        }
+                    }
+        }
 
-            return children.joinToString(";") {
+        private fun buildInsertForParentToChildRelation(parentType: Any, typeUid: String, fields: Opt2<String>, fieldsValues: Opt2<String>): String {
+            val parentUid = UidBuilder.buildUniqueId(parentType)
+            val tableJoinUid = parentUid + typeUid
 
-                buildInsertSql(parentType) { typeUid, fields, fieldsValues ->
-
-                            "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
-
-                    xxx // replace with buildInsertSqlToRef?
-                }
-            }
+            return "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues);" +
+                    "SELECT LAST_INSERT_ID() INTO @childLastId;" +
+                    "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@parentLastId, @childLastId)"
         }
 
         private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
@@ -126,15 +126,7 @@ class MySqlImpl {
 
             val typeUid = UidBuilder.buildUniqueId(type)
 
-//            println()
-//            println("type: ${type::class.simpleName}")
-//            type::class.memberProperties.forEach { println("${it.javaField?.type?.simpleName}, ${it.name}") }
-
-
             val properties = getNonArrayNonCollectionMemberProperties(type)
-
-//            println("properties:")
-//            properties.get()?.forEach { println("${it.javaField?.type?.simpleName}, ${it.name}") }
 
             val fields = properties.map { it.joinToString(", ") { p -> p.name } }
 
@@ -156,8 +148,6 @@ class MySqlImpl {
                     .lfilter { p: KProperty1<*, *> ->
 
                         val typeName = p.javaField?.type?.toString() ?: ""
-
-                        println("typeName: $typeName")
 
                         p.javaField != null
                                 && !isCustom(p.javaField!!)
@@ -396,7 +386,7 @@ class MySqlImpl {
         private fun buildFieldPart(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
 
-            // FIXME 300
+            // TODO 5 check for types coverage
             // println("includedTypes contains:: " + includedTypes.any { it.contains("Int", ignoreCase = true) })
 
             return type::class

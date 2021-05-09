@@ -121,12 +121,12 @@ internal class DslMapperTest {
                 "INSERT INTO $dslAddress3Uid (fullAddress) VALUES ('anAddress');" +
                 "SELECT LAST_INSERT_ID() INTO @childLastId;" +
                 "INSERT INTO $placeAddressJoinUid (${dslPlace3Uid}refid, ${dslAddress3Uid}refid) VALUES (@parentLastId, @childLastId);" +
-                "INSERT INTO $dslFloor3Uid (floor) VALUES (1);" +
+                "INSERT INTO $dslFloor3Uid (number) VALUES ('10');" +
                 "SELECT LAST_INSERT_ID() INTO @childLastId;" +
                 "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId);" +
-                "INSERT INTO $dslFloor3Uid (floor) VALUES (2);" +
+                "INSERT INTO $dslFloor3Uid (number) VALUES ('20');" +
                 "SELECT LAST_INSERT_ID() INTO @childLastId;" +
-                "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId);"
+                "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId)"
 
 
         TestUtil.expect(expected, candidate)
