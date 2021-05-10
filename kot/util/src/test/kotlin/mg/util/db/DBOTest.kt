@@ -9,11 +9,14 @@ import mg.util.db.dsl.DefaultDslMapper
 import mg.util.db.dsl.DslMapperFactory
 import mg.util.db.dsl.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
+import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import java.sql.Connection
 import java.sql.ResultSet
 
@@ -136,47 +139,35 @@ internal class DBOTest {
     fun testSaveWithComposition() {
 
         // TODO 1: use composition for testing
+        // - test one to one, one to many
 
         val connection = dbConfig.connection
         dbo.ensureTable(DBOBilling2(), connection)
         dbo.save(DBOBilling2("10", DBOPerson3("fff", "lll")), connection)
 
-        val dboBilling = buildUniqueId(DBOBilling2())
-        val dboPerson = buildUniqueId(DBOPerson3())
-        val joinTable = "$dboBilling$dboPerson"
-
         val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10 and DBOPerson3::firstName eq "fff" and DBOPerson3::lastName eq "lll"
 
         val sqlStr = DslMapperFactory.get().map(sql)
 
-//        val aa: List<String> = sqlStr.split("JOIN")
-//        val bb = aa.joinToString("\nJOIN")
-//        println(bb)
-
-
-
-//        val sql = "SELECT * FROM $dboBilling" +
-//                " JOIN $joinTable ON $joinTable.${dboBilling}refid = $dboBilling.id" +
-//                " JOIN $dboPerson ON $joinTable.${dboPerson}refid = $dboPerson.id"
-//
-        val candidate = of(dbConfig.connection)
+        val candidate: Opt2<ResultSet> = of(dbConfig.connection)
                 .map(Connection::createStatement)
                 .map { it.executeQuery(sqlStr) }
 
 //        // FIXME: 200 asserts
-//        var isColumnsPrinted = false
-//        candidate.map(ResultSet::toResultSetIterator)
-//                .xmap {
-//                    forEach { rs ->
-//                        if (!isColumnsPrinted) {
-//                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
-//                            println()
-//                            isColumnsPrinted = true
-//                        }
-//                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
-//                        println()
-//                    }
-//                }
+        var isColumnsPrinted = false
+        candidate.map(ResultSet::toResultSetIterator)
+                .xmap {
+                    forEach { rs ->
+                        if (!isColumnsPrinted) {
+                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
+                            println()
+                            isColumnsPrinted = true
+                        }
+                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
+                        println()
+                    }
+                }
+
     }
 
     @Test
@@ -249,8 +240,13 @@ internal class DBOTest {
                     DBOPerson(),
                     DBOBilling(),
                     DBOBilling2()
-            )
-                    .also { TestSupport.dropTables(it) }
+            ).also { TestSupport.dropTables(it) }
+
+            listOf(
+                    Pair(DBOBilling2(), DBOPerson3()),
+                    Pair(DBOMultipleComposition(), DBOSimple()),
+                    Pair(DBOMultipleComposition(), DBOSimpleComp())
+            ).also { TestSupport.dropJoinTables(it) }
         }
     }
 }
