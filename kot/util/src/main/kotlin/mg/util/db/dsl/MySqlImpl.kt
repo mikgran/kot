@@ -56,19 +56,18 @@ class MySqlImpl {
 
             sqls += buildInsertSql(t)
 
-            val customFields = getFieldsWithCustoms(dp)
-            val listsWithCustoms = getFieldsWithListOfCustoms(dp)
+            val fieldsWithCustoms = getFieldsWithCustoms(dp)
+            val fieldsWithListsOfCustoms = getFieldsWithListOfCustoms(dp)
 
-            if (customFields.size + listsWithCustoms.size > 0) {
+            if (fieldsWithCustoms.size + fieldsWithListsOfCustoms.size > 0) {
                 sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId"
             }
 
-            sqls += customFields
+            sqls += fieldsWithCustoms
                     .map { field -> fieldGet(field, dp.typeT) }
                     .map { buildInsertSqlOneToOne(it, t) }
 
-            // TODO fix the list processing and parentId usage
-            sqls += listsWithCustoms
+            sqls += fieldsWithListsOfCustoms
                     .map { field -> fieldGet(field, dp.typeT) as List<*> }
                     .map { buildInsertSqlOneToMany(it, t) }
 
@@ -76,72 +75,66 @@ class MySqlImpl {
         }
 
         private fun buildInsertSql(type: Any): String =
-                buildInsertSql(type) { typeUid, fields, fieldsValues ->
-                    "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues)"
+                buildInsertSql(type) { uid, fields, fieldsValues ->
+                    "INSERT INTO $uid ($fields) VALUES ($fieldsValues)"
                 }
 
-        private fun buildInsertSqlOneToOne(type: Any, parentType: Any): String =
-                buildInsertSql(type) { typeUid, fields, fieldsValues ->
-                    buildInsertForParentToChildRelation(parentType, typeUid, fields, fieldsValues)
+        private fun buildInsertSqlOneToOne(child: Any, parent: Any): String =
+                buildInsertSql(child) { childUid, childFields, childFieldsValues ->
+                    buildInsertForParentToChildRelation(parent, childUid, childFields, childFieldsValues)
                 }
 
         // TODO: 90 add test coverage: one-to-many relation
-        private fun buildInsertSqlOneToMany(children: List<*>, parentType: Any): String {
+        private fun buildInsertSqlOneToMany(children: List<*>, parent: Any): String {
             return children
                     .filterNotNull()
                     .joinToString(";") {
-                        buildInsertSql(it) { typeUid, fields, fieldsValues ->
-                            buildInsertForParentToChildRelation(parentType, typeUid, fields, fieldsValues)
+                        buildInsertSql(it) { childUid, childFields, childFieldsValues ->
+                            buildInsertForParentToChildRelation(parent, childUid, childFields, childFieldsValues)
                         }
                     }
         }
 
-        private fun buildInsertForParentToChildRelation(parentType: Any, typeUid: String, fields: Opt2<String>, fieldsValues: Opt2<String>): String {
-            val parentUid = UidBuilder.buildUniqueId(parentType)
-            val tableJoinUid = parentUid + typeUid
+        private fun buildInsertForParentToChildRelation(parent: Any, childUid: String, childFields: Opt2<String>, childFieldsValues: Opt2<String>): String {
+            val parentUid = UidBuilder.buildUniqueId(parent)
+            val tableJoinUid = parentUid + childUid
 
-            return "INSERT INTO $typeUid ($fields) VALUES ($fieldsValues);" +
+            return "INSERT INTO $childUid ($childFields) VALUES ($childFieldsValues);" +
                     "SELECT LAST_INSERT_ID() INTO @childLastId;" +
-                    "INSERT INTO $tableJoinUid (${parentUid}refid, ${typeUid}refid) VALUES (@parentLastId, @childLastId)"
+                    "INSERT INTO $tableJoinUid (${parentUid}refid, ${childUid}refid) VALUES (@parentLastId, @childLastId)"
         }
 
         private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
 
-            val typeName = type::class.simpleName
-            if (typeName?.contains("array", ignoreCase = true) == true) {
+            if ("array" in (type::class.simpleName ?: "")) {
                 return ""
+            }
+
+            val memberProperties = type
+                    .toOpt()
+                    .map { it::class.memberProperties }
+                    .lfilter { p: KProperty1<*, *> ->
+
+                        val javaFieldTypeName = p.javaField?.type?.toString() ?: ""
+
+                        p.javaField != null
+                                && !isCustom(p.javaField!!)
+                                && "Array" !in javaFieldTypeName
+                                && "List" !in javaFieldTypeName
+                                && "collection" !in javaFieldTypeName
+                    }
+
+            val fieldNames = memberProperties.map { it.joinToString(", ") { p -> p.name } }
+            val fieldValues = memberProperties.map { list: List<KProperty1<*, *>> ->
+
+                list.joinToString(", ") {
+                    "'${getFieldValueAsString(it, type)}'"
+                }
             }
 
             val typeUid = UidBuilder.buildUniqueId(type)
 
-            val properties = getNonArrayNonCollectionMemberProperties(type)
-
-            val fields = properties.map { it.joinToString(", ") { p -> p.name } }
-
-            val fieldsValues = getFieldsValuesAsStringCommaSeparated(properties, type)
-
-            return insertCreateFunction(typeUid, fields, fieldsValues)
-        }
-
-        private fun getFieldsValuesAsStringCommaSeparated(properties: Opt2<List<KProperty1<*, *>>>, type: Any): Opt2<String> =
-                properties.map { list: List<KProperty1<*, *>> ->
-                    list.joinToString(", ") {
-                        "'${getFieldValueAsString(it, type)}'"
-                    }
-                }
-
-        private fun getNonArrayNonCollectionMemberProperties(type: Any): Opt2<List<KProperty1<*, *>>> {
-            return type.toOpt()
-                    .map { it::class.memberProperties }
-                    .lfilter { p: KProperty1<*, *> ->
-
-                        val typeName = p.javaField?.type?.toString() ?: ""
-
-                        p.javaField != null
-                                && !isCustom(p.javaField!!)
-                                && "Array" !in typeName
-                                && "List" !in typeName
-                    }
+            return insertCreateFunction(typeUid, fieldNames, fieldValues)
         }
     }
 
