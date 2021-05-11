@@ -13,6 +13,7 @@ object UidBuilder {
                 .getOrElse("")
     }
 
+    // TODO 10 add type coverage, and multiple packages support
     fun <T : Any> build(t: KClass<out T>): String {
         return of(t).map { it.memberProperties.toCollection(ArrayList()) }
                 .filter { it.size > 0 }
