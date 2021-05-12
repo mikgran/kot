@@ -11,7 +11,7 @@ import kotlin.reflect.full.declaredMemberProperties
 
 open class MySqlCreateBuilder {
 
-    fun buildCreate(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
+    fun build(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
 
         val dp = buildDslParameters(sql.t)
         val sqls = mutableListOf<String>()

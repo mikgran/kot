@@ -98,7 +98,6 @@ internal class DslMapperTest {
         TestUtil.expect(expected, candidate)
     }
 
-    // FIXME: 99
     @Test
     fun testInsertOneToManyRelation() {
 
@@ -127,7 +126,6 @@ internal class DslMapperTest {
                 "INSERT INTO $dslFloor3Uid (number) VALUES ('20');" +
                 "SELECT LAST_INSERT_ID() INTO @childLastId;" +
                 "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId)"
-
 
         TestUtil.expect(expected, candidate)
     }

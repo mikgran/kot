@@ -13,7 +13,7 @@ class DefaultDslMapper(internal val mapper: String) {
     fun <T : Any> buildCreateTable(metadata: Metadata<T>): String = dslMapper.map(Sql create metadata.type)
     // sql update metadata.type -> full update of all fields given based on ref fields
 
-    // TODO: 1 finish me or finish sqp insert method
+    // TODO: 1 finish me or finish sql insert method
     fun <T: Any> buildFindAll(metadata: Metadata<T>): String {
         return ""
     }

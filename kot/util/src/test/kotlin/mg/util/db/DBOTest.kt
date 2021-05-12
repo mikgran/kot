@@ -143,31 +143,38 @@ internal class DBOTest {
 
         val connection = dbConfig.connection
         dbo.ensureTable(DBOBilling2(), connection)
-        dbo.save(DBOBilling2("10", DBOPerson3("fff", "lll")), connection)
+        val dboBilling2 = DBOBilling2("10", DBOPerson3("Firstname", "Lastname"))
+        dbo.save(dboBilling2, connection)
 
-        val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10 and DBOPerson3::firstName eq "fff" and DBOPerson3::lastName eq "lll"
+        val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10 and DBOPerson3::firstName eq "Firstname" and DBOPerson3::lastName eq "Lastname"
 
         val sqlStr = DslMapperFactory.get().map(sql)
 
-        val candidate: Opt2<ResultSet> = of(dbConfig.connection)
+        val results: Opt2<ResultSet> = of(dbConfig.connection)
                 .map(Connection::createStatement)
                 .map { it.executeQuery(sqlStr) }
 
 //        // FIXME: 200 asserts
-        var isColumnsPrinted = false
-        candidate.map(ResultSet::toResultSetIterator)
-                .xmap {
-                    forEach { rs ->
-                        if (!isColumnsPrinted) {
-                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
-                            println()
-                            isColumnsPrinted = true
-                        }
-                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
-                        println()
-                    }
-                }
+//        var isColumnsPrinted = false
+//        results.map(ResultSet::toResultSetIterator)
+//                .xmap {
+//                    forEach { rs ->
+//                        if (!isColumnsPrinted) {
+//                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
+//                            println()
+//                            isColumnsPrinted = true
+//                        }
+//                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
+//                        println()
+//                    }
+//                }
 
+        // XXX: 500 Fix composition building
+//        val dboBillingCandidate: MutableList<DBOBilling2> =
+//                ObjectBuilder()
+//                        .buildListOfT(results.get(), DBOBilling2())
+//
+//        println(dboBillingCandidate)
     }
 
     @Test

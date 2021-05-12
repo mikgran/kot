@@ -1,16 +1,9 @@
 package mg.util.db.dsl
 
 import mg.util.common.Common.hasContent
-import mg.util.common.Common.isCustom
-import mg.util.common.Common.isList
-import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
-import mg.util.db.dsl.FieldAccessor.Companion.fieldGet
-import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithCustoms
-import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithListOfCustoms
-import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
@@ -18,7 +11,6 @@ import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
 class MySqlImpl {
@@ -26,7 +18,7 @@ class MySqlImpl {
     class Create(t: Any) : Sql.Create(t) {
         // TODO: 1 does not include multilayer creates yet
         override fun build(p: Parameters): String {
-            return MySqlCreateBuilder().buildCreate(p, this)
+            return MySqlCreateBuilder().build(p, this)
         }
     }
 
@@ -45,102 +37,13 @@ class MySqlImpl {
 
     class Insert(t: Any) : Sql.Insert(t) {
         override fun build(p: Parameters): String {
-
-            val dp = DslParameters().apply {
-                typeT = t
-                uniqueId = UidBuilder.buildUniqueId(t)
-                uniqueIdAlias = AliasBuilder.build(uniqueId!!)
-            }
-
-            val sqls = mutableListOf<String>()
-
-            sqls += buildInsertSql(t)
-
-            val fieldsWithCustoms = getFieldsWithCustoms(dp)
-            val fieldsWithListsOfCustoms = getFieldsWithListOfCustoms(dp)
-
-            if (fieldsWithCustoms.size + fieldsWithListsOfCustoms.size > 0) {
-                sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId"
-            }
-
-            sqls += fieldsWithCustoms
-                    .map { field -> fieldGet(field, dp.typeT) }
-                    .map { buildInsertSqlOneToOne(it, t) }
-
-            sqls += fieldsWithListsOfCustoms
-                    .map { field -> fieldGet(field, dp.typeT) as List<*> }
-                    .map { buildInsertSqlOneToMany(it, t) }
-
-            return sqls.joinToString(";")
-        }
-
-        private fun buildInsertSql(type: Any): String =
-                buildInsertSql(type) { uid, fields, fieldsValues ->
-                    "INSERT INTO $uid ($fields) VALUES ($fieldsValues)"
-                }
-
-        private fun buildInsertSqlOneToOne(child: Any, parent: Any): String =
-                buildInsertSql(child) { childUid, childFields, childFieldsValues ->
-                    buildInsertForParentToChildRelation(parent, childUid, childFields, childFieldsValues)
-                }
-
-        // TODO: 90 add test coverage: one-to-many relation
-        private fun buildInsertSqlOneToMany(children: List<*>, parent: Any): String {
-            return children
-                    .filterNotNull()
-                    .joinToString(";") {
-                        buildInsertSql(it) { childUid, childFields, childFieldsValues ->
-                            buildInsertForParentToChildRelation(parent, childUid, childFields, childFieldsValues)
-                        }
-                    }
-        }
-
-        private fun buildInsertForParentToChildRelation(parent: Any, childUid: String, childFields: Opt2<String>, childFieldsValues: Opt2<String>): String {
-            val parentUid = UidBuilder.buildUniqueId(parent)
-            val tableJoinUid = parentUid + childUid
-
-            return "INSERT INTO $childUid ($childFields) VALUES ($childFieldsValues);" +
-                    "SELECT LAST_INSERT_ID() INTO @childLastId;" +
-                    "INSERT INTO $tableJoinUid (${parentUid}refid, ${childUid}refid) VALUES (@parentLastId, @childLastId)"
-        }
-
-        private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
-
-            if ("array" in (type::class.simpleName ?: "")) {
-                return ""
-            }
-
-            val memberProperties = type
-                    .toOpt()
-                    .map { it::class.memberProperties }
-                    .lfilter { p: KProperty1<*, *> ->
-
-                        val javaFieldTypeName = p.javaField?.type?.toString() ?: ""
-
-                        p.javaField != null
-                                && !isCustom(p.javaField!!)
-                                && "Array" !in javaFieldTypeName
-                                && "List" !in javaFieldTypeName
-                                && "collection" !in javaFieldTypeName
-                    }
-
-            val fieldNames = memberProperties.map { it.joinToString(", ") { p -> p.name } }
-            val fieldValues = memberProperties.map { list: List<KProperty1<*, *>> ->
-
-                list.joinToString(", ") {
-                    "'${getFieldValueAsString(it, type)}'"
-                }
-            }
-
-            val typeUid = UidBuilder.buildUniqueId(type)
-
-            return insertCreateFunction(typeUid, fieldNames, fieldValues)
+            return MySqlInsertBuilder().build(p, this)
         }
     }
 
     class Delete(t: Any) : Sql.Delete(t) {
         override fun build(p: Parameters): String {
-            // no multi table deletes supported
+            // TODO 1: no multi table deletes supported? yes/no/abandon
             // DELETE FROM table where field = value AND field2 = value2
             val sb = StringBuilder() +
                     "DELETE FROM ${UidBuilder.buildUniqueId(t)} " +
@@ -165,87 +68,10 @@ class MySqlImpl {
         }
     }
 
-    // FIXME: 104 SELECT natural vs manual
+    // FIXME: 104 support SELECT composition and manual
     class Select(t: Any) : Sql.Select(t) {
         override fun build(p: Parameters): String {
-
-            p.tableFragments.add(0, buildTableFragment(t))
-            p.joinsMap.putAll(buildJoinsMap(t, p))
-
-            p.toOpt()
-                    .map { buildJoinsForNaturalRefs(it) }
-                    .filter(String::isNotEmpty)
-                    .map(p.joinFragments::add)
-
-            collectUniqueTypesFrom(p.action, p.joinsMap)
-                    .forEach { p.columnFragments += buildFieldPart(it) }
-
-            val sb = StringBuilder() +
-                    "SELECT ${p.columnFragments.joinToString(", ")}" +
-                    " FROM ${p.tableFragments.joinToString(", ")}" +
-                    buildJoinPart(p) +
-                    buildManualJoinPart(p) +
-                    buildWherePart(p)
-            return sb.toString()
-        }
-
-        private fun buildManualJoinPart(p: Parameters): String =
-                if (p.manualJoinFragments.isNotEmpty()) " ${p.manualJoinFragments.joinToString(" ")}" else ""
-
-        private fun buildTableFragment(type: Any): String {
-            val (uid, alias) = buildUidAndAlias(type)
-            return "$uid $alias"
-        }
-
-        private fun buildJoinsMap(root: Any, p: Parameters): MutableMap<Any, List<Any>> {
-
-            val joinsMap = mutableMapOf<Any, List<Any>>()
-            root.toOpt()
-                    .map {
-                        val list: List<Any> = childrenForParent(it)
-                        if (list.isNotEmpty()) {
-                            joinsMap[it] = list
-                        }
-                        list
-                    }
-                    .xmap { forEach { buildJoinsMap(it, p) } }
-            return joinsMap
-        }
-
-        private fun childrenForParent(type: Any): List<Any> {
-            return type::class.java.declaredFields.toList()
-                    .toOpt()
-                    .lfilter(::isCustom or ::isList)
-                    .lxmap<Field, Any> { mapNotNull { getFieldValue(it, type) } }
-                    .getOrElse { emptyList() }
-        }
-
-        private fun collectUniqueTypesFrom(action: Sql?, joinsMap: MutableMap<*, *>): MutableSet<Any> {
-            val uniques = mutableSetOf<Any>()
-            action?.t.toOpt()
-                    .map(uniques::add)
-
-            joinsMap.iterator()
-                    .toOpt()
-                    .lmap { entry: MutableMap.MutableEntry<Any, Any> -> getUniques(entry, uniques) }
-
-            return uniques
-        }
-
-        private fun getUniques(entry: MutableMap.MutableEntry<Any, Any>, uniques: MutableSet<Any>) {
-            when (val e = entry.value) {
-                is List<*> -> getUniques(e, uniques)
-                else -> uniques.add(e)
-            }
-        }
-
-        private fun getUniques(list: List<*>, uniques: MutableSet<Any>) {
-            list.forEach {
-                when (it) {
-                    is List<*> -> getUniques(it, uniques)
-                    else -> it?.let(uniques::add)
-                }
-            }
+            return MySqlSelectBuilder().build(p, this)
         }
 
         class Join(t: Any) : Select.Join(t) {
@@ -303,6 +129,7 @@ class MySqlImpl {
     }
 
     class Update(t: Any) : Sql.Update(t) {
+        // TODO: 1 recursive multilayer update -> save all dirty objects? / abandon idea?
         override fun build(p: Parameters): String {
             // "UPDATE $uid $alias SET firstName = 'newFirstName', lastName = 'newLastName' WHERE $alias.firstName = 'firstName'"
             val uid = UidBuilder.buildUniqueId(t)
@@ -353,18 +180,18 @@ class MySqlImpl {
 
     companion object {
 
-        private fun <T : Any> buildUidAndAlias(t: T): Pair<String, String> {
+        fun <T : Any> buildUidAndAlias(t: T): Pair<String, String> {
             val uid = UidBuilder.buildUniqueId(t)
             val alias = AliasBuilder.build(uid)
             return uid to alias
         }
 
-        private fun <T : Any> getFieldValue(field: Field, type: T): Any? {
+        fun <T : Any> getFieldValue(field: Field, type: T): Any? {
             field.isAccessible = true
             return field.get(type)
         }
 
-        private fun buildFieldPart(type: Any): String {
+        fun buildFieldPart(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
 
             // TODO 5 check for types coverage
@@ -389,7 +216,7 @@ class MySqlImpl {
         private val excludedTypes = listOf("util.", "collection")
         private val includedTypes = listOf("kotlin.", "java.", *(primitiveTypes.toTypedArray()))
 
-        private fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {
+        fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {
             return parameters
                     .joinsMap
                     .toOpt()
@@ -427,7 +254,7 @@ class MySqlImpl {
                     .getOrElse { "" }
         }
 
-        private fun buildWherePart(p: Sql.Parameters): String {
+        fun buildWherePart(p: Sql.Parameters): String {
             val whereStr = " WHERE "
             val whereFragmentsSize = p.whereFragments.size
             val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
@@ -442,10 +269,10 @@ class MySqlImpl {
             }
         }
 
-        private fun buildJoinPart(p: Sql.Parameters): String =
+        fun buildJoinPart(p: Sql.Parameters): String =
                 if (p.joinFragments.isNotEmpty()) " ${p.joinFragments.joinToString(" ")}" else ""
 
-        private fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
+        fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
 
         private fun buildFieldFragment(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
