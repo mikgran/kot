@@ -186,11 +186,6 @@ class MySqlImpl {
             return uid to alias
         }
 
-        fun <T : Any> getFieldValue(field: Field, type: T): Any? {
-            field.isAccessible = true
-            return field.get(type)
-        }
-
         fun buildFieldPart(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
 
@@ -253,24 +248,6 @@ class MySqlImpl {
                     }
                     .getOrElse { "" }
         }
-
-        fun buildWherePart(p: Sql.Parameters): String {
-            val whereStr = " WHERE "
-            val whereFragmentsSize = p.whereFragments.size
-            val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
-            return when {
-                whereFragmentsSize == whereElementCount -> whereStr + p.whereFragments.joinToString("")
-                whereFragmentsSize / whereElementCount > 1 -> {
-                    whereStr + p.whereFragments
-                            .chunked(2)
-                            .joinToString(" AND ") { (i, j) -> "$i$j" }
-                }
-                else -> ""
-            }
-        }
-
-        fun buildJoinPart(p: Sql.Parameters): String =
-                if (p.joinFragments.isNotEmpty()) " ${p.joinFragments.joinToString(" ")}" else ""
 
         fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
 

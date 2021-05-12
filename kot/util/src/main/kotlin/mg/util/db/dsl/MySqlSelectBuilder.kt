@@ -25,11 +25,30 @@ class MySqlSelectBuilder {
         val sb = StringBuilder() +
                 "SELECT ${p.columnFragments.joinToString(", ")}" +
                 " FROM ${p.tableFragments.joinToString(", ")}" +
-                MySqlImpl.buildJoinPart(p) +
+                buildJoinPart(p) +
                 buildManualJoinPart(p) +
-                MySqlImpl.buildWherePart(p)
+                buildWherePart(p)
+
         return sb.toString()
     }
+
+    private fun buildWherePart(p: Sql.Parameters): String {
+        val whereStr = " WHERE "
+        val whereFragmentsSize = p.whereFragments.size
+        val whereElementCount = 2 // TOIMPROVE: add(Where(t)) add(Eq(t)) -> count == 2, distinctBy(t::class)?
+        return when {
+            whereFragmentsSize == whereElementCount -> whereStr + p.whereFragments.joinToString("")
+            whereFragmentsSize / whereElementCount > 1 -> {
+                whereStr + p.whereFragments
+                        .chunked(2)
+                        .joinToString(" AND ") { (i, j) -> "$i$j" }
+            }
+            else -> ""
+        }
+    }
+
+    private fun buildJoinPart(p: Sql.Parameters) =
+            (if (p.joinFragments.isNotEmpty()) " ${p.joinFragments.joinToString(" ")}" else "")
 
     private fun buildManualJoinPart(p: Sql.Parameters): String =
             if (p.manualJoinFragments.isNotEmpty()) " ${p.manualJoinFragments.joinToString(" ")}" else ""
@@ -58,10 +77,17 @@ class MySqlSelectBuilder {
         return type::class.java.declaredFields.toList()
                 .toOpt()
                 .lfilter(Common::isCustom or Common::isList)
-                .lxmap<Field, Any> { mapNotNull {
-                    MySqlImpl.getFieldValue(it, type) }
+                .lxmap<Field, Any> {
+                    mapNotNull {
+                        getFieldValue(it, type)
+                    }
                 }
                 .getOrElse { emptyList() }
+    }
+
+    private fun getFieldValue(it: Field, type: Any): Any? {
+        it.isAccessible = true
+        return it.get(type)
     }
 
     private fun collectUniqueTypesFrom(action: Sql?, joinsMap: MutableMap<*, *>): MutableSet<Any> {
