@@ -3,8 +3,12 @@ package mg.util.db.dsl
 import mg.util.common.Common
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.plus
+import mg.util.db.AliasBuilder
+import mg.util.db.dsl.MySqlImpl.Companion.buildUidAndAlias
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.javaField
 
 class MySqlSelectBuilder {
 
@@ -15,12 +19,23 @@ class MySqlSelectBuilder {
         p.joinsMap.putAll(buildJoinsMap(t, p))
 
         p.toOpt()
-                .map { MySqlImpl.buildJoinsForNaturalRefs(it) }
+                .map { buildJoinsForNaturalRefs(it) }
                 .filter(String::isNotEmpty)
                 .map(p.joinFragments::add)
 
         collectUniqueTypesFrom(p.action, p.joinsMap)
-                .forEach { p.columnFragments += MySqlImpl.buildFieldPart(it) }
+                .forEach {
+                    p.columnFragments += run {
+                        val (_, alias) = buildUidAndAlias(it)
+                        // TODO 5 check for types coverage
+                        // println("includedTypes contains:: " + includedTypes.any { it.contains("Int", ignoreCase = true) })
+                        it::class
+                                .declaredMemberProperties
+                                .mapNotNull { it.javaField }
+                                .filter(::isCustomField)
+                                .joinToString(", ") { "${alias}.${it.name}" }
+                    }
+                }
 
         val sb = StringBuilder() +
                 "SELECT ${p.columnFragments.joinToString(", ")}" +
@@ -31,6 +46,56 @@ class MySqlSelectBuilder {
 
         return sb.toString()
     }
+
+    private fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {
+        return parameters
+                .joinsMap
+                .toOpt()
+                .xmap { map { buildJoinsOnNaturalRefs(it) }.joinToString(" ") }
+                .filter(Common::hasContent)
+                .getOrElse { "" }
+    }
+
+    /*
+        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
+            " FROM $placeUid $p" +
+            " JOIN $placeUid$addressUid $joinTableAlias ON $joinTableAlias.${placeUid}refid = $p.id" +
+            " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id"
+         */
+    private fun buildJoinsOnNaturalRefs(parentKeyChildValues: Map.Entry<Any, Any>): String {
+        val (parentUid, parentAlias) = buildUidAndAlias(parentKeyChildValues.key)
+        return (parentKeyChildValues.value as? List<*>).toOpt()
+                .lmap { child: Any -> buildNaturalRefForParent(child, parentUid, parentAlias) }
+                .xmap { joinToString(" ") }
+                .getOrElse { "" }
+    }
+
+    private fun buildNaturalRefForParent(t: Any, parentUid: String, parentAlias: String): String {
+
+        return t.toOpt()
+                .mapTo(List::class)
+                .map { it.first() }
+                .ifEmpty { t }
+                .map { element ->
+                    val (childUid, childAlias) = buildUidAndAlias(element)
+                    val joinTableAlias = AliasBuilder.build("$parentUid$childUid")
+                    "JOIN $parentUid$childUid $joinTableAlias ON $joinTableAlias.${parentUid}refid = $parentAlias.id" +
+                            " JOIN $childUid $childAlias ON $joinTableAlias.${childUid}refid = $childAlias.id"
+                }
+                .getOrElse { "" }
+    }
+
+    private fun isFieldTypeName(field: Field, it: String) =
+            field.type.typeName.contains(it, ignoreCase = true)
+
+    private fun isCustomField(field: Field): Boolean {
+        return includedTypes.any { isFieldTypeName(field, it) } &&
+                !excludedTypes.any { isFieldTypeName(field, it) }
+    }
+
+    private val primitiveTypes = listOf("int", "long")
+    private val excludedTypes = listOf("util.", "collection")
+    private val includedTypes = listOf("kotlin.", "java.", *(primitiveTypes.toTypedArray()))
 
     private fun buildWherePart(p: Sql.Parameters): String {
         val whereStr = " WHERE "
@@ -54,7 +119,7 @@ class MySqlSelectBuilder {
             if (p.manualJoinFragments.isNotEmpty()) " ${p.manualJoinFragments.joinToString(" ")}" else ""
 
     private fun buildTableFragment(type: Any): String {
-        val (uid, alias) = MySqlImpl.buildUidAndAlias(type)
+        val (uid, alias) = buildUidAndAlias(type)
         return "$uid $alias"
     }
 

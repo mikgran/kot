@@ -1,12 +1,11 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common.hasContent
+import mg.util.common.Common
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2.Factory.of
 import mg.util.functional.toOpt
-import java.lang.reflect.Field
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -184,69 +183,6 @@ class MySqlImpl {
             val uid = UidBuilder.buildUniqueId(t)
             val alias = AliasBuilder.build(uid)
             return uid to alias
-        }
-
-        fun buildFieldPart(type: Any): String {
-            val (_, alias) = buildUidAndAlias(type)
-
-            // TODO 5 check for types coverage
-            // println("includedTypes contains:: " + includedTypes.any { it.contains("Int", ignoreCase = true) })
-
-            return type::class
-                    .declaredMemberProperties
-                    .mapNotNull { it.javaField }
-                    .filter(::isCustomField)
-                    .joinToString(", ") { "${alias}.${it.name}" }
-        }
-
-        private fun isCustomField(field: Field): Boolean {
-            return includedTypes.any { isFieldTypeName(field, it) } &&
-                    !excludedTypes.any { isFieldTypeName(field, it) }
-        }
-
-        private fun isFieldTypeName(field: Field, it: String) =
-                field.type.typeName.contains(it, ignoreCase = true)
-
-        private val primitiveTypes = listOf("int", "long")
-        private val excludedTypes = listOf("util.", "collection")
-        private val includedTypes = listOf("kotlin.", "java.", *(primitiveTypes.toTypedArray()))
-
-        fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {
-            return parameters
-                    .joinsMap
-                    .toOpt()
-                    .xmap { map { buildJoinsOnNaturalRefs(it) }.joinToString(" ") }
-                    .filter(::hasContent)
-                    .getOrElse { "" }
-        }
-
-        /*
-        val expected = "SELECT $p.address, $p.rentInCents, $a.fullAddress" +
-            " FROM $placeUid $p" +
-            " JOIN $placeUid$addressUid $joinTableAlias ON $joinTableAlias.${placeUid}refid = $p.id" +
-            " JOIN $addressUid $a ON ${joinTableAlias}.${addressUid}refid = $a.id"
-         */
-        private fun buildJoinsOnNaturalRefs(parentKeyChildValues: Map.Entry<Any, Any>): String {
-            val (parentUid, parentAlias) = buildUidAndAlias(parentKeyChildValues.key)
-            return (parentKeyChildValues.value as? List<*>).toOpt()
-                    .lmap { child: Any -> buildNaturalRefForParent(child, parentUid, parentAlias) }
-                    .xmap { joinToString(" ") }
-                    .getOrElse { "" }
-        }
-
-        private fun buildNaturalRefForParent(t: Any, parentUid: String, parentAlias: String): String {
-
-            return t.toOpt()
-                    .mapTo(List::class)
-                    .map { it.first() }
-                    .ifEmpty { t }
-                    .map { element ->
-                        val (childUid, childAlias) = buildUidAndAlias(element)
-                        val joinTableAlias = AliasBuilder.build("$parentUid$childUid")
-                        "JOIN $parentUid$childUid $joinTableAlias ON $joinTableAlias.${parentUid}refid = $parentAlias.id" +
-                                " JOIN $childUid $childAlias ON $joinTableAlias.${childUid}refid = $childAlias.id"
-                    }
-                    .getOrElse { "" }
         }
 
         fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
