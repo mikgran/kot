@@ -150,31 +150,37 @@ internal class DBOTest {
 
         val sqlStr = DslMapperFactory.get().map(sql)
 
+        println()
+        println("dboBilling2: $dboBilling2")
+        println()
+        println("sqlStr: $sqlStr")
+        println()
+
         val results: Opt2<ResultSet> = of(dbConfig.connection)
                 .map(Connection::createStatement)
                 .map { it.executeQuery(sqlStr) }
 
 //        // FIXME: 200 asserts
-//        var isColumnsPrinted = false
-//        results.map(ResultSet::toResultSetIterator)
-//                .xmap {
-//                    forEach { rs ->
-//                        if (!isColumnsPrinted) {
-//                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
-//                            println()
-//                            isColumnsPrinted = true
-//                        }
-//                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
-//                        println()
-//                    }
-//                }
+        var isColumnsPrinted = false
+        results.map(ResultSet::toResultSetIterator)
+                .xmap {
+                    forEach { rs ->
+                        if (!isColumnsPrinted) {
+                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
+                            println()
+                            isColumnsPrinted = true
+                        }
+                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
+                        println()
+                    }
+                }
 
         // XXX: 500 Fix composition building
-//        val dboBillingCandidate: MutableList<DBOBilling2> =
-//                ObjectBuilder()
-//                        .buildListOfT(results.get(), DBOBilling2())
-//
-//        println(dboBillingCandidate)
+        val dboBillingCandidate: MutableList<DBOBilling2> =
+                ObjectBuilder()
+                        .buildListOfT(results.get(), DBOBilling2())
+
+        println(dboBillingCandidate)
     }
 
     @Test

@@ -11,9 +11,9 @@ import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaType
 
 @Suppress("UNCHECKED_CAST")
-class ObjectBuilder {
+open class ObjectBuilder {
 
-    private data class ConstructorData(val type: Any, val name: String)
+    protected data class ConstructorData(val type: Any, val name: String)
 
     fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
         return typeT
@@ -90,9 +90,9 @@ class ObjectBuilder {
     private fun isColumnNameNotId(results: ResultSet?, columnNumber: Int) = results?.metaData?.getColumnName(columnNumber) != "id"
     private fun getColumnCount(results: ResultSet?) = results?.metaData?.columnCount ?: 1
 
-    private fun <T : Any> narrowDown(
+    protected open fun <T : Any> narrowDown(
             constr: Collection<KFunction<T>>,
-            resultSetConstructorData: MutableList<ConstructorData>
+            resultSetConstructorData: MutableList<ConstructorData>,
     ): Wrap<Constructor<T>?> {
         val result = Wrap<Constructor<T>?>(null)
         constr.map { c ->
@@ -104,7 +104,7 @@ class ObjectBuilder {
         return result
     }
 
-    private fun <T : Any> getConstructorDatas(c: KFunction<T>): MutableList<ConstructorData> {
+    protected open fun <T : Any> getConstructorDatas(c: KFunction<T>): MutableList<ConstructorData> {
         val constructorDataCr = mutableListOf<ConstructorData>()
         c.parameters.forEach { p ->
             constructorDataCr.add(ConstructorData(p.type.javaType.typeName, p.name ?: ""))
@@ -125,4 +125,39 @@ class ObjectBuilder {
     private companion object {
         const val DB_ID_FIELD = "id"
     }
+}
+
+class CompositeObjectBuilder : ObjectBuilder() {
+
+    override fun <T : Any> getConstructorDatas(c: KFunction<T>): MutableList<ConstructorData> {
+        val constructorDatas: MutableList<ConstructorData> = super.getConstructorDatas(c)
+
+        // datasList == { amount, person == { firstName, lastName } }
+        // datasList == { amount, firstName, lastName }
+
+        // 1. flatten all composite objects
+        // 2. list parent object
+        // 3. filter to primitives
+        // 4. list customs -> repeat recursive
+
+        return constructorDatas
+    }
+
+    override fun <T : Any> narrowDown(
+            constr: Collection<KFunction<T>>,
+            resultSetConstructorData: MutableList<ConstructorData>,
+    ): Wrap<Constructor<T>?> {
+
+        val result = Wrap<Constructor<T>?>(null)
+        constr.map { c ->
+            val constructorDatas = getConstructorDatas(c)
+
+            if (constructorDatas.containsAll(resultSetConstructorData)) { // TOIMPROVE: test coverage
+                result.t = c.javaConstructor
+            }
+        }
+
+        return result
+    }
+
 }
