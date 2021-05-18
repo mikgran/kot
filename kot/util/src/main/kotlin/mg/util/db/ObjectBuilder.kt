@@ -19,9 +19,35 @@ open class ObjectBuilder {
         return typeT
                 .toOpt()
                 .case({ it is String }, { buildListUsingStrings(results, it) })
-                .caseDefault { buildListUsingConstructorForT(results, it) }
+                .case({ isMultiDepthCustom(it) }, { buildListOfMultiDepthCustoms(results, it) })
+                .caseDefault { buildListOfOneDepthCustoms(results, it) }
                 .result()
                 .getOrElse(mutableListOf())
+    }
+
+    private fun <T> buildListOfMultiDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
+
+        // - collect all custom objects
+        // - assume order of appearance in ResultSet
+        // - construct first custom object by name from primitives
+        // - find customs for first, construct customs by name from primitives
+
+        // Building (name = a, floors = { floor(1), floor(2), floor(3) } )
+        // ResultSet:
+        // building floor
+        // a        1       -> building(name = a), floor(1)
+        // a        2       -> building(name = a), floor(2)
+        // a        3       -> building(name = a), floor(3) -> building( a, { floor(1), floor(2), floor(3) } )
+        // b        1       -> building(name = b), floor(1)
+        // b        2       -> building(name = b), floor(2) -> building( b, { floor(1), floor(2) } )
+
+        // DBOBilling2("10", DBOPerson3("Firstname", "Lastname"))
+        // amount firstName lastName
+        // 10 Firstname Lastname
+
+
+
+        return mutableListOf()
     }
 
     fun <T : Any> add(list: MutableList<T>, t: T) = list.add(t)
@@ -44,11 +70,11 @@ open class ObjectBuilder {
                 .map(list::add)
     }
 
-    private fun <T : Any> buildListUsingConstructorForT(results: ResultSet?, typeT: T): MutableList<T> {
+    private fun <T : Any> buildListOfOneDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
 
         val listT = mutableListOf<T>()
         val constructorForT = narrowDownConstructorForT(results, typeT)
-        val columnCount = getColumnCount(results)
+        val columnCount = results?.metaData?.columnCount ?: 1
 
         do {
             val parametersListForT = getParameters(results, columnCount)
@@ -59,14 +85,14 @@ open class ObjectBuilder {
         return listT
     }
 
-    private fun <T : Any> narrowDownConstructorForT(results: ResultSet?, t: T): Wrap<Constructor<T>?> {
+    private fun <T : Any> narrowDownConstructorForT(results: ResultSet?, typeT: T): Wrap<Constructor<T>?> {
         return results
                 .toOpt()
                 .map(ResultSet::getMetaData)
-                .map(::getConstructorData)
-                .mapWith(t) { data, type -> narrowDown(type::class.constructors, data) }
+                .map(::getFields)
+                .mapWith(typeT) { fields, type -> narrowDown(fields, type::class.constructors) }
                 .filter { it.t != null }
-                .getOrElseThrow { Exception("Unable to narrow down a constructor for object T: ${t::class}") }!!
+                .getOrElseThrow { Exception("Unable to narrow down a constructor for object T: ${typeT::class}") }!!
     }
 
     private fun <T : Any> createT(constructor: Wrap<Constructor<T>?>, parametersList: MutableList<Any>, typeT: T): T {
@@ -88,11 +114,10 @@ open class ObjectBuilder {
     }
 
     private fun isColumnNameNotId(results: ResultSet?, columnNumber: Int) = results?.metaData?.getColumnName(columnNumber) != "id"
-    private fun getColumnCount(results: ResultSet?) = results?.metaData?.columnCount ?: 1
 
-    protected open fun <T : Any> narrowDown(
-            constr: Collection<KFunction<T>>,
+    private fun <T : Any> narrowDown(
             resultSetConstructorData: MutableList<ConstructorData>,
+            constr: Collection<KFunction<T>>,
     ): Wrap<Constructor<T>?> {
         val result = Wrap<Constructor<T>?>(null)
         constr.map { c ->
@@ -104,7 +129,7 @@ open class ObjectBuilder {
         return result
     }
 
-    protected open fun <T : Any> getConstructorDatas(c: KFunction<T>): MutableList<ConstructorData> {
+    private fun <T : Any> getConstructorDatas(c: KFunction<T>): MutableList<ConstructorData> {
         val constructorDataCr = mutableListOf<ConstructorData>()
         c.parameters.forEach { p ->
             constructorDataCr.add(ConstructorData(p.type.javaType.typeName, p.name ?: ""))
@@ -112,7 +137,7 @@ open class ObjectBuilder {
         return constructorDataCr
     }
 
-    private fun getConstructorData(resultSetMetadata: ResultSetMetaData): MutableList<ConstructorData> {
+    private fun getFields(resultSetMetadata: ResultSetMetaData): MutableList<ConstructorData> {
         val list = mutableListOf<ConstructorData>()
         (1..resultSetMetadata.columnCount).forEach { i ->
             if (resultSetMetadata.getColumnName(i) != DB_ID_FIELD) { // add coverage for various types of db providers
@@ -127,37 +152,4 @@ open class ObjectBuilder {
     }
 }
 
-class CompositeObjectBuilder : ObjectBuilder() {
 
-    override fun <T : Any> getConstructorDatas(c: KFunction<T>): MutableList<ConstructorData> {
-        val constructorDatas: MutableList<ConstructorData> = super.getConstructorDatas(c)
-
-        // datasList == { amount, person == { firstName, lastName } }
-        // datasList == { amount, firstName, lastName }
-
-        // 1. flatten all composite objects
-        // 2. list parent object
-        // 3. filter to primitives
-        // 4. list customs -> repeat recursive
-
-        return constructorDatas
-    }
-
-    override fun <T : Any> narrowDown(
-            constr: Collection<KFunction<T>>,
-            resultSetConstructorData: MutableList<ConstructorData>,
-    ): Wrap<Constructor<T>?> {
-
-        val result = Wrap<Constructor<T>?>(null)
-        constr.map { c ->
-            val constructorDatas = getConstructorDatas(c)
-
-            if (constructorDatas.containsAll(resultSetConstructorData)) { // TOIMPROVE: test coverage
-                result.t = c.javaConstructor
-            }
-        }
-
-        return result
-    }
-
-}

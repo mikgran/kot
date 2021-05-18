@@ -2,6 +2,7 @@ package mg.util.common
 
 import mg.util.common.Common.hasAnyContent
 import mg.util.common.Common.hasContent
+import mg.util.db.TestDataClasses.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -71,6 +72,18 @@ internal class CommonTest {
         assertEquals(" $WORLD", stringBuilder2.toString())
         assertEquals(HELLO_WORLD, candidate.toString())
         assertEquals(stringBuilder1, candidate)
+    }
+
+    @Test
+    fun testIsMultiDepthCustomObject() {
+
+        val isMultiDepthCustomObject = Common.isMultiDepthCustom(CPerson1())
+        assertNotNull(isMultiDepthCustomObject)
+        assertFalse(isMultiDepthCustomObject, "CPerson1 should not be a multidepth object.")
+
+        val isMultiDepthCustomObject2 = Common.isMultiDepthCustom(CPerson2())
+        assertNotNull(isMultiDepthCustomObject2)
+        assertTrue(isMultiDepthCustomObject2, "CPerson2 should be a multidepth object.")
     }
 
     companion object {

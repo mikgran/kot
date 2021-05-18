@@ -2,6 +2,7 @@ package mg.util.common
 
 import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
+import mg.util.functional.toOpt
 import java.lang.reflect.Field
 
 object Common {
@@ -32,8 +33,16 @@ object Common {
     fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
     private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.") // or startsWith
     private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
+
     // FIXME: -1 add testing, doesn't take primitives into count
     fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
+    fun isMultiDepthCustom(obj: Any): Boolean {
+        return obj::class.java.declaredFields.toCollection(ArrayList())
+                .toOpt()
+                .lfilter(::isCustom)
+                .map { it.isNotEmpty() }
+                .getOrElse { false }
+    }
 }
 
 operator fun StringBuilder.plus(s: String): StringBuilder = append(s)
