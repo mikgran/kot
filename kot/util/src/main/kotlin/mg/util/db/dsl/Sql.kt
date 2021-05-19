@@ -6,7 +6,7 @@ package mg.util.db.dsl
 // of parameters for Dsl to Sql building.
 sealed class Sql(val t: Any) {
 
-    data class  Parameters(
+    data class Parameters(
             var action: Sql? = null,
             val joins: MutableList<Sql> = mutableListOf(),
             val updates: MutableList<Sql> = mutableListOf(),
@@ -19,7 +19,8 @@ sealed class Sql(val t: Any) {
             val whereFragments: MutableList<String> = mutableListOf(),
             val joinTypes: MutableList<Any> = mutableListOf(),
             val joinsMap: MutableMap<Any, Any> = mutableMapOf(),
-            var isManuallyJoined: Boolean = false
+            var isManuallyJoined: Boolean = false,
+            var isPrimaryIdIncluded: Boolean = false,
     ) {
 
 
@@ -60,10 +61,12 @@ sealed class Sql(val t: Any) {
             is Drop,
             is Delete,
             is Select,
-            is Update -> parameters.action = type
+            is Update,
+            -> parameters.action = type
             is Select.Join,
             is Select.Join.On,
-            is Select.Join.On.Eq -> parameters.joins.add(type)
+            is Select.Join.On.Eq,
+            -> parameters.joins.add(type)
             is Select.Join.Where,
             is Select.Join.Where.Eq,
             is Select.Where,
@@ -73,11 +76,13 @@ sealed class Sql(val t: Any) {
             is Update.Set.Eq.Where,
             is Update.Set.Eq.Where.Eq,
             is Update.Set.Eq.And.Eq.Where,
-            is Update.Set.Eq.And.Eq.Where.Eq -> parameters.wheres.add(type)
+            is Update.Set.Eq.And.Eq.Where.Eq,
+            -> parameters.wheres.add(type)
             is Update.Set,
             is Update.Set.Eq,
             is Update.Set.Eq.And,
-            is Update.Set.Eq.And.Eq -> parameters.updates.add(type)
+            is Update.Set.Eq.And.Eq,
+            -> parameters.updates.add(type)
             // TODO: 1 coverage
         }
         return type

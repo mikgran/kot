@@ -147,6 +147,7 @@ internal class DBOTest {
         dbo.save(dboBilling2, connection)
 
         val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10 and DBOPerson3::firstName eq "Firstname" and DBOPerson3::lastName eq "Lastname"
+        sql.parameters().isPrimaryIdIncluded = true
 
         val sqlStr = DslMapperFactory.get().map(sql)
 
@@ -180,7 +181,7 @@ internal class DBOTest {
                 ObjectBuilder()
                         .buildListOfT(results.get(), DBOBilling2())
 
-        println(dboBillingCandidate)
+        println("\ndboBillingCandidate: $dboBillingCandidate")
     }
 
     @Test

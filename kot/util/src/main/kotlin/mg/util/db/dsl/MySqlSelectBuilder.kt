@@ -18,26 +18,13 @@ class MySqlSelectBuilder {
         p.tableFragments.add(0, buildTableFragment(t))
         p.joinsMap.putAll(buildJoinsMap(t, p, mutableMapOf()))
 
-        println("joinsMap: ${p.joinsMap}")
-
         p.toOpt()
                 .map { buildJoinsForNaturalRefs(it) }
                 .filter(String::isNotEmpty)
                 .map(p.joinFragments::add)
 
         collectUniqueTypesFrom(p.action, p.joinsMap)
-                .forEach {
-                    p.columnFragments += run {
-                        val (_, alias) = buildUidAndAlias(it)
-                        // TODO 5 check for types coverage
-                        // println("includedTypes contains:: " + includedTypes.any { it.contains("Int", ignoreCase = true) })
-                        it::class
-                                .declaredMemberProperties
-                                .mapNotNull { it.javaField }
-                                .filter(::isCustomField)
-                                .joinToString(", ") { "${alias}.${it.name}" }
-                    }
-                }
+                .forEach { addColumnFragments(it, p) }
 
         val sb = StringBuilder() +
                 "SELECT ${p.columnFragments.joinToString(", ")}" +
@@ -47,6 +34,26 @@ class MySqlSelectBuilder {
                 buildWherePart(p)
 
         return sb.toString()
+    }
+
+    private fun addPrimaryIdIfIncluded(p: Sql.Parameters, t: Any) {
+        if (p.isPrimaryIdIncluded) {
+            val (_, aliasT) = buildUidAndAlias(t)
+            p.columnFragments +="$aliasT.id"
+        }
+    }
+
+    private fun addColumnFragments(type: Any, p: Sql.Parameters) {
+        val (_, alias) = buildUidAndAlias(type)
+
+        addPrimaryIdIfIncluded(p, type)
+
+        // TODO 5 check for types coverage
+        p.columnFragments += type::class
+                .declaredMemberProperties
+                .mapNotNull { it.javaField }
+                .filter(::isCustomField)
+                .joinToString(", ") { "$alias.${it.name}" }
     }
 
     private fun buildJoinsForNaturalRefs(parameters: Sql.Parameters): String {

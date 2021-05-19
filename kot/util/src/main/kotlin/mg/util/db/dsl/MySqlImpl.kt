@@ -1,11 +1,9 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2.Factory.of
-import mg.util.functional.toOpt
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1

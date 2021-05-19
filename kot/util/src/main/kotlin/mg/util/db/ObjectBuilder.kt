@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.common.Common.isMultiDepthCustom
 import mg.util.common.Wrap
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
@@ -20,7 +21,7 @@ open class ObjectBuilder {
                 .toOpt()
                 .case({ it is String }, { buildListUsingStrings(results, it) })
                 .case({ isMultiDepthCustom(it) }, { buildListOfMultiDepthCustoms(results, it) })
-                .caseDefault { buildListOfOneDepthCustoms(results, it) }
+                .caseDefault { buildListOfSingleDepthCustoms(results, it) }
                 .result()
                 .getOrElse(mutableListOf())
     }
@@ -70,7 +71,7 @@ open class ObjectBuilder {
                 .map(list::add)
     }
 
-    private fun <T : Any> buildListOfOneDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
+    private fun <T : Any> buildListOfSingleDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
 
         val listT = mutableListOf<T>()
         val constructorForT = narrowDownConstructorForT(results, typeT)
