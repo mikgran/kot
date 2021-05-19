@@ -1,6 +1,6 @@
 package mg.util.db
 
-import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.toOpt
 
 /*
     map {
@@ -24,13 +24,13 @@ object AliasBuilder {
 
     @Synchronized fun build(s: String): String {
 
-        val firstLetter = of(s)
+        val firstLetter = s.toOpt()
                 .filter(String::isNotEmpty)
                 .ifMissingThrow { Exception("alias: Not possible to alias empty strings") }
-                .map { "${s[0]}".toLowerCase() }
+                .map { "${s[0]}".lowercase() }
                 .getOrElse("")
 
-        val alias = of(aliases)
+        val alias = aliases.toOpt()
                 .filter { it.containsKey(firstLetter) }
                 .map { it[firstLetter] as HashMap<String, Alias> }
                 .ifEmpty { newLetterMap(firstLetter) }
