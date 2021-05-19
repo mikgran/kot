@@ -16,7 +16,9 @@ class MySqlSelectBuilder {
 
         val t = sql.t
         p.tableFragments.add(0, buildTableFragment(t))
-        p.joinsMap.putAll(buildJoinsMap(t, p))
+        p.joinsMap.putAll(buildJoinsMap(t, p, mutableMapOf()))
+
+        println("joinsMap: ${p.joinsMap}")
 
         p.toOpt()
                 .map { buildJoinsForNaturalRefs(it) }
@@ -123,9 +125,8 @@ class MySqlSelectBuilder {
         return "$uid $alias"
     }
 
-    private fun buildJoinsMap(root: Any, p: Sql.Parameters): MutableMap<Any, List<Any>> {
+    private fun buildJoinsMap(root: Any, p: Sql.Parameters, joinsMap: MutableMap<Any, List<Any>>): MutableMap<Any, List<Any>> {
 
-        val joinsMap = mutableMapOf<Any, List<Any>>()
         root.toOpt()
                 .map {
                     val list: List<Any> = childrenForParent(it)
@@ -134,7 +135,7 @@ class MySqlSelectBuilder {
                     }
                     list
                 }
-                .xmap { forEach { buildJoinsMap(it, p) } }
+                .xmap { forEach { buildJoinsMap(it, p, joinsMap) } }  // recursion
         return joinsMap
     }
 
