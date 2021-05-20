@@ -164,23 +164,24 @@ internal class DBOTest {
 //        // FIXME: 200 asserts
         var isColumnsPrinted = false
         results.map(ResultSet::toResultSetIterator)
-                .lxforEach { rs: ResultSet ->
-                    if (!isColumnsPrinted) {
-                        (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
+                .xmap {
+                    map { rs: ResultSet ->
+                        if (!isColumnsPrinted) {
+                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
+                            println()
+                            isColumnsPrinted = true
+                        }
+                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
                         println()
-                        isColumnsPrinted = true
                     }
-                    (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
-                    println()
                 }
-
         // XXX: 500 Fix composition building
         val dboBillingCandidate: MutableList<DBOBilling2> =
                 ObjectBuilder()
                         .buildListOfT(results.get(), DBOBilling2())
 
         println("\ndboBillingCandidate: $dboBillingCandidate")
-
+        // fail("")
     }
 
     @Test
