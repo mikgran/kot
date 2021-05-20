@@ -12,6 +12,7 @@ import mg.util.db.functional.ResultSetIterator.Companion.iof
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
+import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
@@ -143,10 +144,10 @@ internal class DBOTest {
 
         val connection = dbConfig.connection
         dbo.ensureTable(DBOBilling2(), connection)
-        val dboBilling2 = DBOBilling2("10", DBOPerson3("Firstname", "Lastname"))
+        val dboBilling2 = DBOBilling2("10", listOf(DBOPerson3("A", "AA"), DBOPerson3("B", "BB"), DBOPerson3("C", "CC")))
         dbo.save(dboBilling2, connection)
 
-        val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10 and DBOPerson3::firstName eq "Firstname" and DBOPerson3::lastName eq "Lastname"
+        val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10//  and DBOPerson3::firstName eq "Firstname" and DBOPerson3::lastName eq "Lastname"
         sql.parameters().isPrimaryIdIncluded = true
 
         val sqlStr = DslMapperFactory.get().map(sql)

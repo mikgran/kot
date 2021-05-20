@@ -4,6 +4,7 @@ import mg.util.common.Common
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
+import mg.util.db.UidBuilder
 import mg.util.db.dsl.MySqlImpl.Companion.buildUidAndAlias
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
@@ -16,7 +17,7 @@ class MySqlSelectBuilder {
 
         val t = sql.t
         p.tableFragments.add(0, buildTableFragment(t))
-        p.joinsMap.putAll(buildJoinsMap(t, p, mutableMapOf()))
+        p.joinsMap.putAll(buildJoinsMap(t, mutableMapOf()))
 
         p.toOpt()
                 .map { buildJoinsForNaturalRefs(it) }
@@ -132,16 +133,16 @@ class MySqlSelectBuilder {
         return "$uid $alias"
     }
 
-    private fun buildJoinsMap(root: Any, p: Sql.Parameters, joinsMap: MutableMap<Any, List<Any>>): MutableMap<Any, List<Any>> {
+    private fun buildJoinsMap(root: Any, joinsMap: MutableMap<Any, List<Any>>): MutableMap<Any, List<Any>> {
         root.toOpt()
                 .map {
-                    val list: List<Any> = childrenForParent(it)
-                    if (list.isNotEmpty()) {
-                        joinsMap[it] = list
+                    val children: List<Any> = childrenForParent(it)
+                    if (children.isNotEmpty()) {
+                        joinsMap[it] = children
                     }
-                    list
+                    children
                 }
-                .lxforEach<Any> { buildJoinsMap(it, p, joinsMap) }  // recursion
+                .lxforEach<Any> { buildJoinsMap(it, joinsMap) }  // recursion
         return joinsMap
     }
 
@@ -162,29 +163,29 @@ class MySqlSelectBuilder {
         return it.get(type)
     }
 
-    private fun collectUniqueTypesFrom(action: Sql?, joinsMap: MutableMap<*, *>): MutableSet<Any> {
-        val uniques = mutableSetOf<Any>()
+    private fun collectUniqueTypesFrom(action: Sql?, joinsMap: MutableMap<*, *>): List<Any> {
+        val allObjects = mutableSetOf<Any>()
         action?.t.toOpt()
-                .map(uniques::add)
+                .map(allObjects::add)
 
         joinsMap.iterator()
                 .toOpt()
-                .lmap { entry: MutableMap.MutableEntry<Any, Any> -> getUniques(entry, uniques) }
+                .lmap { entry: MutableMap.MutableEntry<Any, Any> -> addUniques(entry, allObjects) }
 
-        return uniques
+        return allObjects.distinctBy(UidBuilder::buildUniqueId)
     }
 
-    private fun getUniques(entry: MutableMap.MutableEntry<Any, Any>, uniques: MutableSet<Any>) {
+    private fun addUniques(entry: MutableMap.MutableEntry<Any, Any>, uniques: MutableSet<Any>) {
         when (val e = entry.value) {
-            is List<*> -> getUniques(e, uniques)
+            is List<*> -> addUniques(e, uniques)
             else -> uniques.add(e)
         }
     }
 
-    private fun getUniques(list: List<*>, uniques: MutableSet<Any>) {
+    private fun addUniques(list: List<*>, uniques: MutableSet<Any>) {
         list.forEach {
             when (it) {
-                is List<*> -> getUniques(it, uniques)
+                is List<*> -> addUniques(it, uniques)
                 else -> it?.let(uniques::add)
             }
         }
