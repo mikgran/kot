@@ -176,6 +176,15 @@ class Opt2<T : Any> {
         }
     }
 
+    /**
+     * A non transforming through-to-list-for-each (lxforEach). Performs side-effect
+     * on the contents, with no modification of the contents.
+     */
+    inline fun <reified V : Any> lxforEach(consumer: (V) -> Unit): Opt2<List<V>> {
+        val list = toList<V>()
+        list.forEach(consumer)
+        return list.toOpt()
+    }
     inline fun <reified V : Any, R : Any> lxmap(mapper: List<V>.() -> List<R>): Opt2<List<R>> = of(toList<V>().mapper())
     inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
     inline fun <reified V : Any> toList(): List<V> {

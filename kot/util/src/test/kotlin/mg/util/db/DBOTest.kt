@@ -164,16 +164,14 @@ internal class DBOTest {
 //        // FIXME: 200 asserts
         var isColumnsPrinted = false
         results.map(ResultSet::toResultSetIterator)
-                .xmap {
-                    forEach { rs ->
-                        if (!isColumnsPrinted) {
-                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
-                            println()
-                            isColumnsPrinted = true
-                        }
-                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
+                .lxforEach { rs: ResultSet ->
+                    if (!isColumnsPrinted) {
+                        (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
                         println()
+                        isColumnsPrinted = true
                     }
+                    (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
+                    println()
                 }
 
         // XXX: 500 Fix composition building
@@ -182,6 +180,7 @@ internal class DBOTest {
                         .buildListOfT(results.get(), DBOBilling2())
 
         println("\ndboBillingCandidate: $dboBillingCandidate")
+
     }
 
     @Test

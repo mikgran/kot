@@ -39,7 +39,7 @@ class MySqlSelectBuilder {
     private fun addPrimaryIdIfIncluded(p: Sql.Parameters, t: Any) {
         if (p.isPrimaryIdIncluded) {
             val (_, aliasT) = buildUidAndAlias(t)
-            p.columnFragments +="$aliasT.id"
+            p.columnFragments += "$aliasT.id"
         }
     }
 
@@ -133,7 +133,6 @@ class MySqlSelectBuilder {
     }
 
     private fun buildJoinsMap(root: Any, p: Sql.Parameters, joinsMap: MutableMap<Any, List<Any>>): MutableMap<Any, List<Any>> {
-
         root.toOpt()
                 .map {
                     val list: List<Any> = childrenForParent(it)
@@ -142,7 +141,7 @@ class MySqlSelectBuilder {
                     }
                     list
                 }
-                .xmap { forEach { buildJoinsMap(it, p, joinsMap) } }  // recursion
+                .lxforEach<Any> { buildJoinsMap(it, p, joinsMap) }  // recursion
         return joinsMap
     }
 

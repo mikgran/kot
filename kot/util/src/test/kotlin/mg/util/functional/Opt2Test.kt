@@ -525,6 +525,22 @@ internal class Opt2Test {
     }
 
     @Test
+    fun test_lxforEach() {
+
+        val mutableList = mutableListOf<Int>()
+
+        assertEquals(0, mutableList.sum())
+
+        Opt2.of(listOf(1, 2, 3, 4))
+                .lxforEach(mutableList::add)
+                .apply {
+                    val candidate: List<Int>? = get()
+                    assertNotNull(candidate)
+                    assertEquals(10, mutableList.sum())
+                }
+    }
+
+    @Test
     fun test_lfilter() {
 
         Opt2.of(listOf(1, 2, 3, 4))
@@ -580,7 +596,7 @@ internal class Opt2Test {
     }
 
     @Test
-    fun testOptOfExtension(){
+    fun testOptOfExtension() {
 
         val someData = "someData"
         val candidate: Opt2<String> = someData.toOpt()
