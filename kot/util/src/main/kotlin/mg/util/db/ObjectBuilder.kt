@@ -19,9 +19,9 @@ open class ObjectBuilder {
     fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
         return typeT
                 .toOpt()
-                .case({ it is String }, { buildListUsingStrings(results, it) })
-                .case({ isMultiDepthCustom(it) }, { buildListOfMultiDepthCustoms(results, it) })
-                .caseDefault { buildListOfSingleDepthCustoms(results, it) }
+                .case({ it is String }, { println("\nA\n"); buildListUsingStrings(results, it) })
+                .case({ isMultiDepthCustom(it) }, { println("\nB\n"); buildListOfMultiDepthCustoms(results, it) })
+                .caseDefault { println("\nC\n"); buildListOfSingleDepthCustoms(results, it) }
                 .result()
                 .getOrElse(mutableListOf())
     }
