@@ -29,7 +29,7 @@ object AliasBuilder {
                 .filter(String::isNotEmpty)
                 .ifMissingThrow { Exception("Not possible to alias empty strings") }
                 .map { "${s[0]}".lowercase() }
-                .getOrElse("")
+                .getOrElse { "" }
 
         val alias = aliases.toOpt()
                 .map { it[firstLetter] }
