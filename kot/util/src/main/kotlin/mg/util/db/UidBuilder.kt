@@ -3,7 +3,6 @@ package mg.util.db
 import mg.util.functional.toOpt
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.jvmName
 
 object UidBuilder {
 
@@ -19,7 +18,6 @@ object UidBuilder {
                 .map { it::class }
                 .map(::build)
                 .getOrElse("")
-
     }
 
     // TODO 10 add type coverage, and multiple packages support
@@ -27,7 +25,7 @@ object UidBuilder {
         return synchronizedBlock {
             uniqueIds.toOpt()
                     .map { it[t] }
-                    .ifEmpty { buildUid(t) }
+                    .ifEmpty { buildUid(t).also { uniqueIds[t] = it } }
                     .getOrElse { "" }
         }
     }
@@ -40,6 +38,5 @@ object UidBuilder {
             .map { it.hashCode() }
             .map { if (it < 0) (it and 0x7fffffff) else it }
             .mapWith(t.simpleName) { hashCode, simpleName -> simpleName + hashCode }
-            .ifPresent { uniqueIds[t] = it }
             .getOrElse { "" }
 }

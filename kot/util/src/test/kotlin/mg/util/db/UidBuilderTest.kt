@@ -2,7 +2,6 @@ package mg.util.db
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import kotlin.reflect.KClass
 
 internal class UidBuilderTest {
 

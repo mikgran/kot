@@ -22,36 +22,31 @@ object AliasBuilder {
 
     private var aliases = HashMap<String, HashMap<String, Alias>>()
 
-    @Synchronized fun build(s: String): String {
+    @Synchronized
+    fun build(s: String): String {
 
         val firstLetter = s.toOpt()
                 .filter(String::isNotEmpty)
-                .ifMissingThrow { Exception("alias: Not possible to alias empty strings") }
+                .ifMissingThrow { Exception("Not possible to alias empty strings") }
                 .map { "${s[0]}".lowercase() }
                 .getOrElse("")
 
         val alias = aliases.toOpt()
-                .filter { it.containsKey(firstLetter) }
-                .map { it[firstLetter] as HashMap<String, Alias> }
-                .ifEmpty { newLetterMap(firstLetter) }
-                .case({ it.containsKey(s) }, { it[s] as Alias })
-                .case({ !it.containsKey(s) }, { newCachedAlias(firstLetter, s) })
-                .result()
+                .map { it[firstLetter] }
+                .ifEmpty { newCachedLetterMap(firstLetter) }
+                .map { it[s] }
+                .ifEmpty { newCachedAlias(firstLetter, s) }
 
         return alias.toString()
     }
 
-    private fun newLetterMap(firstLetter: String): HashMap<String, Alias> {
-        val newLetterMap = HashMap<String, Alias>()
-        aliases[firstLetter] = newLetterMap
-        return newLetterMap
-    }
+    private fun newCachedLetterMap(firstLetter: String) =
+            HashMap<String, Alias>()
+                    .also { aliases[firstLetter] = it }
 
-    private fun newCachedAlias(firstLetter: String, s: String): Alias {
-        val newAlias = Alias(firstLetter, aliases[firstLetter]!!.size + 1)
-        aliases[firstLetter]!![s] = newAlias
-        return newAlias
-    }
+    private fun newCachedAlias(firstLetter: String, s: String) =
+            Alias(firstLetter, aliases[firstLetter]!!.size + 1)
+                    .also { aliases[firstLetter]!![s] = it }
 
     override fun toString(): String {
         return aliases.toSortedMap().toString()
