@@ -37,11 +37,23 @@ object Common {
     // FIXME: -1 add testing, doesn't take primitives into count
     fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
     fun isMultiDepthCustom(obj: Any): Boolean {
-        return obj::class.java.declaredFields.toCollection(ArrayList())
-                .toOpt()
-                .lfilter(::isCustom)
-                .map { it.isNotEmpty() }
-                .getOrElse { false }
+        val isAnyCustom = obj::class.java.declaredFields.toCollection(ArrayList())
+                .any(::isCustom)
+
+        val isAnyCustomInsideList = obj::class.java.declaredFields.toCollection(ArrayList())
+                .any { field ->
+                    field.isAccessible = true
+                    field.get(obj).toOpt()
+                            .mapTo(List::class)
+                            .map(List<*>::first)
+                            .map { println("[ $it"); it }
+                            .filter { obj ->
+                                listOf("kotlin.", "java.").none { it == obj::class.java.packageName }
+                            }
+                            .get() != null
+                }
+
+        return isAnyCustom || isAnyCustomInsideList
     }
 }
 
