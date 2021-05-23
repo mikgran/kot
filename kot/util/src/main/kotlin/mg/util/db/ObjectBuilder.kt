@@ -8,7 +8,11 @@ import java.lang.reflect.Constructor
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
+import kotlin.reflect.full.createInstance
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaConstructor
+import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaType
 
 @Suppress("UNCHECKED_CAST")
@@ -26,29 +30,65 @@ open class ObjectBuilder {
                 .getOrElse(mutableListOf())
     }
 
-    private fun <T> buildListOfMultiDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
+    private fun <T : Any> buildListOfMultiDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
 
-        // - collect all custom objects
-        // - assume order of appearance in ResultSet
-        // - construct first custom object by name from primitives
-        // - find customs for first, construct customs by name from primitives
+        // DBOBilling2(
+        //      "10",
+        //      listOf(
+        //          DBOPerson3("A", "AA"),
+        //          DBOPerson3("B", "BB"),
+        //          DBOPerson3("C", "CC")
+        //      )
+        // )
+        // id amount id firstName lastName
+        // 1  10     1  A         AA
+        // 1  10     2  B         BB
+        // 1  10     3  C         CC
+        // Billing(amount, persons[])
 
-        // Building (name = a, floors = { floor(1), floor(2), floor(3) } )
-        // ResultSet:
-        // building floor
-        // a        1       -> building(name = a), floor(1)
-        // a        2       -> building(name = a), floor(2)
-        // a        3       -> building(name = a), floor(3) -> building( a, { floor(1), floor(2), floor(3) } )
-        // b        1       -> building(name = b), floor(1)
-        // b        2       -> building(name = b), floor(2) -> building( b, { floor(1), floor(2) } )
+        // var columns = getColumns(results)
 
-        // DBOBilling2("10", DBOPerson3("Firstname", "Lastname"))
-        // amount firstName lastName
-        // 10 Firstname Lastname
+        // narrowDownMultiDepthConstructor(columns, typeT)
 
+        val newInstance = typeT::class.createInstance()
 
+        val propertiesOfTypeT = typeT::class.declaredMemberProperties
+                .toCollection(ArrayList())
+                .filter {
+                    !(it.javaField?.type?.simpleName ?: "").contains("list", ignoreCase = true)
+                }
+
+        println("XXX:: $newInstance")
+
+        results?.beforeFirst()
+        if (results?.next() == true) {
+            propertiesOfTypeT.forEach {
+                val propertyValue = results.getString(it.name)
+                it.isAccessible = true
+                it.javaField?.set(newInstance, propertyValue)
+            }
+        }
+        println("YYY:: $newInstance")
 
         return mutableListOf()
+    }
+
+    private fun <T : Any> narrowDownMultiDepthConstructor(columns: List<String>, typeT: T) {
+        val columnsSize = columns.size
+        typeT::class.constructors.toMutableList()
+                .filter { constructor ->
+                    columnsSize == constructor.parameters.size &&
+                            constructor.parameters.map { it.name }.containsAll(columns)
+                }
+    }
+
+    private fun getColumns(results: ResultSet?): List<String> {
+        // id amount id firstName lastName
+        val columns = mutableListOf<String?>()
+        val columnCount = results?.metaData?.columnCount ?: 1
+        (1..columnCount)
+                .forEach { columns += results?.metaData?.getColumnName(it) }
+        return columns.filterNotNull()
     }
 
     fun <T : Any> add(list: MutableList<T>, t: T) = list.add(t)
