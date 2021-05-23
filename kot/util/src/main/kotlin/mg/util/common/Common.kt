@@ -40,7 +40,7 @@ object Common {
         val isAnyCustom = obj::class.java.declaredFields.toCollection(ArrayList())
                 .any(::isCustom)
 
-        val isAnyCustomInsideList = obj::class.java.declaredFields.toCollection(ArrayList())
+        val isCustomInsideListsFirstElement = obj::class.java.declaredFields.toCollection(ArrayList())
                 .any { field ->
                     field.isAccessible = true
                     field.get(obj).toOpt()
@@ -52,7 +52,7 @@ object Common {
                             .get() != null
                 }
 
-        return isAnyCustom || isAnyCustomInsideList
+        return isAnyCustom || isCustomInsideListsFirstElement
     }
 }
 
