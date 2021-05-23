@@ -46,7 +46,6 @@ object Common {
                     field.get(obj).toOpt()
                             .mapTo(List::class)
                             .map(List<*>::first)
-                            .map { println("[ $it"); it }
                             .filter { obj ->
                                 listOf("kotlin.", "java.").none { it == obj::class.java.packageName }
                             }
