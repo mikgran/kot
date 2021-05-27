@@ -1,22 +1,27 @@
 package mg.util.db
 
+import mg.util.common.Common
 import mg.util.common.Common.isMultiDepthCustom
+import mg.util.common.PredicateComposition.Companion.and
+import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.Wrap
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
 import java.lang.reflect.Constructor
+import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
-import kotlin.reflect.full.createInstance
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.jvm.isAccessible
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaType
 
 @Suppress("UNCHECKED_CAST")
 open class ObjectBuilder {
+
+    private val nonAcceptableTypes = listOf("list", "collection", "array")
 
     protected data class ConstructorData(val type: Any, val name: String)
 
@@ -44,54 +49,75 @@ open class ObjectBuilder {
         // 1  10     1  A         AA
         // 1  10     2  B         BB
         // 1  10     3  C         CC
+        // 2  20     4  D         DD
+        // 2  20     5  E         EE
+        // 2  20     6  C         FF
         // Billing(amount, persons[])
 
-        // var columns = getColumns(results)
+//
+//        val newInstance = typeT::class.createInstance()
+//
+//        val propertiesOfTypeT = typeT::class.declaredMemberProperties
+//                .toCollection(ArrayList())
+//                .filter(::isNotListCollectionOrArray)
+//
+//        println("YYY1:: $newInstance")
+//
+//        results?.beforeFirst()
+//        if (results?.next() == true) {
+//            propertiesOfTypeT.forEach {
+//                val propertyValue = results.getString(it.name)
+//                it.javaField?.isAccessible = true
+//                it.javaField?.set(newInstance, propertyValue)
+//            }
+//        }
+//        println("YYY2:: $newInstance")
 
-        // narrowDownMultiDepthConstructor(columns, typeT)
+        val uniquesByParent = HashMap<Any, Any>()
 
-        val newInstance = typeT::class.createInstance()
+        getUniquesByParent(typeT, uniquesByParent)
 
-        val propertiesOfTypeT = typeT::class.declaredMemberProperties
-                .toCollection(ArrayList())
-                .filter {
-                    !(it.javaField?.type?.simpleName ?: "").contains("list", ignoreCase = true)
-                }
-
-        println("XXX:: $newInstance")
-
-        results?.beforeFirst()
-        if (results?.next() == true) {
-            propertiesOfTypeT.forEach {
-                val propertyValue = results.getString(it.name)
-                it.isAccessible = true
-                it.javaField?.set(newInstance, propertyValue)
-            }
+        uniquesByParent.forEach {
+            println("parent: ${it.key::class.simpleName}")
+            println("child: ${it.value::class.simpleName}")
         }
-        println("YYY:: $newInstance")
 
         return mutableListOf()
     }
 
-    private fun <T : Any> narrowDownMultiDepthConstructor(columns: List<String>, typeT: T) {
-        val columnsSize = columns.size
-        typeT::class.constructors.toMutableList()
-                .filter { constructor ->
-                    columnsSize == constructor.parameters.size &&
-                            constructor.parameters.map { it.name }.containsAll(columns)
+    private fun <T : Any> getUniquesByParent(typeT: T, uniquesByParent: HashMap<Any, Any>) {
+
+        val fieldsOfT = typeT::class.memberProperties
+                .toMutableList()
+                .mapNotNull { it.javaField }
+
+        uniquesByParent[typeT] =
+                fieldsOfT.filter(Common::isCustom and !Common::isList)
+                        .map { field: Field ->
+                            field.isAccessible = true
+                            field.get(typeT)
+                        }
+
+        // list types accepted for now only
+        fieldsOfT.filter(Common::isList)
+                .map {
+                    it.isAccessible = true
+                    it.get(typeT) as List<*>
+                }
+                // check for single type list?
+                .forEach { list ->
+                    list.first()?.let { firstElement ->
+                        uniquesByParent[typeT] = firstElement
+                        getUniquesByParent(firstElement, uniquesByParent)
+                    }
                 }
     }
 
-    private fun getColumns(results: ResultSet?): List<String> {
-        // id amount id firstName lastName
-        val columns = mutableListOf<String?>()
-        val columnCount = results?.metaData?.columnCount ?: 1
-        (1..columnCount)
-                .forEach { columns += results?.metaData?.getColumnName(it) }
-        return columns.filterNotNull()
-    }
 
-    fun <T : Any> add(list: MutableList<T>, t: T) = list.add(t)
+    private fun <T : Any> isNotListCollectionOrArray(property: KProperty1<out T, *>) =
+            nonAcceptableTypes.none {
+                it.equals((property.javaField?.type?.simpleName ?: ""), ignoreCase = true)
+            }
 
     private fun <T : Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
 
