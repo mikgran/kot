@@ -45,6 +45,7 @@ object Common {
                     field.isAccessible = true
                     field.get(obj).toOpt()
                             .mapTo(List::class)
+                            .filter(List<*>::isNotEmpty)
                             .map(List<*>::first)
                             .filter { obj ->
                                 listOf("kotlin.", "java.").none { it == obj::class.java.packageName }

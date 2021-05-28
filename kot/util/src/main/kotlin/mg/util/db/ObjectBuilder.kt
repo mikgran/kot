@@ -2,8 +2,6 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.common.Common.isMultiDepthCustom
-import mg.util.common.PredicateComposition.Companion.and
-import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.Wrap
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
@@ -12,7 +10,6 @@ import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
-import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaField
@@ -20,8 +17,6 @@ import kotlin.reflect.jvm.javaType
 
 @Suppress("UNCHECKED_CAST")
 open class ObjectBuilder {
-
-    private val nonAcceptableTypes = listOf("list", "collection", "array")
 
     protected data class ConstructorData(val type: Any, val name: String)
 
@@ -52,7 +47,7 @@ open class ObjectBuilder {
         // 2  20     4  D         DD
         // 2  20     5  E         EE
         // 2  20     6  C         FF
-        // Billing(amount, persons[])
+        // Billing(amount, persons[Person, Person])
 
 //
 //        val newInstance = typeT::class.createInstance()
@@ -73,51 +68,69 @@ open class ObjectBuilder {
 //        }
 //        println("YYY2:: $newInstance")
 
-        val uniquesByParent = HashMap<Any, Any>()
+        val uniquesByParent = HashMap<Any, MutableList<Any>>()
 
-        getUniquesByParent(typeT, uniquesByParent)
+        collectUniquesByParent(typeT, uniquesByParent)
 
-        uniquesByParent.forEach {
-            println("parent: ${it.key::class.simpleName}")
-            println("child: ${it.value::class.simpleName}")
+        uniquesByParent.entries.forEach {
+            println("key: ${it.key::class.simpleName}")
+            println("value: ${it.value.first()::class.simpleName}")
         }
 
         return mutableListOf()
     }
 
-    private fun <T : Any> getUniquesByParent(typeT: T, uniquesByParent: HashMap<Any, Any>) {
+    private fun <T : Any> collectUniquesByParent(typeT: T, uniquesByParent: HashMap<Any, MutableList<Any>>) {
 
         val fieldsOfT = typeT::class.memberProperties
                 .toMutableList()
                 .mapNotNull { it.javaField }
 
-        uniquesByParent[typeT] =
-                fieldsOfT.filter(Common::isCustom and !Common::isList)
-                        .map { field: Field ->
-                            field.isAccessible = true
-                            field.get(typeT)
-                        }
+        println("typeT: $typeT")
+
+        fieldsOfT.filter(Common::isCustom) //  and !Common::isList
+                .map { field: Field ->
+                    field.isAccessible = true
+                    field.get(typeT)
+                }
+                .forEach {
+                    addElementToListIfNotExists(uniquesByParent, typeT, it)
+                }
 
         // list types accepted for now only
-        fieldsOfT.filter(Common::isList)
-                .map {
-                    it.isAccessible = true
-                    it.get(typeT) as List<*>
-                }
-                // check for single type list?
-                .forEach { list ->
-                    list.first()?.let { firstElement ->
-                        uniquesByParent[typeT] = firstElement
-                        getUniquesByParent(firstElement, uniquesByParent)
+        fieldsOfT.map { field ->
+
+            field.isAccessible = true
+            field.get(typeT)
+                    .toOpt()
+                    .mapTo(List::class)
+                    .filter(List<*>::isNotEmpty)
+                    .map(List<*>::first)
+                    .filter { obj ->
+                        listOf("kotlin.", "java.").none { it == obj::class.java.packageName }
                     }
-                }
+                    .ifPresent { firstListElement ->
+                        addElementToListIfNotExists(uniquesByParent, typeT, firstListElement)
+                    }
+        }
+        // check for single type list?
+//                .forEach { list ->
+//                    list.first()
+//
+//                    // collectUniquesByParent(firstElement, uniquesByParent)
+//                }
     }
 
+    private fun <T : Any> addElementToListIfNotExists(uniquesByParent: HashMap<Any, MutableList<Any>>, typeT: T, obj: Any) {
+        if (uniquesByParent.containsKey(typeT)) {
+            // if (uniquesByParent[typeT]?.contains(obj) == false) {
+                uniquesByParent[typeT]?.add(obj)
+            // }
+        } else {
+            uniquesByParent[typeT] = mutableListOf(obj)
+        }
+    }
 
-    private fun <T : Any> isNotListCollectionOrArray(property: KProperty1<out T, *>) =
-            nonAcceptableTypes.none {
-                it.equals((property.javaField?.type?.simpleName ?: ""), ignoreCase = true)
-            }
 
     private fun <T : Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
 
