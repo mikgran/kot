@@ -88,21 +88,13 @@ open class ObjectBuilder {
 
         println("typeT: $typeT")
 
-        fieldsOfT.filter(Common::isCustom) //  and !Common::isList
-                .map { field: Field ->
-                    field.isAccessible = true
-                    field.get(typeT)
-                }
-                .forEach {
-                    addElementToListIfNotExists(uniquesByParent, typeT, it)
-                }
+        fieldsOfT.filter(Common::isCustom)
+                .map { field: Field -> getFieldValue(field, typeT) }
+                .forEach { addElementToListIfNotExists(uniquesByParent, typeT, it) }
 
         // list types accepted for now only
         fieldsOfT.map { field ->
-
-            field.isAccessible = true
-            field.get(typeT)
-                    .toOpt()
+            getFieldValue(field, typeT).toOpt()
                     .mapTo(List::class)
                     .filter(List<*>::isNotEmpty)
                     .map(List<*>::first)
@@ -113,18 +105,18 @@ open class ObjectBuilder {
                         addElementToListIfNotExists(uniquesByParent, typeT, firstListElement)
                     }
         }
-        // check for single type list?
-//                .forEach { list ->
-//                    list.first()
-//
-//                    // collectUniquesByParent(firstElement, uniquesByParent)
-//                }
+
+    }
+
+    private fun <T : Any> getFieldValue(field: Field, typeT: T): Any {
+        field.isAccessible = true
+        return field.get(typeT)
     }
 
     private fun <T : Any> addElementToListIfNotExists(uniquesByParent: HashMap<Any, MutableList<Any>>, typeT: T, obj: Any) {
         if (uniquesByParent.containsKey(typeT)) {
             // if (uniquesByParent[typeT]?.contains(obj) == false) {
-                uniquesByParent[typeT]?.add(obj)
+            uniquesByParent[typeT]?.add(obj)
             // }
         } else {
             uniquesByParent[typeT] = mutableListOf(obj)
