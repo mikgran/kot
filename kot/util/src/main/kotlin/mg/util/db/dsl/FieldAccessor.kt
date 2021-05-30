@@ -13,6 +13,11 @@ class FieldAccessor private constructor() {
             return field.get(type)
         }
 
+        fun fieldSet(field: Field, type: Any?, value: Any?) {
+            field.isAccessible = true
+            field.set(type, value)
+        }
+
         fun getFieldsWithCustoms(dp: DslParameters): List<Field> =
                 getFieldsWithCustoms(dp.typeT!!)
 

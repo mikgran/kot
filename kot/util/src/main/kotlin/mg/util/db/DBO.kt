@@ -57,6 +57,7 @@ class DBO(private val mapper: DefaultDslMapper) {
                 .getOrElseThrow { Exception("$UNABLE_TO_DO_INSERT$t") }
     }
 
+    // save multiple depth relations
     fun <T : Any> save2(t: T, connection: Connection) {
 
         t.toOpt()

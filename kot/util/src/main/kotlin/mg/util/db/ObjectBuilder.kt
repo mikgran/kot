@@ -2,7 +2,9 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.common.Common.isMultiDepthCustom
+import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.Wrap
+import mg.util.db.dsl.FieldAccessor
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
 import java.lang.reflect.Constructor
@@ -44,38 +46,41 @@ open class ObjectBuilder {
         // 1  10     1  A         AA
         // 1  10     2  B         BB
         // 1  10     3  C         CC
-        // 2  20     4  D         DD
-        // 2  20     5  E         EE
-        // 2  20     6  C         FF
-        // Billing(amount, persons[Person, Person])
+        // Billing(amount, persons[Person, Person, Person])
 
+        println("111:: $typeT")
+
+        val propertiesOfTypeT = typeT::class.memberProperties
+                .toCollection(ArrayList())
+                .mapNotNull { it.javaField }
+                .filter(!Common::isCustom)
+
+        results.toOpt()
+                .ifPresent (ResultSet::beforeFirst)
+                .filter(ResultSet::next)
+                .mapWith(propertiesOfTypeT) { results, fields ->
+                    fields.forEach { field ->
+                        if (field.type.simpleName.lowercase() == INT) {
+                            FieldAccessor.fieldSet(field, typeT, results.getInt(field.name))
+                        }
+                        if (field.type.simpleName.lowercase() == STRING) {
+                            FieldAccessor.fieldSet(field, typeT, results.getString(field.name))
+                        }
+                    }
+                }
+
+        println("222:: $typeT")
+
+//        val uniquesByParent = HashMap<Any, MutableList<Any>>()
 //
-//        val newInstance = typeT::class.createInstance()
+//        collectUniquesByParent(typeT, uniquesByParent)
 //
-//        val propertiesOfTypeT = typeT::class.declaredMemberProperties
-//                .toCollection(ArrayList())
-//                .filter(::isNotListCollectionOrArray)
-//
-//        println("YYY1:: $newInstance")
-//
-//        results?.beforeFirst()
-//        if (results?.next() == true) {
-//            propertiesOfTypeT.forEach {
-//                val propertyValue = results.getString(it.name)
-//                it.javaField?.isAccessible = true
-//                it.javaField?.set(newInstance, propertyValue)
-//            }
+//        uniquesByParent.entries.forEach { entry ->
+//            println("key: ${entry.key::class.simpleName}")
+//            println("value: ${entry.value.joinToString { " " + it::class.simpleName }}")
 //        }
-//        println("YYY2:: $newInstance")
+//
 
-        val uniquesByParent = HashMap<Any, MutableList<Any>>()
-
-        collectUniquesByParent(typeT, uniquesByParent)
-
-        uniquesByParent.entries.forEach {
-            println("key: ${it.key::class.simpleName}")
-            println("value: ${it.value.first()::class.simpleName}")
-        }
 
         return mutableListOf()
     }
@@ -86,43 +91,31 @@ open class ObjectBuilder {
                 .toMutableList()
                 .mapNotNull { it.javaField }
 
-        println("typeT: $typeT")
-
         fieldsOfT.filter(Common::isCustom)
-                .map { field: Field -> getFieldValue(field, typeT) }
+                .map { field: Field -> FieldAccessor.fieldGet(field, typeT) }
                 .forEach { addElementToListIfNotExists(uniquesByParent, typeT, it) }
 
         // list types accepted for now only
         fieldsOfT.map { field ->
-            getFieldValue(field, typeT).toOpt()
+
+            FieldAccessor.fieldGet(field, typeT).toOpt()
                     .mapTo(List::class)
                     .filter(List<*>::isNotEmpty)
                     .map(List<*>::first)
-                    .filter { obj ->
-                        listOf("kotlin.", "java.").none { it == obj::class.java.packageName }
-                    }
-                    .ifPresent { firstListElement ->
-                        addElementToListIfNotExists(uniquesByParent, typeT, firstListElement)
-                    }
+                    .filter(::hasCustomPackageName)
+                    .ifPresent { addElementToListIfNotExists(uniquesByParent, typeT, it) }
         }
-
     }
 
-    private fun <T : Any> getFieldValue(field: Field, typeT: T): Any {
-        field.isAccessible = true
-        return field.get(typeT)
-    }
+    private fun hasCustomPackageName(obj: Any) =
+            listOf("kotlin.", "java.").none { obj::class.java.packageName.contains(it, ignoreCase = true) }
 
     private fun <T : Any> addElementToListIfNotExists(uniquesByParent: HashMap<Any, MutableList<Any>>, typeT: T, obj: Any) {
-        if (uniquesByParent.containsKey(typeT)) {
-            // if (uniquesByParent[typeT]?.contains(obj) == false) {
-            uniquesByParent[typeT]?.add(obj)
-            // }
-        } else {
-            uniquesByParent[typeT] = mutableListOf(obj)
+        when {
+            uniquesByParent.containsKey(typeT) -> uniquesByParent[typeT]?.add(obj)
+            else -> uniquesByParent[typeT] = mutableListOf(obj)
         }
     }
-
 
     private fun <T : Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
 
@@ -221,6 +214,8 @@ open class ObjectBuilder {
 
     private companion object {
         const val DB_ID_FIELD = "id"
+        const val INT = "int"
+        const val STRING = "string"
     }
 }
 
