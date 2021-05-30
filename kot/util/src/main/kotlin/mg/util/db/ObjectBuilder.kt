@@ -37,15 +37,29 @@ open class ObjectBuilder {
         // DBOBilling2(
         //      "10",
         //      listOf(
-        //          DBOPerson3("A", "AA"),
-        //          DBOPerson3("B", "BB"),
-        //          DBOPerson3("C", "CC")
+        //          DBOPerson3("A", "AA", listOf(
+        //                                       DBODelivery("e"),
+        //                                       DBODelivery("p"),
+        //                                       DBODelivery("u")
+        //                                ),
+        //          DBOPerson3("B", "BB", listOf(
+        //                                       DBODelivery("p")
+        //                                ),
+        //          DBOPerson3("C", "CC", listOf(
+        //                                       DBODelivery("p")
+        //                                )
         //      )
         // )
-        // id amount id firstName lastName
-        // 1  10     1  A         AA
-        // 1  10     2  B         BB
-        // 1  10     3  C         CC
+        // id amount id firstName lastName delivery
+        // 1  10     1  A         AA       e
+        // 1  10     1  A         AA       p
+        // 1  10     1  A         AA       u
+        // 1  10     2  B         BB       p
+        // 1  10     3  C         CC       p
+        // 2  10     1  A         AA       p
+        // 2  10     2  B         BB       p
+        // 2  10     3  C         CC       p
+
         // Billing(amount, persons[Person, Person, Person])
 
         println("111:: $typeT")
@@ -71,15 +85,15 @@ open class ObjectBuilder {
 
         println("222:: $typeT")
 
-//        val uniquesByParent = HashMap<Any, MutableList<Any>>()
-//
-//        collectUniquesByParent(typeT, uniquesByParent)
-//
-//        uniquesByParent.entries.forEach { entry ->
-//            println("key: ${entry.key::class.simpleName}")
-//            println("value: ${entry.value.joinToString { " " + it::class.simpleName }}")
-//        }
-//
+        val uniquesByParent = HashMap<Any, MutableList<Any>>()
+
+        collectUniquesByParent(typeT, uniquesByParent)
+
+        uniquesByParent.entries.forEach { entry ->
+            println("key: ${entry.key::class.simpleName}")
+            println("value: ${entry.value.joinToString { " " + it::class.simpleName }}")
+        }
+
 
 
         return mutableListOf()
