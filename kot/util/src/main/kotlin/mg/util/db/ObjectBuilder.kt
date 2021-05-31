@@ -70,16 +70,11 @@ open class ObjectBuilder {
                 .filter(!Common::isCustom)
 
         results.toOpt()
-                .ifPresent (ResultSet::beforeFirst)
+                .ifPresent(ResultSet::beforeFirst)
                 .filter(ResultSet::next)
                 .mapWith(propertiesOfTypeT) { results, fields ->
-                    fields.forEach { field ->
-                        if (field.type.simpleName.lowercase() == INT) {
-                            FieldAccessor.fieldSet(field, typeT, results.getInt(field.name))
-                        }
-                        if (field.type.simpleName.lowercase() == STRING) {
-                            FieldAccessor.fieldSet(field, typeT, results.getString(field.name))
-                        }
+                    fields.forEach {
+                        setObjectValueFromResultSet(it, typeT, results)
                     }
                 }
 
@@ -92,11 +87,25 @@ open class ObjectBuilder {
         uniquesByParent.entries.forEach { entry ->
             println("key: ${entry.key::class.simpleName}")
             println("value: ${entry.value.joinToString { " " + it::class.simpleName }}")
+
+
+
         }
 
-
-
         return mutableListOf()
+    }
+
+    private fun <T : Any> setObjectValueFromResultSet(field: Field, typeT: T, results: ResultSet) {
+        var obj: Any? = null
+        when (field.type.simpleName.lowercase()) {
+            STRING -> obj = results.getString(field.name)
+            INT -> obj = results.getInt(field.name)
+            // LONG?
+            // DATETIME?
+        }
+        if (obj != null) {
+            FieldAccessor.fieldSet(field, typeT, obj)
+        }
     }
 
     private fun <T : Any> collectUniquesByParent(typeT: T, uniquesByParent: HashMap<Any, MutableList<Any>>) {
@@ -125,11 +134,16 @@ open class ObjectBuilder {
             listOf("kotlin.", "java.").none { obj::class.java.packageName.contains(it, ignoreCase = true) }
 
     private fun <T : Any> addElementToListIfNotExists(uniquesByParent: HashMap<Any, MutableList<Any>>, typeT: T, obj: Any) {
-        when {
-            uniquesByParent.containsKey(typeT) -> uniquesByParent[typeT]?.add(obj)
-            else -> uniquesByParent[typeT] = mutableListOf(obj)
-        }
+        uniquesByParent.toOpt()
+                .filter { it.containsKey(typeT) }
+                .map { it[typeT] }
+                .filter { isNoSameUniqueInList(it, obj) }
+                .ifPresent { it.add(obj) }
+                .ifMissing { uniquesByParent[typeT] = mutableListOf(obj) }
     }
+
+    private fun isNoSameUniqueInList(uniques: MutableList<Any>, obj: Any) =
+            uniques.none { it::class.simpleName.equals(obj::class.simpleName, ignoreCase = true) }
 
     private fun <T : Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
 
