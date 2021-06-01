@@ -2,6 +2,7 @@ package mg.util.db.functional
 
 import java.sql.ResultSet
 
+// Iterates over ResultSet. Meant only for rewindable ResultSets.
 class ResultSetIterator private constructor(private val resultSet: ResultSet) : Iterator<ResultSet>, Iterable<ResultSet> {
 
     @Synchronized

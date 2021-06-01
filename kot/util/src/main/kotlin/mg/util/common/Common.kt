@@ -48,13 +48,15 @@ object Common {
                             .filter(List<*>::isNotEmpty)
                             .map(List<*>::first)
                             .filter { obj ->
-                                listOf("kotlin.", "java.").none { it == obj::class.java.packageName }
+                                listOf("kotlin.", "java.").none { obj::class.java.packageName.contains(it, ignoreCase = true) }
                             }
-                            .get() != null
+                            .isPresent()
                 }
 
         return isAnyCustom || isCustomInsideListsFirstElement
     }
+    fun hasCustomPackageName(obj: Any) =
+            listOf("kotlin.", "java.").none { obj::class.java.packageName.contains(it, ignoreCase = true) }
 }
 
 operator fun StringBuilder.plus(s: String): StringBuilder = append(s)

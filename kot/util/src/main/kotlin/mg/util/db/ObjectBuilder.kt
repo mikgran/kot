@@ -12,7 +12,9 @@ import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMembers
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaField
@@ -63,9 +65,9 @@ open class ObjectBuilder {
         results.toOpt()
                 .ifPresent(ResultSet::beforeFirst)
                 .filter(ResultSet::next)
-                .mapWith(propertiesOfTypeT) { results, fields ->
+                .mapWith(propertiesOfTypeT) { rs, fields ->
                     fields.forEach { field ->
-                        getByFieldName(field, results).toOpt()
+                        getByFieldName(field, rs).toOpt()
                                 .map { FieldAccessor.fieldSet(field, typeT, it) }
                     }
                 }
@@ -82,11 +84,38 @@ open class ObjectBuilder {
             println("parent: ${entry.key::class.simpleName}")
             println("children: ${entry.value.joinToString { "" + it::class.simpleName }}")
 
-            val listMembers = entry.key::class.declaredMembers.filter { kCallable ->
-                (kCallable.returnType.jvmErasure.simpleName ?: "").contains("list", ignoreCase = true)
-            }
+            val allMembers = entry.key::class.memberProperties
 
-            entry.key::class.declaredMembers.minus(listMembers)
+            //println("allMembers: $allMembers")
+
+            val listMembers = allMembers
+                    .filter {
+                        it.returnType.jvmErasure.isSubclassOf(List::class)
+                    }.filter { kProperty1 ->
+                        kProperty1.toOpt()
+                                .map { it.javaField }
+                                .map { FieldAccessor.fieldGet(it, entry.key) }
+                                .mapTo(List::class)
+                                .filter(List<*>::isNotEmpty)
+                                .map(List<*>::first)
+                                .filter(Common::hasCustomPackageName)
+                                .isPresent()
+                    }
+
+            println()
+            println("listMembers: $listMembers")
+
+            val customs = allMembers.minus(listMembers)
+                    .filter { kProperty1 ->
+                        kProperty1.toOpt()
+                                .map { it.javaField }
+                                .map { FieldAccessor.fieldGet(it, entry.key) }
+                                .filter(Common::hasCustomPackageName)
+                                .isPresent()
+                    }
+
+            println()
+            println("customs: $customs")
         }
 
 
@@ -121,13 +150,10 @@ open class ObjectBuilder {
                     .mapTo(List::class)
                     .filter(List<*>::isNotEmpty)
                     .map(List<*>::first)
-                    .filter(::hasCustomPackageName)
+                    .filter(Common::hasCustomPackageName)
                     .ifPresent { addElementToListIfNotExists(uniquesByParent, typeT, it) }
         }
     }
-
-    private fun hasCustomPackageName(obj: Any) =
-            listOf("kotlin.", "java.").none { obj::class.java.packageName.contains(it, ignoreCase = true) }
 
     private fun <T : Any> addElementToListIfNotExists(uniquesByParent: HashMap<Any, MutableList<Any>>, typeT: T, obj: Any) {
         uniquesByParent.toOpt()

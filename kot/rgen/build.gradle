@@ -24,5 +24,6 @@ description = 'mg-kot-rgen'
 task startServer(type: JavaExec) {
     // classpath = files('build/libs/foo.jar')
     classpath += sourceSets.main.runtimeClasspath
-    main = 'mg.kot.rgen.ServerKt'
+    // main = 'mg.kot.rgen.ServerKt'
+    mainClass.set('mg.kot.rgen.ServerKt')
 }
