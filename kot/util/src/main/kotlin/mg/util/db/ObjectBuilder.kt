@@ -12,10 +12,12 @@ import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
+import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaType
+import kotlin.reflect.jvm.jvmErasure
 
 @Suppress("UNCHECKED_CAST")
 open class ObjectBuilder {
@@ -34,34 +36,23 @@ open class ObjectBuilder {
 
     private fun <T : Any> buildListOfMultiDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
 
-        // DBOBilling2(
-        //      "10",
-        //      listOf(
-        //          DBOPerson3("A", "AA", listOf(
-        //                                       DBODelivery("e"),
-        //                                       DBODelivery("p"),
-        //                                       DBODelivery("u")
-        //                                ),
-        //          DBOPerson3("B", "BB", listOf(
-        //                                       DBODelivery("p")
-        //                                ),
-        //          DBOPerson3("C", "CC", listOf(
-        //                                       DBODelivery("p")
-        //                                )
-        //      )
-        // )
-        // id amount id firstName lastName delivery
-        // 1  10     1  A         AA       e
-        // 1  10     1  A         AA       p
-        // 1  10     1  A         AA       u
-        // 1  10     2  B         BB       p
-        // 1  10     3  C         CC       p
-        // 2  10     1  A         AA       p
-        // 2  10     2  B         BB       p
-        // 2  10     3  C         CC       p
+        var isColumnsPrinted = false
+        results.toOpt()
+                .ifPresent(ResultSet::beforeFirst)
+                .map(ResultSet::toResultSetIterator)
+                .xmap {
+                    map { rs: ResultSet ->
+                        if (!isColumnsPrinted) {
+                            (1..rs.metaData.columnCount).forEach { print("${rs.metaData.getColumnName(it)} ") }
+                            println()
+                            isColumnsPrinted = true
+                        }
+                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
+                        println()
+                    }
+                }
 
-        // Billing(amount, persons[Person, Person, Person])
-
+        println()
         println("111:: $typeT")
 
         val propertiesOfTypeT = typeT::class.memberProperties
@@ -73,10 +64,13 @@ open class ObjectBuilder {
                 .ifPresent(ResultSet::beforeFirst)
                 .filter(ResultSet::next)
                 .mapWith(propertiesOfTypeT) { results, fields ->
-                    fields.forEach {
-                        setObjectValueFromResultSet(it, typeT, results)
+                    fields.forEach { field ->
+                        getByFieldName(field, results).toOpt()
+                                .map { FieldAccessor.fieldSet(field, typeT, it) }
                     }
                 }
+
+        results?.metaData
 
         println("222:: $typeT")
 
@@ -85,28 +79,30 @@ open class ObjectBuilder {
         collectUniquesByParent(typeT, uniquesByParent)
 
         uniquesByParent.entries.forEach { entry ->
-            println("key: ${entry.key::class.simpleName}")
-            println("value: ${entry.value.joinToString { " " + it::class.simpleName }}")
+            println("parent: ${entry.key::class.simpleName}")
+            println("children: ${entry.value.joinToString { "" + it::class.simpleName }}")
 
+            val listMembers = entry.key::class.declaredMembers.filter { kCallable ->
+                (kCallable.returnType.jvmErasure.simpleName ?: "").contains("list", ignoreCase = true)
+            }
 
-
+            entry.key::class.declaredMembers.minus(listMembers)
         }
+
+
+
 
         return mutableListOf()
     }
 
-    private fun <T : Any> setObjectValueFromResultSet(field: Field, typeT: T, results: ResultSet) {
-        var obj: Any? = null
-        when (field.type.simpleName.lowercase()) {
-            STRING -> obj = results.getString(field.name)
-            INT -> obj = results.getInt(field.name)
-            // LONG?
-            // DATETIME?
-        }
-        if (obj != null) {
-            FieldAccessor.fieldSet(field, typeT, obj)
-        }
-    }
+    private fun getByFieldName(field: Field, results: ResultSet): Any? =
+            when (field.type.simpleName.lowercase()) {
+                STRING -> results.getString(field.name)
+                INT -> results.getInt(field.name)
+                // LONG?
+                // DATETIME?
+                else -> null
+            }
 
     private fun <T : Any> collectUniquesByParent(typeT: T, uniquesByParent: HashMap<Any, MutableList<Any>>) {
 

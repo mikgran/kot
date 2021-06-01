@@ -5,6 +5,8 @@ import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
 import mg.util.db.dsl.DefaultDslMapper
+import mg.util.db.dsl.DslMapperFactory
+import mg.util.db.dsl.Sql
 import mg.util.functional.Opt2
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -51,8 +53,14 @@ internal class ObjectBuilderTest {
 
     private fun queryResults(t: Any, connection: Connection): ResultSet? {
         val uid = buildUniqueId(t)
+        val sql = Sql select t
+        sql.parameters().isPrimaryIdIncluded = true
+        val sqlStr = DslMapperFactory.get().map(sql)
+
+        println("sqlStr: $sqlStr")
+
         return Opt2.of(connection.createStatement())
-                .map { it.executeQuery("SELECT * FROM $uid") }
+                .map { it.executeQuery(sqlStr) }
                 .filter { it.next() }
                 .getOrElseThrow { Exception("no results in table $uid.") }
     }

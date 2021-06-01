@@ -32,7 +32,7 @@ class TestDataClasses {
     data class OBPersonB(val firstName: String = "", val lastName: String = "")
     data class OBSimple(val ffff: String = "aaaa")
     data class OBSimpleComp(val gggg: String = "cccc")
-    data class OBMultipleComposition(val iiii: Int = 0, val hhhh: OBSimple = OBSimple("aaaa"), val ssss: List<OBSimpleComp> = listOf(OBSimpleComp("1111"), OBSimpleComp("2222")))
+    data class OBMultipleComposition(val iiii: Int = 0, val hhhh: OBSimple = OBSimple(""), val ssss: List<OBSimpleComp> = listOf(OBSimpleComp(""), OBSimpleComp("")))
     data class SMTPerson(val firstName: String = "", val lastName: String = "")
     data class RSIPerson(val firstName: String = "", val lastName: String = "")
 }
