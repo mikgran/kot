@@ -59,9 +59,11 @@ class Opt2<T : Any> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <R : Any, V : Any> match(ref: R,
-                                 predicate: (R) -> Boolean,
-                                 mapper: (R) -> V): BiOpt2<T, V> {
+    fun <R : Any, V : Any> match(
+            ref: R,
+            predicate: (R) -> Boolean,
+            mapper: (R) -> V,
+    ): BiOpt2<T, V> {
 
         // maps and filters only non null values of the same class.
         // returns BiOpt2.of(oldValue, newValue/null)
@@ -75,8 +77,10 @@ class Opt2<T : Any> {
 
     private fun <V : Any> getBiOpt2OfValueAndEmpty(): BiOpt2<T, V> = BiOpt2.of(of(value), empty())
 
-    fun <V : Any> case(predicate: (T) -> Boolean,
-                       mapper: (T) -> V): BiOpt2<T, V> {
+    fun <V : Any> case(
+            predicate: (T) -> Boolean,
+            mapper: (T) -> V,
+    ): BiOpt2<T, V> {
 
         return this.filter { isPresent() && predicate(lazyT) }
                 .map(mapper)
@@ -162,6 +166,14 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
+    // synonymous with(lazyT) { this.extensionMapper() }
+    fun x(extensionConsumer: T.() -> Unit): Opt2<T> {
+        if (isPresent()) {
+            lazyT.extensionConsumer()
+        }
+        return this
+    }
+
     inline fun <reified V : Any, R : Any> map(type: Iterator<*>, mapper: (V) -> R): Opt2<List<R>> {
         val list = mutableListOf<R>()
         for (element in type) if (element is V) list += mapper(element)
@@ -185,6 +197,7 @@ class Opt2<T : Any> {
         list.forEach(consumer)
         return list.toOpt()
     }
+
     inline fun <reified V : Any, R : Any> lxmap(mapper: List<V>.() -> List<R>): Opt2<List<R>> = of(toList<V>().mapper())
     inline fun <reified V : Any> lfilter(predicate: (V) -> Boolean): Opt2<List<V>> = of(toList<V>().filter(predicate))
     inline fun <reified V : Any> toList(): List<V> {

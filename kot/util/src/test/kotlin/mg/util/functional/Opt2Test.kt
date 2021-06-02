@@ -20,7 +20,7 @@ internal class Opt2Test {
     @Test
     fun test_mapAs() {
 
-        val strAny: Any? = VALUE
+        val strAny: Any = VALUE
 
         val opt = Opt2.of(strAny)
 
@@ -35,7 +35,7 @@ internal class Opt2Test {
     @Test
     fun test_mapAs_doesNotThrow() {
         assertDoesNotThrow {
-            val strAny2: Any? = VALUE
+            val strAny2: Any = VALUE
             val candidate = Opt2.of(strAny2)
                     .mapTo(Int::class)
 
@@ -492,6 +492,34 @@ internal class Opt2Test {
                 .xmap { length }
                 .apply {
                     assertEquals(8, get())
+                }
+    }
+
+    @Test
+    fun test_x() {
+        Opt2.of(listOf(1, 2, 3, 4))
+                .x {
+                    val subList = filter { it < 3 }
+                    assertNotNull(subList)
+                    assertEquals(2, subList.size)
+                    assertEquals(3, subList.sum())
+                }
+                .apply {
+                    val t = get()
+                    assertNotNull(t)
+                    assertEquals(4, t?.size)
+                    assertEquals(10, t?.sum())
+                }
+
+        Opt2.of(mutableListOf(1, 2, 3, 4))
+                .x {
+                    add(5)
+                }
+                .apply {
+                    val list = get()
+                    assertNotNull(list)
+                    assertEquals(5, list?.size)
+                    assertEquals(15, list?.sum())
                 }
     }
 

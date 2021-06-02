@@ -42,7 +42,7 @@ open class ObjectBuilder {
         results.toOpt()
                 .ifPresent(ResultSet::beforeFirst)
                 .map(ResultSet::toResultSetIterator)
-                .xmap {
+                .x {
                     map { rs: ResultSet ->
                         if (!isColumnsPrinted) {
                             (1..rs.metaData.columnCount).forEach { print("${rs.metaData.getColumnName(it)} ") }
