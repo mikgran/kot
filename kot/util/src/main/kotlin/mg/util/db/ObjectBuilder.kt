@@ -12,8 +12,6 @@ import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaConstructor
@@ -42,37 +40,27 @@ open class ObjectBuilder {
         results.toOpt()
                 .ifPresent(ResultSet::beforeFirst)
                 .map(ResultSet::toResultSetIterator)
-                .x {
-                    map { rs: ResultSet ->
-                        if (!isColumnsPrinted) {
-                            (1..rs.metaData.columnCount).forEach { print("${rs.metaData.getColumnName(it)} ") }
-                            println()
-                            isColumnsPrinted = true
-                        }
-                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
-                        println()
-                    }
-                }
+                .x { map { isColumnsPrinted = printlnColumnsAndRows(isColumnsPrinted, it) } }
 
         println()
         println("111:: $typeT")
 
-        val propertiesOfTypeT = typeT::class.memberProperties
+        val primitivesOfTypeT = typeT::class.memberProperties
                 .toCollection(ArrayList())
                 .mapNotNull { it.javaField }
                 .filter(!Common::isCustom)
 
         results.toOpt()
                 .ifPresent(ResultSet::beforeFirst)
-                .filter(ResultSet::next)
-                .mapWith(propertiesOfTypeT) { rs, fields ->
-                    fields.forEach { field ->
-                        getByFieldName(field, rs).toOpt()
-                                .map { FieldAccessor.fieldSet(field, typeT, it) }
+                .map(ResultSet::toResultSetIterator)
+                .x {
+                    map {
+                        primitivesOfTypeT.forEach { field ->
+                            getByFieldName(field, it).toOpt()
+                                    .map { FieldAccessor.fieldSet(field, typeT, it) }
+                        }
                     }
                 }
-
-        results?.metaData
 
         println("222:: $typeT")
 
@@ -80,13 +68,11 @@ open class ObjectBuilder {
 
         collectUniquesByParent(typeT, uniquesByParent)
 
-        uniquesByParent.entries.forEach { entry ->
+        uniquesByParent.entries.forEach { entry: MutableMap.MutableEntry<Any, MutableList<Any>> ->
             println("parent: ${entry.key::class.simpleName}")
             println("children: ${entry.value.joinToString { "" + it::class.simpleName }}")
 
             val allMembers = entry.key::class.memberProperties
-
-            //println("allMembers: $allMembers")
 
             val listMembers = allMembers
                     .filter {
@@ -118,10 +104,24 @@ open class ObjectBuilder {
             println("customs: $customs")
         }
 
-
-
-
         return mutableListOf()
+    }
+
+    /**
+     * Doubles the given element i.
+     */
+    private fun doubleAnElement(i: Int): Int = i * 2
+
+    private fun printlnColumnsAndRows(isColumnsPrinted: Boolean, rs: ResultSet): Boolean {
+        var isPrinted = isColumnsPrinted
+        if (!isPrinted) {
+            (1..rs.metaData.columnCount).forEach { print("${rs.metaData.getColumnName(it)} ") }
+            println()
+            isPrinted = true
+        }
+        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
+        println()
+        return isPrinted
     }
 
     private fun getByFieldName(field: Field, results: ResultSet): Any? =

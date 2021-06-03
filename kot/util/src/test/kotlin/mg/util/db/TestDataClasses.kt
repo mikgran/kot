@@ -30,9 +30,9 @@ class TestDataClasses {
     data class DSLBuilding(var fullAddress: String = "", var floors: List<DSLFloor> = listOf(DSLFloor(1)))
     data class MTMPerson(val firstName: String = "", val lastName: String = "")
     data class OBPersonB(val firstName: String = "", val lastName: String = "")
-    data class OBSimple(val ffff: String = "aaaa")
-    data class OBSimpleComp(val gggg: String = "cccc")
-    data class OBMultipleComposition(val iiii: Int = 0, val hhhh: OBSimple = OBSimple(""), val ssss: List<OBSimpleComp> = listOf(OBSimpleComp(""), OBSimpleComp("")))
+    data class OBSimple(val reference: String = "aaaa")
+    data class OBSimpleComp(val validator: String = "cccc")
+    data class OBMultipleComposition(val amount: Int = 0, val reference: OBSimple = OBSimple(""), val validators: List<OBSimpleComp> = listOf(OBSimpleComp(""), OBSimpleComp("")))
     data class SMTPerson(val firstName: String = "", val lastName: String = "")
     data class RSIPerson(val firstName: String = "", val lastName: String = "")
 }

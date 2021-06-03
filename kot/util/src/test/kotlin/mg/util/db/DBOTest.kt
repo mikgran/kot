@@ -162,10 +162,10 @@ internal class DBOTest {
                 .map(Connection::createStatement)
                 .map { it.executeQuery(sqlStr) }
 
-//        // FIXME: 200 asserts
+        // FIXME: 200 asserts
         var isColumnsPrinted = false
         results.map(ResultSet::toResultSetIterator)
-                .xmap {
+                .x {
                     map { rs: ResultSet ->
                         if (!isColumnsPrinted) {
                             (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }

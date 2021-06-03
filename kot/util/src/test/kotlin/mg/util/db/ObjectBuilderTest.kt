@@ -40,6 +40,7 @@ internal class ObjectBuilderTest {
         val obMultipleComposition = OBMultipleComposition(555, OBSimple("1111"), listOf(OBSimpleComp("AAAA"), OBSimpleComp("BBBB")))
 
         val connection = dbConfig.connection
+
         dbo.ensureTable(OBMultipleComposition(), connection)
         dbo.save(obMultipleComposition, connection)
 
