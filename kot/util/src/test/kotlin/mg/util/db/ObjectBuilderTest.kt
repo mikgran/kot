@@ -37,7 +37,10 @@ internal class ObjectBuilderTest {
     @Test
     fun testBuildMultiDepthCustom() {
 
-        val obMultipleComposition = OBMultipleComposition(555, OBSimple("1111"), listOf(OBSimpleComp("AAAA"), OBSimpleComp("BBBB")))
+        val obMultipleComposition = OBMultipleComposition(
+                primitive = 555,
+                oneToOne = OBSimple("1111"),
+                oneToMany = listOf(OBSimpleComp("AAAA"), OBSimpleComp("BBBB")))
 
         val connection = dbConfig.connection
 

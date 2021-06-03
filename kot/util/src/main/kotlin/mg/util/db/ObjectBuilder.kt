@@ -42,6 +42,58 @@ open class ObjectBuilder {
                 .map(ResultSet::toResultSetIterator)
                 .x { map { isColumnsPrinted = printlnColumnsAndRows(isColumnsPrinted, it) } }
 
+        /*
+            OBMultipleComposition(
+                primitive = 555,
+                oneToOne = OBSimple("1111"),
+                oneToMany = listOf(OBSimpleComp("AAAA"), OBSimpleComp("BBBB"))
+            )
+
+            OBMultipleComposition.id
+            OBMultipleComposition.primitive
+            OBSimple.id
+            OBSimple.simple
+            OBSimpleComp.id
+            OBSimpleComp.comp
+
+            id  primitive   id  simple  id  comp id duplex
+            1   555         1   1111    1   AAAA 1  A
+            1   555         1   1111    1   BBBB 1  A
+            1   555         1   1111    1   BBBB 1  B
+            - uniqueByParent
+                OBMultipleComposition -> OBSimple, OBSimpleComp
+                OBSimpleComp -> OBDuplex
+
+            OBMultipleComposition(
+                primitive = 0,
+                oneToOne = OBSimple(),
+                oneToMany = listOf()
+            )
+            if (id == 1), process rows
+            1#
+            1   555         1   1111    1   AAAA 1  A
+            OBMultipleComposition(
+                primitive = 555,
+                oneToOne = OBSimple(1111),
+                oneToMany = listOf(OBSimpleComp(comp = AAAA, duplex = OBDuplex(A))
+            )
+            2#
+            1   555         1   1111    1   BBBB 1  A
+            OBMultipleComposition(
+                primitive = 555,
+                oneToOne = OBSimple(1111),
+                oneToMany = listOf(OBSimpleComp(AAAA, duplex = OBDuplex(A)), OBSimpleComp(BBBB, duplex = listOf(OBDuplex(A))))
+            )
+            3#
+            1   555         1   1111    1   BBBB 1  B
+            OBMultipleComposition(
+                primitive = 555,
+                oneToOne = OBSimple(1111),
+                oneToMany = listOf(OBSimpleComp(AAAA, duplex = OBDuplex(A)), OBSimpleComp(BBBB, duplex = listOf(OBDuplex(A), OBDuplex(B))))
+            )
+
+         */
+
         println()
         println("111:: $typeT")
 
