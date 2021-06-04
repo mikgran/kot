@@ -60,9 +60,7 @@ internal class ObjectBuilderTest {
         val sql = Sql select t
         sql.parameters().isPrimaryIdIncluded = true
         val sqlStr = DslMapperFactory.get().map(sql)
-
-        println("sqlStr: $sqlStr")
-
+        // println("sqlStr: $sqlStr")
         return Opt2.of(connection.createStatement())
                 .map { it.executeQuery(sqlStr) }
                 .filter { it.next() }

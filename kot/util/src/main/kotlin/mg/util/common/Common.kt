@@ -2,7 +2,6 @@ package mg.util.common
 
 import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
-import mg.util.db.dsl.FieldAccessor
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
 
@@ -40,18 +39,8 @@ object Common {
 
     fun isMultiDepthCustom(obj: Any): Boolean {
         val fields = obj::class.java.declaredFields.toCollection(ArrayList())
-        val isAnyCustom = fields
-                .any(::isCustom)
-
-        val isCustomInsideListsFirstElement = fields
-                .any { field ->
-                    FieldAccessor.fieldGet(field, obj).toOpt()
-                            .mapTo(List::class)
-                            .filter(List<*>::isNotEmpty)
-                            .map(List<*>::first)
-                            .filter(::hasCustomPackageName)
-                            .isPresent()
-                }
+        val isAnyCustom = fields.any(::isCustom)
+        val isCustomInsideListsFirstElement = fields.any { it.isListOfCustoms(obj) }
 
         return isAnyCustom || isCustomInsideListsFirstElement
     }
@@ -59,6 +48,23 @@ object Common {
     fun hasCustomPackageName(obj: Any) =
             listOf("kotlin.", "java.").none { obj::class.java.packageName.contains(it, ignoreCase = true) }
 }
+
+fun <T : Any> Field.isCustom(ownerOfField: T): Boolean =
+        this.also { isAccessible = true }
+                .get(ownerOfField)
+                .toOpt()
+                .filter(Common::hasCustomPackageName)
+                .isPresent()
+
+fun <T : Any> Field.isListOfCustoms(ownerOfField: T): Boolean =
+        this.also { isAccessible = true }
+                .get(ownerOfField)
+                .toOpt()
+                .mapTo(List::class)
+                .filter(List<*>::isNotEmpty)
+                .map(List<*>::first)
+                .filter(Common::hasCustomPackageName)
+                .isPresent()
 
 operator fun StringBuilder.plus(s: String): StringBuilder = append(s)
 operator fun StringBuilder.plus(sb: StringBuilder): StringBuilder = append(sb.toString())

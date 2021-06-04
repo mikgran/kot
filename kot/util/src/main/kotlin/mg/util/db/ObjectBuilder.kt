@@ -2,9 +2,11 @@ package mg.util.db
 
 import mg.util.common.Common
 import mg.util.common.Common.isMultiDepthCustom
-import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.Wrap
+import mg.util.common.isCustom
+import mg.util.common.isListOfCustoms
 import mg.util.db.dsl.FieldAccessor
+import mg.util.db.functional.print
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
 import java.lang.reflect.Constructor
@@ -12,6 +14,7 @@ import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaConstructor
@@ -27,21 +30,18 @@ open class ObjectBuilder {
     fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
         return typeT
                 .toOpt()
-                .case({ it is String }, { println("\nA\n"); buildListUsingStrings(results, it) })
-                .case({ isMultiDepthCustom(it) }, { println("\nB\n"); buildListOfMultiDepthCustoms(results, it) })
-                .caseDefault { println("\nC\n"); buildListOfSingleDepthCustoms(results, it) }
+                .case({ it is String }, { buildListUsingStrings(results, it) })
+                .case({ isMultiDepthCustom(it) }, { buildListOfMultiDepthCustoms(results, it) })
+                .caseDefault { buildListOfSingleDepthCustoms(results, it) }
                 .result()
                 .getOrElse(mutableListOf())
     }
 
     private fun <T : Any> buildListOfMultiDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
 
-        var isColumnsPrinted = false
         results.toOpt()
                 .ifPresent(ResultSet::beforeFirst)
-                .map(ResultSet::toResultSetIterator)
-                .x { map { isColumnsPrinted = printlnColumnsAndRows(isColumnsPrinted, it) } }
-
+                .x(ResultSet::print)
         /*
             OBMultipleComposition(
                 primitive = 555,
@@ -75,105 +75,109 @@ open class ObjectBuilder {
             OBMultipleComposition(
                 primitive = 555,
                 oneToOne = OBSimple(1111),
-                oneToMany = listOf(OBSimpleComp(comp = AAAA, duplex = OBDuplex(A))
+                oneToMany = listOf(OBSimpleComp(comp = AAAA, duplex = listOf(OBDuplex(A))
+                                   )
             )
             2#
             1   555         1   1111    1   BBBB 1  A
             OBMultipleComposition(
                 primitive = 555,
                 oneToOne = OBSimple(1111),
-                oneToMany = listOf(OBSimpleComp(AAAA, duplex = OBDuplex(A)), OBSimpleComp(BBBB, duplex = listOf(OBDuplex(A))))
+                oneToMany = listOf(OBSimpleComp(AAAA, duplex = listOf(OBDuplex(A))),
+                                   OBSimpleComp(BBBB, duplex = listOf(OBDuplex(A)))
+                                   )
             )
             3#
             1   555         1   1111    1   BBBB 1  B
             OBMultipleComposition(
                 primitive = 555,
                 oneToOne = OBSimple(1111),
-                oneToMany = listOf(OBSimpleComp(AAAA, duplex = OBDuplex(A)), OBSimpleComp(BBBB, duplex = listOf(OBDuplex(A), OBDuplex(B))))
+                oneToMany = listOf(OBSimpleComp(AAAA, duplex = listOf(OBDuplex(A))),
+                                   OBSimpleComp(BBBB, duplex = listOf(OBDuplex(A), OBDuplex(B)))
+                                   )
             )
-
          */
 
-        println()
-        println("111:: $typeT")
+        val uniquesByParent = HashMap<Any, MutableList<Any>>()
+        collectUniquesByParent(typeT, uniquesByParent)
 
-        val primitivesOfTypeT = typeT::class.memberProperties
-                .toCollection(ArrayList())
-                .mapNotNull { it.javaField }
-                .filter(!Common::isCustom)
+//        uniquesByParent.forEach {
+//            print(it.key::class.simpleName + ": ")
+//            println(it.value.joinToString { i -> "" + i::class.simpleName })
+//        }
+
+        println("typeT: $typeT")
 
         results.toOpt()
-                .ifPresent(ResultSet::beforeFirst)
-                .map(ResultSet::toResultSetIterator)
+                .x(ResultSet::beforeFirst)
+                .x(ResultSet::next)
+                .x { setPrimitiveFieldValues(typeT, this) }
                 .x {
-                    map {
-                        primitivesOfTypeT.forEach { field ->
-                            getByFieldName(field, it).toOpt()
-                                    .map { FieldAccessor.fieldSet(field, typeT, it) }
-                        }
+                    while (next()) {
+                        setValuesCascading(uniquesByParent, this)
                     }
                 }
 
-        println("222:: $typeT")
+        println("typeT: $typeT")
 
-        val uniquesByParent = HashMap<Any, MutableList<Any>>()
+        return mutableListOf()
+    }
 
-        collectUniquesByParent(typeT, uniquesByParent)
+    private fun setValuesCascading(uniquesByParent: HashMap<Any, MutableList<Any>>, results: ResultSet) {
+        uniquesByParent.entries.forEach { entry ->
 
-        uniquesByParent.entries.forEach { entry: MutableMap.MutableEntry<Any, MutableList<Any>> ->
-            println("parent: ${entry.key::class.simpleName}")
-            println("children: ${entry.value.joinToString { "" + it::class.simpleName }}")
+            val allFields = entry.key::class.memberProperties
+            val listFields = getListMembers(allFields, entry)
+            val customFields = getCustomMembers(allFields, listFields, entry)
 
-            val allMembers = entry.key::class.memberProperties
+            customFields.forEach { kProperty1 ->
+                kProperty1.toOpt()
+                        .map { it.javaField }
+                        .ifPresent {
+                            // TODO: -1 cleanup
+                            val obj = FieldAccessor.fieldGet(it, entry.key)
+                            setPrimitiveFieldValues(obj, results)
+                        }
+            }
 
-            val listMembers = allMembers
+            listFields.forEach {
+                // println("list: $it")
+            }
+        }
+    }
+
+    private fun getCustomMembers(allMembers: Collection<KProperty1<out Any, *>>, listMembers: List<KProperty1<out Any, *>>, entry: MutableMap.MutableEntry<Any, MutableList<Any>>) =
+            allMembers.minus(listMembers)
+                    .filter { kProperty1 ->
+                        kProperty1.toOpt()
+                                .map { it.javaField }
+                                .filter { it.isCustom(entry.key) }
+                                .isPresent()
+                    }
+
+    private fun getListMembers(allMembers: Collection<KProperty1<out Any, *>>, entry: MutableMap.MutableEntry<Any, MutableList<Any>>) =
+            allMembers
                     .filter {
                         it.returnType.jvmErasure.isSubclassOf(List::class)
                     }.filter { kProperty1 ->
                         kProperty1.toOpt()
                                 .map { it.javaField }
-                                .map { FieldAccessor.fieldGet(it, entry.key) }
-                                .mapTo(List::class)
-                                .filter(List<*>::isNotEmpty)
-                                .map(List<*>::first)
-                                .filter(Common::hasCustomPackageName)
+                                .filter { it.isListOfCustoms(entry.key) }
                                 .isPresent()
                     }
 
-            println()
-            println("listMembers: $listMembers")
-
-            val customs = allMembers.minus(listMembers)
-                    .filter { kProperty1 ->
-                        kProperty1.toOpt()
-                                .map { it.javaField }
-                                .map { FieldAccessor.fieldGet(it, entry.key) }
-                                .filter(Common::hasCustomPackageName)
-                                .isPresent()
-                    }
-
-            println()
-            println("customs: $customs")
-        }
-
-        return mutableListOf()
-    }
-
-    /**
-     * Doubles the given element i.
-     */
-    private fun doubleAnElement(i: Int): Int = i * 2
-
-    private fun printlnColumnsAndRows(isColumnsPrinted: Boolean, rs: ResultSet): Boolean {
-        var isPrinted = isColumnsPrinted
-        if (!isPrinted) {
-            (1..rs.metaData.columnCount).forEach { print("${rs.metaData.getColumnName(it)} ") }
-            println()
-            isPrinted = true
-        }
-        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
-        println()
-        return isPrinted
+    private fun <T : Any> setPrimitiveFieldValues(typeT: T, results: ResultSet?) {
+        results.toOpt()
+                .x {
+                    typeT::class.memberProperties.toCollection(ArrayList())
+                            .mapNotNull { it.javaField }
+                            .filter { !(it.isCustom(typeT) || Common.isList(it)) }
+                            .forEach { field ->
+                                // println("\nfield: $field")
+                                getByFieldName(field, this).toOpt()
+                                        .map { FieldAccessor.fieldSet(field, typeT, it) }
+                            }
+                }
     }
 
     private fun getByFieldName(field: Field, results: ResultSet): Any? =

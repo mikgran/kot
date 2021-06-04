@@ -1,5 +1,6 @@
 package mg.util.db.functional
 
+import mg.util.functional.toOpt
 import java.sql.ResultSet
 
 // Iterates over ResultSet. Meant only for rewindable ResultSets.
@@ -44,3 +45,19 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
 }
 
 fun ResultSet.toResultSetIterator(): ResultSetIterator = ResultSetIterator.of(this)
+
+fun ResultSet.print(): ResultSet {
+    this.toOpt()
+            .filter(ResultSet::next)
+            .x {
+                (1..this.metaData.columnCount).forEach { print("${this.metaData.getColumnName(it)} ") }
+                println()
+                this.beforeFirst()
+                toResultSetIterator().map {
+                    (1..this.metaData.columnCount).forEach { print(this.getString(it) + " ") }
+                    println()
+                }
+            }
+    return this
+}
+
