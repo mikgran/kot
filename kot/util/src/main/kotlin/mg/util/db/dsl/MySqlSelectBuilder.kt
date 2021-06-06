@@ -4,11 +4,13 @@ import mg.util.common.Common
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
+import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.MySqlImpl.Companion.buildUidAndAlias
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
 class MySqlSelectBuilder {
@@ -50,10 +52,8 @@ class MySqlSelectBuilder {
         addPrimaryIdIfIncluded(p, type)
 
         // TODO 5 check for types coverage
-        p.columnFragments += type::class
-                .declaredMemberProperties
-                .mapNotNull { it.javaField }
-                .filter(::isCustomField)
+        p.columnFragments += FieldCache.fieldsFor(type)
+                .primitives
                 .joinToString(", ") { "$alias.${it.name}" }
     }
 
@@ -84,7 +84,7 @@ class MySqlSelectBuilder {
 
         return t.toOpt()
                 .mapTo(List::class)
-                .map { it.first() }
+                .map(List<*>::first)
                 .ifEmpty { t }
                 .map { element ->
                     val (childUid, childAlias) = buildUidAndAlias(element)
@@ -94,18 +94,6 @@ class MySqlSelectBuilder {
                 }
                 .getOrElse { "" }
     }
-
-    private fun isFieldTypeName(field: Field, it: String) =
-            field.type.typeName.contains(it, ignoreCase = true)
-
-    private fun isCustomField(field: Field): Boolean {
-        return includedTypes.any { isFieldTypeName(field, it) } &&
-                !excludedTypes.any { isFieldTypeName(field, it) }
-    }
-
-    private val primitiveTypes = listOf("int", "long")
-    private val excludedTypes = listOf("util.", "collection")
-    private val includedTypes = listOf("kotlin.", "java.", *(primitiveTypes.toTypedArray()))
 
     private fun buildWherePart(p: Sql.Parameters): String {
         val whereStr = " WHERE "

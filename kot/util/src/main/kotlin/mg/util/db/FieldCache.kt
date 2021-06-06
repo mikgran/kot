@@ -10,6 +10,7 @@ import kotlin.reflect.jvm.javaField
 class FieldCache {
 
     data class Fields(
+            val all: MutableList<Field> = mutableListOf(),
             val customs: MutableList<Field> = mutableListOf(),
             val listsOfCustoms: MutableList<Field> = mutableListOf(),
             val primitives: MutableList<Field> = mutableListOf(),
@@ -40,6 +41,7 @@ class FieldCache {
             val primitiveMembers = allMembers.minus(listMembers).minus(customMembers)
 
             return Fields().also {
+                it.all.addAll(allMembers)
                 it.customs.addAll(customMembers)
                 it.listsOfCustoms.addAll(listMembers)
                 it.primitives.addAll(primitiveMembers)

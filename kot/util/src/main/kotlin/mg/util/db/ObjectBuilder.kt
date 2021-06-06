@@ -3,8 +3,6 @@ package mg.util.db
 import mg.util.common.Common
 import mg.util.common.Common.isMultiDepthCustom
 import mg.util.common.Wrap
-import mg.util.common.isCustom
-import mg.util.common.isListOfCustoms
 import mg.util.db.dsl.FieldAccessor
 import mg.util.db.functional.print
 import mg.util.db.functional.toResultSetIterator
@@ -14,13 +12,8 @@ import java.lang.reflect.Field
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import kotlin.reflect.KFunction
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaConstructor
-import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaType
-import kotlin.reflect.jvm.jvmErasure
 
 @Suppress("UNCHECKED_CAST")
 open class ObjectBuilder {
@@ -140,15 +133,13 @@ open class ObjectBuilder {
     }
 
     private fun <T : Any> setPrimitiveFieldValues(typeT: T, results: ResultSet?) {
-        results.toOpt()
-                .x {
-                    typeT::class.memberProperties.toCollection(ArrayList())
-                            .mapNotNull { it.javaField }
-                            .filter { !(it.isCustom(typeT) || Common.isList(it)) } // TODO: 1000 update to use FieldCache
-                            .forEach { field ->
-                                getByFieldName(field, this).toOpt()
-                                        .map { FieldAccessor.fieldSet(field, typeT, it) }
-                            }
+        FieldCache.fieldsFor(typeT)
+                .primitives
+                .forEach { field ->
+                    results?.let { rs ->
+                        val value = getByFieldName(field, rs)
+                        FieldAccessor.fieldSet(field, typeT, value)
+                    }
                 }
     }
 
@@ -163,17 +154,22 @@ open class ObjectBuilder {
 
     private fun <T : Any> collectUniquesByParent(typeT: T, uniquesByParent: HashMap<Any, MutableList<Any>>) {
 
-        val fieldsOfT = typeT::class.memberProperties
-                .toMutableList()
-                .mapNotNull { it.javaField }
+//        val fieldsOfT = typeT::class.memberProperties
+//                .toMutableList()
+//                .mapNotNull { it.javaField }
+//
+//        fieldsOfT.filter(Common::isCustom)
+//                .map { field: Field -> FieldAccessor.fieldGet(field, typeT) }
+//                .forEach { addElementToListIfNotExists(uniquesByParent, typeT, it) }
 
-        fieldsOfT.filter(Common::isCustom)
-                .map { field: Field -> FieldAccessor.fieldGet(field, typeT) }
-                .forEach { addElementToListIfNotExists(uniquesByParent, typeT, it) }
+        val fields = FieldCache.fieldsFor(typeT)
+
+        fields.customs.forEach {
+            addElementToListIfNotExists(uniquesByParent, typeT, it)
+        }
 
         // list types accepted for now only
-        fieldsOfT.map { field ->
-
+        fields.listsOfCustoms.map { field ->
             FieldAccessor.fieldGet(field, typeT).toOpt()
                     .mapTo(List::class)
                     .filter(List<*>::isNotEmpty)
