@@ -126,46 +126,18 @@ open class ObjectBuilder {
     private fun setValuesToCustomsAndListsOfCustoms(uniquesByParent: HashMap<Any, MutableList<Any>>, results: ResultSet) {
         uniquesByParent.entries.forEach { entry ->
 
-            val allFields = entry.key::class.memberProperties
-            val listFields = getListMembers(allFields, entry)
-            val customFields = getCustomMembers(allFields, listFields, entry)
+            val fields = FieldCache.fieldsFor(entry.key)
 
-            customFields.forEach { kProperty1 ->
-                kProperty1.toOpt()
-                        .map { it.javaField }
-                        .ifPresent {
-                            // TODO: -1 cleanup
-                            // just override the primitives for now
-                            val obj = FieldAccessor.fieldGet(it, entry.key)
-                            setPrimitiveFieldValues(obj, results)
-                        }
+            fields.customs.forEach {
+                val obj = FieldAccessor.fieldGet(it, entry.key)
+                setPrimitiveFieldValues(obj, results)
             }
 
-            listFields.forEach {
+            fields.listsOfCustoms.forEach {
                 // checkIfNotExists -> add()
             }
         }
     }
-
-    private fun getCustomMembers(allMembers: Collection<KProperty1<out Any, *>>, listMembers: List<KProperty1<out Any, *>>, entry: MutableMap.MutableEntry<Any, MutableList<Any>>) =
-            allMembers.minus(listMembers)
-                    .filter { kProperty1 ->
-                        kProperty1.toOpt()
-                                .map { it.javaField }
-                                .filter { it.isCustom(entry.key) }
-                                .isPresent()
-                    }
-
-    private fun getListMembers(allMembers: Collection<KProperty1<out Any, *>>, entry: MutableMap.MutableEntry<Any, MutableList<Any>>) =
-            allMembers
-                    .filter {
-                        it.returnType.jvmErasure.isSubclassOf(List::class)
-                    }.filter { kProperty1 ->
-                        kProperty1.toOpt()
-                                .map { it.javaField }
-                                .filter { it.isListOfCustoms(entry.key) }
-                                .isPresent()
-                    }
 
     private fun <T : Any> setPrimitiveFieldValues(typeT: T, results: ResultSet?) {
         results.toOpt()

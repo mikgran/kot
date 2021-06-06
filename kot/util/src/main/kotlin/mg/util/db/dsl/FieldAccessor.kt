@@ -18,6 +18,7 @@ class FieldAccessor private constructor() {
             field.set(type, value)
         }
 
+        // TODO 900: replace with FieldCache.fieldsFor(typeT)
         fun getFieldsWithCustoms(dp: DslParameters): List<Field> =
                 getFieldsWithCustoms(dp.typeT!!)
 

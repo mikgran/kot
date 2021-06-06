@@ -17,18 +17,23 @@ class FieldCache {
 
     companion object {
 
+        private val emptyFields = Fields()
         internal val cache = HashMap<Any, Fields>()
 
         fun <T : Any> fieldsFor(typeT: T): Fields {
-            return cache[typeT].toOpt()
+            val uid = UidBuilder.buildUniqueId(typeT)
+            return cache[uid].toOpt()
                     .ifEmpty {
                         collectFields(typeT)
-                                .also { cache[typeT] = it }
+                                .also {
+                                    cache[uid] = it
+                                }
                     }
-                    .getOrElse { Fields() }
+                    .getOrElse { emptyFields }
         }
 
         private fun <T : Any> collectFields(typeT: T): Fields {
+
             val allMembers = typeT::class.memberProperties.mapNotNull { it.javaField }
             val listMembers = allMembers.filter { it.isListOfCustoms(typeT) }
             val customMembers = allMembers.minus(listMembers).filter { it.isCustom(typeT) }
