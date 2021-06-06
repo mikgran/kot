@@ -109,12 +109,12 @@ open class ObjectBuilder {
         println("typeT: $typeT")
 
         results.toOpt()
-                .x(ResultSet::beforeFirst)
-                .x(ResultSet::next)
+                .ifPresent(ResultSet::beforeFirst)
+                .ifPresent(ResultSet::next)
                 .x { setPrimitiveFieldValues(typeT, this) }
                 .x {
                     while (next()) {
-                        setValuesCascading(uniquesByParent, this)
+                        setValuesToCustomsAndListsOfCustoms(uniquesByParent, this)
                     }
                 }
 
@@ -123,7 +123,7 @@ open class ObjectBuilder {
         return mutableListOf()
     }
 
-    private fun setValuesCascading(uniquesByParent: HashMap<Any, MutableList<Any>>, results: ResultSet) {
+    private fun setValuesToCustomsAndListsOfCustoms(uniquesByParent: HashMap<Any, MutableList<Any>>, results: ResultSet) {
         uniquesByParent.entries.forEach { entry ->
 
             val allFields = entry.key::class.memberProperties
@@ -135,13 +135,14 @@ open class ObjectBuilder {
                         .map { it.javaField }
                         .ifPresent {
                             // TODO: -1 cleanup
+                            // just override the primitives for now
                             val obj = FieldAccessor.fieldGet(it, entry.key)
                             setPrimitiveFieldValues(obj, results)
                         }
             }
 
             listFields.forEach {
-                // println("list: $it")
+                // checkIfNotExists -> add()
             }
         }
     }
@@ -171,9 +172,8 @@ open class ObjectBuilder {
                 .x {
                     typeT::class.memberProperties.toCollection(ArrayList())
                             .mapNotNull { it.javaField }
-                            .filter { !(it.isCustom(typeT) || Common.isList(it)) }
+                            .filter { !(it.isCustom(typeT) || Common.isList(it)) } // TODO: 1000 update to use FieldCache
                             .forEach { field ->
-                                // println("\nfield: $field")
                                 getByFieldName(field, this).toOpt()
                                         .map { FieldAccessor.fieldSet(field, typeT, it) }
                             }
