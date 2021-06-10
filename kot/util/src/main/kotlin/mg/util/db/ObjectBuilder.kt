@@ -34,7 +34,9 @@ open class ObjectBuilder {
 
         results.toOpt()
                 .ifPresent(ResultSet::beforeFirst)
-                .x(ResultSet::print)
+                .ifPresent(ResultSet::print)
+
+
         /*
             OBMultipleComposition(
                 primitive = 555,

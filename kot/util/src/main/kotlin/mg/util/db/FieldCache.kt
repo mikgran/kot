@@ -25,15 +25,12 @@ class FieldCache {
             val uid = UidBuilder.buildUniqueId(typeT)
             return cache[uid].toOpt()
                     .ifEmpty {
-                        collectFields(typeT)
-                                .also {
-                                    cache[uid] = it
-                                }
+                        collectMembers(typeT).also { cache[uid] = it }
                     }
                     .getOrElse { emptyFields }
         }
 
-        private fun <T : Any> collectFields(typeT: T): Fields {
+        private fun <T : Any> collectMembers(typeT: T): Fields {
 
             val allMembers = typeT::class.memberProperties.mapNotNull { it.javaField }
             val listMembers = allMembers.filter { it.isListOfCustoms(typeT) }

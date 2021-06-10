@@ -463,23 +463,6 @@ internal class Opt2Test {
     }
 
     @Test
-    fun test_T_Receiver() {
-
-        val candidate = Opt2.of(getTempValue())
-                .rcv { set(XXX) }
-                .get()
-
-        assertEquals(XXX, candidate?.a)
-
-        val tempValue = getTempValue()
-        Opt2.of(tempValue)
-                .filter { false }
-                .rcv { set(XXX) }
-
-        assertEquals(YYY, tempValue.a)
-    }
-
-    @Test
     fun test_xmap() {
         Opt2.of(listOf(1, 2, 3, 4))
                 .xmap { filter { it < 3 } }
@@ -514,6 +497,34 @@ internal class Opt2Test {
         Opt2.of(mutableListOf(1, 2, 3, 4))
                 .x {
                     add(5)
+                }
+                .apply {
+                    val list = get()
+                    assertNotNull(list)
+                    assertEquals(5, list?.size)
+                    assertEquals(15, list?.sum())
+                }
+    }
+
+    @Test
+    fun test_c() {
+        Opt2.of(listOf(1, 2, 3, 4))
+                .c { list ->
+                    val subList = list.filter { it < 3 }
+                    assertNotNull(subList)
+                    assertEquals(2, subList.size)
+                    assertEquals(3, subList.sum())
+                }
+                .apply {
+                    val t = get()
+                    assertNotNull(t)
+                    assertEquals(4, t?.size)
+                    assertEquals(10, t?.sum())
+                }
+
+        Opt2.of(mutableListOf(1, 2, 3, 4))
+                .c { list ->
+                    list.add(5)
                 }
                 .apply {
                     val list = get()

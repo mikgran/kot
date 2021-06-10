@@ -124,6 +124,8 @@ class Opt2<T : Any> {
         return this
     }
 
+    fun c(consumer: (T) -> Unit): Opt2<T> = ifPresent(consumer)
+
     override fun toString(): String = value?.toString() ?: ""
 
     override fun equals(other: Any?): Boolean {
@@ -224,13 +226,6 @@ class Opt2<T : Any> {
         @JvmStatic
         fun <T : Any> empty(): Opt2<T> = Opt2()
     }
-}
-
-inline fun <T : Any> Opt2<T>.rcv(block: T.() -> Unit): Opt2<T> {
-    if (isPresent()) {
-        block(get()!!)
-    }
-    return this
 }
 
 fun <T : Any> T?.toOpt(): Opt2<T> {
