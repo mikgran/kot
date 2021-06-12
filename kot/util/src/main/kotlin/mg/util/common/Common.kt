@@ -68,5 +68,3 @@ fun <T : Any> Field.isListOfCustoms(ownerOfField: T): Boolean =
 
 operator fun StringBuilder.plus(s: String): StringBuilder = append(s)
 operator fun StringBuilder.plus(sb: StringBuilder): StringBuilder = append(sb.toString())
-
-data class Simple(var variable: String = "", var anotherVariable: String = "")

@@ -10,13 +10,11 @@ internal class CacheTest {
     @Test
     fun testCache() {
 
-        val cache = Cache.cacheOf<String, List<Simple>> {
+        Cache.cacheOf("key", listOf(Simple()))
 
-        
 
-        }
-
-        cache["some"]
+//        cache["some"]
+//        cache["some"] = listOf(Simple())
 
         fail("TODO")
     }
