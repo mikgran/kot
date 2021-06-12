@@ -34,6 +34,11 @@ class Opt2<T : Any> {
         else -> this
     }
 
+    fun ifEmptyUse(conditionalSupplier: (() -> T)?): Opt2<T> = when {
+        conditionalSupplier.toOpt().isPresent() && !isPresent() -> Opt2(conditionalSupplier?.invoke())
+        else -> this
+    }
+
     fun ifMissing(block: () -> Unit): Opt2<T> {
         if (!isPresent()) {
             block()

@@ -121,6 +121,45 @@ internal class Opt2Test {
     }
 
     @Test
+    fun test_ifEmptyWithConditionalSupplier() {
+
+        val opt = Opt2.of(VALUE)
+
+        var conditionalSupplier: (() -> String)? = null
+        opt.ifEmptyUse(conditionalSupplier)
+
+        assertNotNull(opt)
+        assertNotNull(opt.get())
+        assertEquals(VALUE, opt.get())
+
+        val nullStr: String? = null
+        val opt2 = Opt2.of(nullStr)
+
+        assertNotNull(opt2)
+        assertNull(opt2.get())
+
+        val opt4 = opt2.ifEmptyUse(conditionalSupplier)
+
+        assertNotNull(opt4)
+        assertNull(opt4.get())
+
+        conditionalSupplier = { NEW_STRING }
+        val opt3 = opt2.ifEmptyUse(conditionalSupplier)
+
+        assertNotNull(opt3)
+        assertNotNull(opt3.get())
+        assertEquals(NEW_STRING, opt3.get())
+
+        conditionalSupplier = { ANOTHER_STRING }
+        val str2 = opt2
+                .ifEmptyUse(conditionalSupplier)
+                .get()
+
+        assertNotNull(str2)
+        assertEquals(ANOTHER_STRING, str2)
+    }
+
+    @Test
     fun test_ifMissingWithSideEffects() {
 
         var str = ""
@@ -626,7 +665,7 @@ internal class Opt2Test {
 
     private fun intToAiString(i: Int): String = "A$i"
 
-    private fun getTempValue() = TempValue(YYY)
+    // private fun getTempValue() = TempValue(YYY)
 
     class TempValue(var a: String?) {
         fun set(s: String) {
@@ -650,7 +689,7 @@ internal class Opt2Test {
         const val VALUE1 = "value1"
         const val VALUE2 = "value2"
         const val VALUE3 = "value2"
-        const val XXX = "XXX"
-        const val YYY = "YYY"
+//        const val XXX = "XXX"
+//        const val YYY = "YYY"
     }
 }
