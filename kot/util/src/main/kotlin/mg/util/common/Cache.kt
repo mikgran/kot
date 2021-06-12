@@ -9,17 +9,17 @@ open class Cache<T : Any, V : Any> private constructor() {
     private var keySupplier: (() -> T)? = null
     private var valueSupplier: (() -> V)? = null
 
+    // FIXME: 1000 resolve the suppliers
+
     operator fun get(index: T): V? {
         val key = keySupplier.toOpt()
                 .map { it() }
 
         return key.map { cache[it] }
                 .ifEmptyUse(valueSupplier)
-                .toBiOpt(key)
-//                .ifPresent { v ->
-//                    key.ifPresent { k -> cache[k] = v }
-//                }
-
+                .ifPresent { v ->
+                    key.ifPresent { k -> cache[k] = v }
+                }
                 .get()
     }
 
