@@ -1,20 +1,20 @@
 package mg.util.common
 
-class Cache<T : Any> private constructor() {
+class Cache<T : Any, V : Any> private constructor() {
 
-    private val cache = mutableMapOf<String, T>()
-    private var supplier: (() -> T)? = null
+    private val cache = mutableMapOf<T, V>()
+    private var supplier: (() -> V)? = null
 
-    operator fun get(index: String): T? {
+    operator fun get(index: T): V? {
         return cache[index] ?: supplier?.invoke()
-
     }
 
     companion object {
 
-        fun <T : Any> cacheOf(t: (Cache<T>) -> Unit): Cache<T> {
-            return Cache<T>().also(t)
+        fun <T : Any, V : Any> cacheOf(t: (Cache<T, V>) -> Unit): Cache<T, V> {
+            return Cache<T, V>().also(t)
         }
 
     }
 }
+

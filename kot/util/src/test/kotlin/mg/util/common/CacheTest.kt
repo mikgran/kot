@@ -1,7 +1,7 @@
 package mg.util.common
 
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 
 internal class CacheTest {
 
@@ -10,15 +10,15 @@ internal class CacheTest {
     @Test
     fun testCache() {
 
-        val cache = Cache.cacheOf<List<Simple>> {
+        val cache = Cache.cacheOf<String, List<Simple>> {
 
-
+        
 
         }
 
         cache["some"]
 
-
+        fail("TODO")
     }
 
 }
