@@ -129,10 +129,9 @@ class Opt2<T : Any> {
         return this
     }
 
-    fun <R : Any> ifPresentWith(r: R?, consumer: (T, R) -> Unit): Opt2<T> {
-        val ropt = r.toOpt()
-        if (isPresent() && ropt.isPresent()) {
-            consumer(lazyT, ropt.lazyT)
+    fun <R : Any> ifPresentWith(r: Opt2<R>, consumer: (T, R) -> Unit): Opt2<T> {
+        if (isPresent() && r.isPresent()) {
+            consumer(lazyT, r.lazyT)
         }
         return this
     }

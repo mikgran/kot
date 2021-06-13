@@ -1,5 +1,6 @@
 package mg.util.common
 
+import mg.util.functional.Opt2
 import mg.util.functional.toOpt
 
 open class Cache<T : Any, V : Any> private constructor() {
@@ -15,21 +16,20 @@ open class Cache<T : Any, V : Any> private constructor() {
 
     operator fun get(index: Any): V? {
         return synchronizedBlock {
-
             val key = keySupplier.toOpt()
                     .map { it(index) }
 
             key.map { cache[it] }
                     .ifEmptyUse(valueSupplier)
-                    .ifPresent { v ->
-                        key.ifPresent { k -> cache[k] = v }
-                    }
+                    .ifPresentWith(key) { v, k -> cache[k] = v }
                     .get()
         }
     }
 
-    operator fun set(t: T, value: V) {
+    operator fun set(key: T, value: V) {
+        synchronizedBlock {
 
+        }
     }
 
     companion object {

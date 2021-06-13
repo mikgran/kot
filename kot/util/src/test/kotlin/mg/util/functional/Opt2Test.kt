@@ -346,18 +346,19 @@ internal class Opt2Test {
 
     @Test
     fun test_ifPresentConsumerWith() {
-        fun <T : Any> ifPresentWithAssert(value: Opt2<String>, value2: T) {
+        fun <T : Any> ifPresentWithAssert(expectedValue: Any?, value: Opt2<String>, value2: T) {
             val candidate = TempValue("")
-
-            value.ifPresentWith(value2) { s, s2 -> candidate.a = s + s2 }
+            val v2 = value2.toOpt()
+            value.ifPresentWith(v2) { s, s2 -> candidate.a = s + s2 }
 
             assertNotNull(candidate.a)
-            assertEquals(VALUE + VALUE2, candidate.a)
+            assertEquals(expectedValue, candidate.a)
         }
 
+        val expectedValue = VALUE + VALUE2
         val value = VALUE.toOpt()
-        ifPresentWithAssert(value, VALUE2.toOpt())
-        ifPresentWithAssert(value, VALUE2)
+        ifPresentWithAssert(expectedValue, value, VALUE2.toOpt())
+        ifPresentWithAssert(expectedValue, value, VALUE2)
     }
 
     @Test
