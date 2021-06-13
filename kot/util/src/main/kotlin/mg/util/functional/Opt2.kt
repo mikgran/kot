@@ -129,6 +129,14 @@ class Opt2<T : Any> {
         return this
     }
 
+    fun <R : Any> ifPresentWith(r: R?, consumer: (T, R) -> Unit): Opt2<T> {
+        val ropt = r.toOpt()
+        if (isPresent() && ropt.isPresent()) {
+            consumer(lazyT, ropt.lazyT)
+        }
+        return this
+    }
+
     fun c(consumer: (T) -> Unit): Opt2<T> = ifPresent(consumer)
 
     override fun toString(): String = value?.toString() ?: ""

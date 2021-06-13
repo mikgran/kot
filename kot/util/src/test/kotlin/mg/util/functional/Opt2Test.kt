@@ -345,6 +345,28 @@ internal class Opt2Test {
     }
 
     @Test
+    fun test_ifPresentConsumerWith() {
+        val value = VALUE.toOpt()
+        val value2 = VALUE2.toOpt()
+
+        val candidate = TempValue("")
+
+        value.ifPresentWith(value2) { s, s2 -> candidate.a = s + s2 }
+
+        assertNotNull(candidate.a)
+        assertEquals(VALUE + VALUE2, candidate.a)
+
+        val value3 = VALUE.toOpt()
+        val value4 = VALUE2
+        val candidate2 = TempValue("")
+
+        value3.ifPresentWith(value4) { s, s2 -> candidate2.a = s + s2 }
+
+        assertNotNull(candidate2.a)
+        assertEquals(VALUE + VALUE2, candidate2.a)
+    }
+
+    @Test
     fun test_getOrElse() {
 
         val candidate = Opt2.of(VALUE)

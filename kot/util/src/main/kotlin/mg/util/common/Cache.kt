@@ -1,26 +1,31 @@
 package mg.util.common
 
-import mg.util.functional.toBiOpt
 import mg.util.functional.toOpt
 
 open class Cache<T : Any, V : Any> private constructor() {
 
+    @Synchronized
+    private fun <T> synchronizedBlock(block: () -> T) = block()
+
     private val cache = mutableMapOf<T, V>()
-    private var keySupplier: (() -> T)? = null
+    private var keySupplier: ((Any) -> T)? = null
     private var valueSupplier: (() -> V)? = null
 
     // FIXME: 1000 resolve the suppliers
 
-    operator fun get(index: T): V? {
-        val key = keySupplier.toOpt()
-                .map { it() }
+    operator fun get(index: Any): V? {
+        return synchronizedBlock {
 
-        return key.map { cache[it] }
-                .ifEmptyUse(valueSupplier)
-                .ifPresent { v ->
-                    key.ifPresent { k -> cache[k] = v }
-                }
-                .get()
+            val key = keySupplier.toOpt()
+                    .map { it(index) }
+
+            key.map { cache[it] }
+                    .ifEmptyUse(valueSupplier)
+                    .ifPresent { v ->
+                        key.ifPresent { k -> cache[k] = v }
+                    }
+                    .get()
+        }
     }
 
     operator fun set(t: T, value: V) {
@@ -42,7 +47,7 @@ open class Cache<T : Any, V : Any> private constructor() {
     }
 
     class Cache2<T : Any, V : Any>(private val cache: Cache<T, V>) {
-        fun keySupplier(supplier: (() -> T)): Cache3<T, V> {
+        fun keySupplier(supplier: ((Any) -> T)): Cache3<T, V> {
             cache.keySupplier = supplier
             return Cache3(cache)
         }
