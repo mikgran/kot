@@ -1,60 +1,46 @@
 package mg.util.common
 
-import mg.util.functional.Opt2
 import mg.util.functional.toOpt
 
 open class Cache<T : Any, V : Any> private constructor() {
 
-    @Synchronized
-    private fun <T> synchronizedBlock(block: () -> T) = block()
-
+    private var lock = Any()
     private val cache = mutableMapOf<T, V>()
-    private var keySupplier: ((Any) -> T)? = null
-    private var valueSupplier: (() -> V)? = null
+    private var keyMapper: ((Any) -> T)? = null
 
-    // FIXME: 1000 resolve the suppliers
+    fun getOrElse(key: Any, valueSupplier: () -> V): V {
+        return this[key] ?: valueSupplier()
+                .also {
+                    this[key] = it
+                }
+    }
 
-    operator fun get(index: Any): V? {
-        return synchronizedBlock {
-            val key = keySupplier.toOpt()
-                    .map { it(index) }
-
-            key.map { cache[it] }
-                    .ifEmptyUse(valueSupplier)
-                    .ifPresentWith(key) { v, k -> cache[k] = v }
-                    .get()
+    operator fun get(key: Any): V? {
+        return synchronized(lock) {
+            keyMapper.toOpt()
+                    .map { it(key) }
+                    .map { cache[it] }
+                    .get() ?: cache[key]
         }
     }
 
-    operator fun set(key: T, value: V) {
-        synchronizedBlock {
-
+    operator fun set(key: Any, value: V) {
+        synchronized(lock) {
+            keyMapper.toOpt()
+                    .map { it(key) }
+                    .ifPresent { cache[it] = value }
         }
+    }
+
+    fun keyMapper(mapper: ((Any) -> T)): Cache<T, V> {
+        synchronized(lock) {
+            keyMapper = mapper
+        }
+        return this
     }
 
     companion object {
-        fun <T : Any, V : Any> cacheOf(key: T, value: V): Cache1<T, V> {
-            val c = Cache<T, V>()
-            return Cache1(c)
-        }
-    }
-
-    class Cache1<T : Any, V : Any>(private val cache: Cache<T, V>) {
-        fun valueSupplier(supplier: (() -> V)): Cache2<T, V> {
-            cache.valueSupplier = supplier
-            return Cache2(cache)
-        }
-    }
-
-    class Cache2<T : Any, V : Any>(private val cache: Cache<T, V>) {
-        fun keySupplier(supplier: ((Any) -> T)): Cache3<T, V> {
-            cache.keySupplier = supplier
-            return Cache3(cache)
-        }
-    }
-
-    class Cache3<T : Any, V : Any>(private val cache: Cache<T, V>) {
-        fun build(): Cache<T, V> = cache
+        fun <T : Any, V : Any> of() = Cache<T, V>()
     }
 }
 

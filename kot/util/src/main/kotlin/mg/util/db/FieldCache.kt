@@ -1,7 +1,9 @@
 package mg.util.db
 
+import mg.util.common.Cache
 import mg.util.common.isCustom
 import mg.util.common.isListOfCustoms
+import mg.util.functional.Opt2
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
 import kotlin.reflect.full.memberProperties
@@ -20,6 +22,8 @@ class FieldCache {
 
         private val emptyFields = Fields()
         internal val cache = HashMap<Any, Fields>()
+        private val cache1 = Cache.of<Any, Fields>()
+                .keyMapper(UidBuilder::buildUniqueId)
 
         fun <T : Any> fieldsFor(typeT: T): Fields {
             val uid = UidBuilder.buildUniqueId(typeT)
@@ -28,6 +32,10 @@ class FieldCache {
                         collectMembers(typeT).also { cache[uid] = it }
                     }
                     .getOrElse { emptyFields }
+        }
+
+        fun <T : Any> fieldsOf(typeT: T): Fields {
+            return cache1.getOrElse(typeT) { collectMembers(typeT) }
         }
 
         private fun <T : Any> collectMembers(typeT: T): Fields {
