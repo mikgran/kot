@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.common.Cache
 import mg.util.functional.toOpt
 
 /*
@@ -20,39 +21,34 @@ object AliasBuilder {
         override fun toString(): String = if (i <= 1) c else "$c$i"
     }
 
-    private var aliases = HashMap<String, HashMap<String, Alias>>()
+    private var aliasCache = Cache.of<String, Cache<String, Alias>>()
 
-    @Synchronized
-    fun build(s: String): String {
-
-        val firstLetter = s.toOpt()
-                .filter(String::isNotEmpty)
-                .ifMissingThrow { Exception("Not possible to alias empty strings") }
-                .map { "${s[0]}".lowercase() }
-                .getOrElse { "" }
-
-        val alias = aliases.toOpt()
-                .map { it[firstLetter] }
-                .ifEmpty { newCachedLetterMap(firstLetter) }
-                .map { it[s] }
-                .ifEmpty { newCachedAlias(firstLetter, s) }
-
-        return alias.toString()
+    fun build(str: String): String {
+        val firstLetter = getFirstLetter(str)
+        val letterCache = aliasCache.getOrCache(firstLetter) { newCache() }
+        return letterCache
+                .getOrCache(str) { newAlias(firstLetter, letterCache) }
+                .toString()
     }
 
-    private fun newCachedLetterMap(firstLetter: String) =
-            HashMap<String, Alias>()
-                    .also { aliases[firstLetter] = it }
+    private fun newAlias(firstLetter: String, letterCache: Cache<String, Alias>) =
+            Alias(firstLetter, letterCache.cache().size + 1)
 
-    private fun newCachedAlias(firstLetter: String, s: String) =
-            Alias(firstLetter, aliases[firstLetter]!!.size + 1)
-                    .also { aliases[firstLetter]!![s] = it }
+    private fun newCache() = Cache.of<String, Alias>()
+
+    private fun getFirstLetter(s: String): String = s.toOpt()
+            .filter(String::isNotEmpty)
+            .ifMissingThrow { Exception("Not possible to alias empty strings") }
+            .map { "${s[0]}".lowercase() }
+            .getOrElse { "" }
 
     override fun toString(): String {
-        return aliases.toSortedMap().toString()
+        return aliasCache.cache().toSortedMap().toString()
     }
 
-    internal fun aliases(): Map<String, HashMap<String, Alias>> {
-        return aliases.toMap()
+    internal fun aliases(): Map<String, Cache<String, Alias>> {
+        return aliasCache.cache().toSortedMap()
     }
+
+    internal fun aliasCache() = aliasCache
 }

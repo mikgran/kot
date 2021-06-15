@@ -20,7 +20,7 @@ internal class FieldCacheTest {
         assertEquals(1, fields.primitives.size)
         assertEquals(1, fields.customs.size)
         assertEquals(1, fields.listsOfCustoms.size)
-        assertNotNull(FieldCache.cache[person])
+        assertNotNull(FieldCache.cache[UidBuilder.buildUniqueId(person)])
     }
 }
 

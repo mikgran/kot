@@ -20,10 +20,10 @@ class FieldCache {
     companion object {
 
         internal val cache = Cache.of<Any, Fields>()
-                .keyMapper(UidBuilder::buildUniqueId)
 
         fun <T : Any> fieldsFor(typeT: T): Fields {
-            return cache.getOrCache(typeT) { collectMembers(typeT) }
+            val uid = UidBuilder.buildUniqueId(typeT)
+            return cache.getOrCache(uid) { collectMembers(typeT) }
         }
 
         private fun <T : Any> collectMembers(typeT: T): Fields {
@@ -40,6 +40,5 @@ class FieldCache {
                 it.primitives.addAll(primitiveMembers)
             }
         }
-
     }
 }
