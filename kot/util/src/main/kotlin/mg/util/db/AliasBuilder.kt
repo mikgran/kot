@@ -4,13 +4,13 @@ import mg.util.common.Cache
 import mg.util.functional.toOpt
 
 /*
-    map {
-        "l" = map {
+    Cache {
+        "l" = Cache {
           "lastName" = Alias("l")
           "lastDate "= Alias("l2")
           "lostDate" = Alias("l3")
         }
-        "f" = map {
+        "f" = Cache {
           "firstName" = Alias("f")
         }
     }
@@ -21,20 +21,15 @@ object AliasBuilder {
         override fun toString(): String = if (i <= 1) c else "$c$i"
     }
 
-    private var aliasCache = Cache.of<String, Cache<String, Alias>>()
+    private var aliasCache: Cache<String, Cache<String, Alias>> = Cache.of()
 
     fun build(str: String): String {
         val firstLetter = getFirstLetter(str)
-        val letterCache = aliasCache.getOrCache(firstLetter) { newCache() }
+        val letterCache = aliasCache.getOrCache(firstLetter) { Cache.of() }
         return letterCache
-                .getOrCache(str) { newAlias(firstLetter, letterCache) }
+                .getOrCache(str) { Alias(firstLetter, letterCache.cache().size + 1) }
                 .toString()
     }
-
-    private fun newAlias(firstLetter: String, letterCache: Cache<String, Alias>) =
-            Alias(firstLetter, letterCache.cache().size + 1)
-
-    private fun newCache() = Cache.of<String, Alias>()
 
     private fun getFirstLetter(s: String): String = s.toOpt()
             .filter(String::isNotEmpty)

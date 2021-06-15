@@ -26,7 +26,7 @@ open class Cache<T : Any, V : Any> private constructor() {
     }
 
     override fun toString(): String {
-        return cache.toString()
+        return synchronized(lock) { cache.toString() }
     }
 
     companion object {
