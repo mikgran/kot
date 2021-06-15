@@ -1,7 +1,5 @@
 package mg.util.common
 
-import mg.util.functional.toOpt
-
 open class Cache<T : Any, V : Any> private constructor() {
 
     private var lock = Any()
@@ -34,7 +32,4 @@ open class Cache<T : Any, V : Any> private constructor() {
     companion object {
         fun <T : Any, V : Any> of() = Cache<T, V>()
     }
-
-
 }
-
