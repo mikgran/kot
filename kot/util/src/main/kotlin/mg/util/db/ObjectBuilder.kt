@@ -31,81 +31,17 @@ open class ObjectBuilder {
     }
 
     private fun <T : Any> buildListOfMultiDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
-
         results.toOpt()
-                .ifPresent(ResultSet::beforeFirst)
-                .ifPresent(ResultSet::print)
+                .x(ResultSet::beforeFirst)
+                .x(ResultSet::print)
 
-
-        /*
-            OBMultipleComposition(
-                primitive = 555,
-                oneToOne = OBSimple("1111"),
-                oneToMany = listOf(OBSimpleComp("AAAA"), OBSimpleComp("BBBB"))
-            )
-
-            OBMultipleComposition.id
-            OBMultipleComposition.primitive
-            OBSimple.id
-            OBSimple.simple
-            OBSimpleComp.id
-            OBSimpleComp.comp
-
-            id  primitive   id  simple  id  comp id duplex
-            1   555         1   1111    1   AAAA 1  A
-            1   555         1   1111    1   BBBB 1  A
-            1   555         1   1111    1   BBBB 1  B
-            - uniqueByParent
-                OBMultipleComposition -> OBSimple, OBSimpleComp
-                OBSimpleComp -> OBDuplex
-
-            OBMultipleComposition(
-                primitive = 0,
-                oneToOne = OBSimple(),
-                oneToMany = listOf()
-            )
-            if (id == 1), process rows
-            1#
-            1   555         1   1111    1   AAAA 1  A
-            OBMultipleComposition(
-                primitive = 555,
-                oneToOne = OBSimple(1111),
-                oneToMany = listOf(OBSimpleComp(comp = AAAA, duplex = listOf(OBDuplex(A))
-                                   )
-            )
-            2#
-            1   555         1   1111    1   BBBB 1  A
-            OBMultipleComposition(
-                primitive = 555,
-                oneToOne = OBSimple(1111),
-                oneToMany = listOf(OBSimpleComp(AAAA, duplex = listOf(OBDuplex(A))),
-                                   OBSimpleComp(BBBB, duplex = listOf(OBDuplex(A)))
-                                   )
-            )
-            3#
-            1   555         1   1111    1   BBBB 1  B
-            OBMultipleComposition(
-                primitive = 555,
-                oneToOne = OBSimple(1111),
-                oneToMany = listOf(OBSimpleComp(AAAA, duplex = listOf(OBDuplex(A))),
-                                   OBSimpleComp(BBBB, duplex = listOf(OBDuplex(A), OBDuplex(B)))
-                                   )
-            )
-         */
-
-        val uniquesByParent = HashMap<Any, MutableList<Any>>()
-        collectUniquesByParent(typeT, uniquesByParent)
-
-//        uniquesByParent.forEach {
-//            print(it.key::class.simpleName + ": ")
-//            println(it.value.joinToString { i -> "" + i::class.simpleName })
-//        }
+        val uniquesByParent = collectUniquesByParent(typeT)
 
         println("typeT: $typeT")
 
         results.toOpt()
-                .ifPresent(ResultSet::beforeFirst)
-                .ifPresent(ResultSet::next)
+                .x(ResultSet::beforeFirst)
+                .x(ResultSet::next)
                 .x { setPrimitiveFieldValues(typeT, this) }
                 .x {
                     while (next()) {
@@ -154,21 +90,11 @@ open class ObjectBuilder {
                 else -> null
             }
 
-    private fun <T : Any> collectUniquesByParent(typeT: T, uniquesByParent: HashMap<Any, MutableList<Any>>) {
-
-//        val fieldsOfT = typeT::class.memberProperties
-//                .toMutableList()
-//                .mapNotNull { it.javaField }
-//
-//        fieldsOfT.filter(Common::isCustom)
-//                .map { field: Field -> FieldAccessor.fieldGet(field, typeT) }
-//                .forEach { addElementToListIfNotExists(uniquesByParent, typeT, it) }
-
+    private fun <T : Any> collectUniquesByParent(typeT: T): HashMap<Any, MutableList<Any>> {
+        val uniquesByParent = HashMap<Any, MutableList<Any>>()
         val fields = FieldCache.fieldsFor(typeT)
 
-        fields.customs.forEach {
-            addElementToListIfNotExists(uniquesByParent, typeT, it)
-        }
+        fields.customs.forEach { addElementToListIfNotExists(uniquesByParent, typeT, it) }
 
         // list types accepted for now only
         fields.listsOfCustoms.map { field ->
@@ -179,6 +105,7 @@ open class ObjectBuilder {
                     .filter(Common::hasCustomPackageName)
                     .ifPresent { addElementToListIfNotExists(uniquesByParent, typeT, it) }
         }
+        return uniquesByParent
     }
 
     private fun <T : Any> addElementToListIfNotExists(uniquesByParent: HashMap<Any, MutableList<Any>>, typeT: T, obj: Any) {
@@ -191,7 +118,7 @@ open class ObjectBuilder {
     }
 
     private fun isNoSameUniqueInList(uniques: MutableList<Any>, obj: Any) =
-            uniques.none { it::class.simpleName.equals(obj::class.simpleName, ignoreCase = true) }
+            uniques.none { it::class.qualifiedName.equals(obj::class.qualifiedName, ignoreCase = true) }
 
     private fun <T : Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
 
