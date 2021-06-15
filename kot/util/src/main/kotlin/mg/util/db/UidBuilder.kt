@@ -1,17 +1,15 @@
 package mg.util.db
 
+import mg.util.common.Cache
 import mg.util.functional.toOpt
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 
 object UidBuilder {
 
-    @Synchronized
-    private fun <T> synchronizedBlock(block: () -> T) = block()
+    private val uidCache: Cache<KClass<*>, String> = Cache.of()
 
-    internal var uniqueIds = HashMap<KClass<*>, String>()
-        get() = synchronizedBlock { field }
-        set(value) = synchronizedBlock { field = value }
+    internal fun uids() = uidCache
 
     fun <T : Any> buildUniqueId(t: T): String {
         return t.toOpt()
@@ -22,12 +20,7 @@ object UidBuilder {
 
     // TODO 10 add type coverage, and multiple packages support
     fun <T : Any> build(t: KClass<out T>): String {
-        return synchronizedBlock {
-            uniqueIds.toOpt()
-                    .map { it[t] }
-                    .ifEmpty { buildUid(t).also { uniqueIds[t] = it } }
-                    .getOrElse { "" }
-        }
+        return uidCache.getOrCache(t) { buildUid(t) }
     }
 
     private fun <T : Any> buildUid(t: KClass<out T>) = t.toOpt()
