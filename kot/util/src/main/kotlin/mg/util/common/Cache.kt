@@ -5,14 +5,13 @@ import mg.util.functional.toOpt
 open class Cache<T : Any, V : Any> private constructor() {
 
     private var lock = Any()
-    private val cache = mutableMapOf<T, V>()
+    internal val cache = mutableMapOf<T, V>()
     private var keyMapper: ((Any) -> T)? = null
 
-    fun getOrElse(key: Any, valueSupplier: () -> V): V {
-        return this[key] ?: valueSupplier()
-                .also {
-                    this[key] = it
-                }
+    fun getOrCache(key: Any, valueSupplier: () -> V): V {
+        return synchronized(lock) {
+            this[key] ?: (valueSupplier().also { this[key] = it })
+        }
     }
 
     operator fun get(key: Any): V? {
@@ -20,7 +19,7 @@ open class Cache<T : Any, V : Any> private constructor() {
             keyMapper.toOpt()
                     .map { it(key) }
                     .map { cache[it] }
-                    .get() ?: cache[key]
+                    .get()
         }
     }
 
@@ -32,15 +31,17 @@ open class Cache<T : Any, V : Any> private constructor() {
         }
     }
 
-    fun keyMapper(mapper: ((Any) -> T)): Cache<T, V> {
-        synchronized(lock) {
-            keyMapper = mapper
-        }
-        return this
+    companion object {
+        fun <T : Any, V : Any> of() = IncompleteInit(Cache<T, V>())
     }
 
-    companion object {
-        fun <T : Any, V : Any> of() = Cache<T, V>()
+    class IncompleteInit<T : Any, V : Any>(private val cache: Cache<T, V>) {
+        fun keyMapper(mapper: ((Any) -> T)): Cache<T, V> {
+            synchronized(cache.lock) {
+                cache.keyMapper = mapper
+            }
+            return cache
+        }
     }
 }
 

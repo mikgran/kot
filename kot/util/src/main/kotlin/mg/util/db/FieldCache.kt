@@ -3,7 +3,6 @@ package mg.util.db
 import mg.util.common.Cache
 import mg.util.common.isCustom
 import mg.util.common.isListOfCustoms
-import mg.util.functional.Opt2
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
 import kotlin.reflect.full.memberProperties
@@ -20,22 +19,11 @@ class FieldCache {
 
     companion object {
 
-        private val emptyFields = Fields()
-        internal val cache = HashMap<Any, Fields>()
-        private val cache1 = Cache.of<Any, Fields>()
+        internal val cache = Cache.of<Any, Fields>()
                 .keyMapper(UidBuilder::buildUniqueId)
 
         fun <T : Any> fieldsFor(typeT: T): Fields {
-            val uid = UidBuilder.buildUniqueId(typeT)
-            return cache[uid].toOpt()
-                    .ifEmpty {
-                        collectMembers(typeT).also { cache[uid] = it }
-                    }
-                    .getOrElse { emptyFields }
-        }
-
-        fun <T : Any> fieldsOf(typeT: T): Fields {
-            return cache1.getOrElse(typeT) { collectMembers(typeT) }
+            return cache.getOrCache(typeT) { collectMembers(typeT) }
         }
 
         private fun <T : Any> collectMembers(typeT: T): Fields {

@@ -1,7 +1,7 @@
 package mg.util.common
 
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 
 internal class CacheTest {
 
@@ -13,14 +13,18 @@ internal class CacheTest {
     @Test
     fun testCache() {
 
-        val newSimple = Simple("AAA")
-        val newSimple2 = Simple("BBB")
+        val simple1 = Simple("AAA")
+        val simple2 = Simple("BBB")
+        val list1 = listOf(simple1, simple2)
 
+        cache["key1"] = list1
 
-//        val aValue = cache["some"]
-//        cache["some"] = listOf(newSimple, newSimple2)
+        assertTrue(cache.cache.containsKey("key1"))
 
-        fail("TODO")
+        val candidate = cache["key1"]
+
+        assertNotNull(candidate)
+        assertTrue(candidate?.size == 2)
+        assertEquals(simple1, candidate?.get(0))
     }
-
 }
