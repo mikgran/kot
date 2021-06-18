@@ -4,6 +4,7 @@ import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
+import kotlin.reflect.KClass
 
 object Common {
 
@@ -54,6 +55,13 @@ fun <T : Any> Field.isCustom(ownerOfField: T): Boolean =
                 .get(ownerOfField)
                 .toOpt()
                 .filter(Common::hasCustomPackageName)
+                .isPresent()
+
+fun <T: Any> Field.isType(ownerOfField: T, type: KClass<*>): Boolean =
+        this.also { isAccessible = true }
+                .get(ownerOfField)
+                .toOpt()
+                .mapTo(type)
                 .isPresent()
 
 fun <T : Any> Field.isListOfCustoms(ownerOfField: T): Boolean =
