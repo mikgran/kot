@@ -30,23 +30,23 @@ class FieldCache {
 
         private fun <T : Any> collectMembers(typeT: T): Fields {
 
-            val allMembers = typeT::class.memberProperties.mapNotNull { it.javaField }
-            val collectionMembers = allMembers.filter { it.isType(typeT, Collection::class) }
-            val arrayMembers = allMembers.filter { it.isType(typeT, Array::class) }
-            val listMembers = collectionMembers.filter { it.isListOfCustoms(typeT) }
-            val customMembers = allMembers.minus(listMembers).filter { it.isCustom(typeT) }
-            val primitiveMembers =
-                    allMembers.minus(collectionMembers)
-                            .minus(customMembers)
-                            .minus(arrayMembers)
+            val all = typeT::class.memberProperties.mapNotNull { it.javaField }
+            val collections = all.filter { it.isType(typeT, Collection::class) }
+            val arrays = all.filter { it.isType(typeT, Array::class) }
+            val listsOfCustoms = collections.filter { it.isListOfCustoms(typeT) }
+            val customs = all.minus(collections).filter { it.isCustom(typeT) }
+            val primitives =
+                    all.minus(collections)
+                            .minus(customs)
+                            .minus(arrays)
 
             return Fields().also {
-                it.all.addAll(allMembers)
-                it.customs.addAll(customMembers)
-                it.listsOfCustoms.addAll(listMembers)
-                it.primitives.addAll(primitiveMembers)
-                it.arrays.addAll(arrayMembers)
-                it.collections.addAll(collectionMembers)
+                it.all.addAll(all)
+                it.customs.addAll(customs)
+                it.listsOfCustoms.addAll(listsOfCustoms)
+                it.primitives.addAll(primitives)
+                it.arrays.addAll(arrays)
+                it.collections.addAll(collections)
             }
         }
     }
