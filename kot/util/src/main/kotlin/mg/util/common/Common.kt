@@ -46,8 +46,10 @@ object Common {
         return isAnyCustom || isCustomInsideListsFirstElement
     }
 
-    fun hasCustomPackageName(obj: Any) =
-            listOf("kotlin.", "java.").none { obj::class.java.packageName.contains(it, ignoreCase = true) }
+    fun hasCustomPackageName(obj: Any): Boolean {
+        val lowerCasePackageName = obj::class.java.packageName.lowercase()
+        return listOf("kotlin.", "java.").none(lowerCasePackageName::contains)
+    }
 }
 
 fun <T : Any> Field.isCustom(ownerOfField: T): Boolean =
@@ -57,7 +59,7 @@ fun <T : Any> Field.isCustom(ownerOfField: T): Boolean =
                 .filter(Common::hasCustomPackageName)
                 .isPresent()
 
-fun <T: Any> Field.isType(ownerOfField: T, type: KClass<*>): Boolean =
+fun <T : Any> Field.isType(ownerOfField: T, type: KClass<*>): Boolean =
         this.also { isAccessible = true }
                 .get(ownerOfField)
                 .toOpt()
