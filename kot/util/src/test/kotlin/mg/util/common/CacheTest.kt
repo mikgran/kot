@@ -40,5 +40,9 @@ internal class CacheTest {
         val cache1 = cache.cache()
         assertTrue(cache1.containsKey("key1"))
         assertTrue(cache1.containsKey("key2"))
+
+        cache.replaceWith(mutableMapOf())
+
+        assertTrue(cache.cache().isEmpty())
     }
 }
