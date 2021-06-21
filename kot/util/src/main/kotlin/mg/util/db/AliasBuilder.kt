@@ -38,7 +38,7 @@ object AliasBuilder {
             .getOrElse { "" }
 
     override fun toString(): String {
-        return aliasCache.cache().toSortedMap().toString()
+        return aliases().toString()
     }
 
     internal fun aliases(): Map<String, Cache<String, Alias>> {
