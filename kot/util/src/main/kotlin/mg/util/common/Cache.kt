@@ -13,9 +13,9 @@ package mg.util.common
 open class Cache<T : Any, V : Any> private constructor() {
 
     private var lock = Any()
-    private val cache = mutableMapOf<T, V>()
+    private val contents = mutableMapOf<T, V>()
 
-    internal fun cache() = synchronized(lock) { cache }
+    internal fun contents() = synchronized(lock) { contents }
 
     fun getOrCache(key: T, valueSupplier: () -> V): V {
         return synchronized(lock) {
@@ -25,25 +25,25 @@ open class Cache<T : Any, V : Any> private constructor() {
 
     operator fun get(key: T): V? {
         return synchronized(lock) {
-            cache[key]
+            contents[key]
         }
     }
 
     internal operator fun set(key: T, value: V) {
         synchronized(lock) {
-            cache[key] = value
+            contents[key] = value
         }
     }
 
     fun replaceWith(replacementMap: MutableMap<T, V>) {
         synchronized(lock) {
-            cache.clear()
-            cache.putAll(replacementMap)
+            contents.clear()
+            contents.putAll(replacementMap)
         }
     }
 
     override fun toString(): String {
-        return synchronized(lock) { cache.toString() }
+        return synchronized(lock) { contents.toString() }
     }
 
     companion object {

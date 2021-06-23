@@ -27,7 +27,7 @@ object AliasBuilder {
         val firstLetter = getFirstLetter(str)
         val letterCache = aliasCache.getOrCache(firstLetter) { Cache.of() }
         return letterCache
-                .getOrCache(str) { Alias(firstLetter, letterCache.cache().size + 1) }
+                .getOrCache(str) { Alias(firstLetter, letterCache.contents().size + 1) }
                 .toString()
     }
 
@@ -42,7 +42,7 @@ object AliasBuilder {
     }
 
     internal fun aliases(): Map<String, Cache<String, Alias>> {
-        return aliasCache.cache().toSortedMap()
+        return aliasCache.contents().toSortedMap()
     }
 
     internal fun aliasCache() = aliasCache

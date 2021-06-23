@@ -16,11 +16,11 @@ internal class CacheTest {
         val simple2 = Simple("BBB")
         val list1 = listOf(simple1, simple2)
 
-        assertFalse(cache.cache().containsKey("key1"))
+        assertFalse(cache.contents().containsKey("key1"))
 
         cache["key1"] = list1
 
-        assertTrue(cache.cache().containsKey("key1"))
+        assertTrue(cache.contents().containsKey("key1"))
 
         val candidate = cache["key1"]
 
@@ -29,7 +29,7 @@ internal class CacheTest {
         assertEquals(simple1, candidate?.get(0))
         assertEquals(simple2, candidate?.get(1))
 
-        assertFalse(cache.cache().containsKey("key2"))
+        assertFalse(cache.contents().containsKey("key2"))
 
         val simple3 = Simple("CCC")
         val candidate2 = cache.getOrCache("key2") { listOf(simple3) }
@@ -37,12 +37,12 @@ internal class CacheTest {
         assertNotNull(candidate2)
         assertEquals(1, candidate2.size)
         assertEquals(simple3, candidate2[0])
-        val cache1 = cache.cache()
+        val cache1 = cache.contents()
         assertTrue(cache1.containsKey("key1"))
         assertTrue(cache1.containsKey("key2"))
 
         cache.replaceWith(mutableMapOf())
 
-        assertTrue(cache.cache().isEmpty())
+        assertTrue(cache.contents().isEmpty())
     }
 }

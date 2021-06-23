@@ -24,19 +24,19 @@ internal class UidBuilderTest {
         val cache1 = UidBuilder.uids()
         assertNotNull(cache1)
         assertNull(cache1[TestClass2::class])
-        assertEquals(0, UidBuilder.uids().cache().keys.filter { it == TestClass2::class } .size)
+        assertEquals(0, UidBuilder.uids().contents().keys.filter { it == TestClass2::class } .size)
 
         val candidate = UidBuilder.buildUniqueId(TestClass2("someName", 1))
 
-        assertTrue(UidBuilder.uids().cache().containsKey(TestClass2::class))
-        assertEquals(1, UidBuilder.uids().cache().keys.filter { it == TestClass2::class } .size)
+        assertTrue(UidBuilder.uids().contents().containsKey(TestClass2::class))
+        assertEquals(1, UidBuilder.uids().contents().keys.filter { it == TestClass2::class } .size)
         assertNotNull(candidate)
         assertEquals(buildUid("TestClass2", "someIntsomeName2"), candidate)
 
         val candidate2 = UidBuilder.buildUniqueId(TestClass2("someName", 1))
 
-        assertTrue(UidBuilder.uids().cache().containsKey(TestClass2::class))
-        assertEquals(1, UidBuilder.uids().cache().keys.filter { it == TestClass2::class } .size)
+        assertTrue(UidBuilder.uids().contents().containsKey(TestClass2::class))
+        assertEquals(1, UidBuilder.uids().contents().keys.filter { it == TestClass2::class } .size)
         assertNotNull(candidate2)
         assertEquals(buildUid("TestClass2", "someIntsomeName2"), candidate2)
     }

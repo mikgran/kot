@@ -77,11 +77,11 @@ internal class CommonTest {
     @Test
     fun testIsMultiDepthCustomObject() {
 
-        val isMultiDepthCustomObject = Common.isMultiDepthCustom(CPerson1())
+        val isMultiDepthCustomObject = Common.isCustomThatContainsCustoms(CPerson1())
         assertNotNull(isMultiDepthCustomObject)
         assertFalse(isMultiDepthCustomObject, "CPerson1 should not be a multidepth object.")
 
-        val isMultiDepthCustomObject2 = Common.isMultiDepthCustom(CPerson2())
+        val isMultiDepthCustomObject2 = Common.isCustomThatContainsCustoms(CPerson2())
         assertNotNull(isMultiDepthCustomObject2)
         assertTrue(isMultiDepthCustomObject2, "CPerson2 should be a multidepth object.")
     }

@@ -35,7 +35,7 @@ class TestDataClasses {
     data class OBPersonB(val firstName: String = "", val lastName: String = "")
     data class OBSimple(val simple: String = "aaaa")
     data class OBSimpleComp(val comp: String = "cccc")
-    data class OBMultipleComposition(val primitive: Int = 0, val oneToOne: OBSimple = OBSimple(""), val oneToMany: List<OBSimpleComp> = listOf(OBSimpleComp(""), OBSimpleComp("")))
+    data class OBMultipleComposition(val compotisionValue: Int = 0, val obSimple: OBSimple = OBSimple(""), val obSimpleComps: List<OBSimpleComp> = listOf(OBSimpleComp(""), OBSimpleComp("")))
     data class SMTPerson(val firstName: String = "", val lastName: String = "")
     data class RSIPerson(val firstName: String = "", val lastName: String = "")
 }

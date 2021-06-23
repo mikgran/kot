@@ -38,12 +38,12 @@ object Common {
     // FIXME: -1 add testing, doesn't take primitives into count
     fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
 
-    fun isMultiDepthCustom(obj: Any): Boolean {
+    fun isCustomThatContainsCustoms(obj: Any): Boolean {
         val fields = obj::class.java.declaredFields.toCollection(ArrayList())
-        val isAnyCustom = fields.any(::isCustom)
-        val isCustomInsideListsFirstElement = fields.any { it.isListOfCustoms(obj) }
+        val isAnyFieldCustom = fields.any(::isCustom)
+        val isCustomInsideAnyListsFirstElement = fields.any { it.isListOfCustoms(obj) }
 
-        return isAnyCustom || isCustomInsideListsFirstElement
+        return isAnyFieldCustom || isCustomInsideAnyListsFirstElement
     }
 
     fun hasCustomPackageName(obj: Any): Boolean {

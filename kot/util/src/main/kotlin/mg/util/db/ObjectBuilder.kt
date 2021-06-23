@@ -1,7 +1,7 @@
 package mg.util.db
 
 import mg.util.common.Common
-import mg.util.common.Common.isMultiDepthCustom
+import mg.util.common.Common.isCustomThatContainsCustoms
 import mg.util.common.Wrap
 import mg.util.db.dsl.FieldAccessor
 import mg.util.db.functional.print
@@ -24,18 +24,23 @@ open class ObjectBuilder {
         return typeT
                 .toOpt()
                 .case({ it is String }, { buildListUsingStrings(results, it) })
-                .case({ isMultiDepthCustom(it) }, { buildListOfMultiDepthCustoms(results, it) })
-                .caseDefault { buildListOfSingleDepthCustoms(results, it) }
+                .case({ isCustomThatContainsCustoms(it) }, { buildListOfCustomsMadeOfCustoms(results, it) })
+                .caseDefault { buildListOfCustomsMadeOfPrimitives(results, it) }
                 .result()
                 .getOrElse(mutableListOf())
     }
 
-    private fun <T : Any> buildListOfMultiDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
+    private fun <T : Any> buildListOfCustomsMadeOfCustoms(results: ResultSet?, typeT: T): MutableList<T> {
         results.toOpt()
                 .x(ResultSet::beforeFirst)
                 .x(ResultSet::print)
 
         val uniquesByParent = collectUniquesByParent(typeT)
+                .also { map ->
+                    map.keys.first().toOpt().map { it::class.simpleName }.x { print("\nk: $this v: ") }
+                    map.values.first().map { it::class.simpleName }.joinToString(", ").also(::println)
+                    println("\n\n")
+                }
 
         println("typeT: $typeT")
 
@@ -94,7 +99,10 @@ open class ObjectBuilder {
         val uniquesByParent = HashMap<Any, MutableList<Any>>()
         val fields = FieldCache.fieldsFor(typeT)
 
-        fields.customs.forEach { addElementToListIfNotExists(uniquesByParent, typeT, it) }
+        fields.customs.forEach { field ->
+            FieldAccessor.fieldGet(field, typeT).toOpt()
+                    .ifPresent { addElementToListIfNotExists(uniquesByParent, typeT, it) }
+        }
 
         // list types accepted for now only
         fields.listsOfCustoms.map { field ->
@@ -108,17 +116,16 @@ open class ObjectBuilder {
         return uniquesByParent
     }
 
-    private fun <T : Any> addElementToListIfNotExists(uniquesByParent: HashMap<Any, MutableList<Any>>, typeT: T, obj: Any) {
+    private fun <T : Any> addElementToListIfNotExists(uniquesByParent: HashMap<Any, MutableList<Any>>, parent: T, obj: Any) {
         uniquesByParent.toOpt()
-                .filter { it.containsKey(typeT) }
-                .map { it[typeT] }
-                .filter { isNoSameUniqueInList(it, obj) }
+                .filter { it.containsKey(parent) }
+                .map { it[parent] }
+                .filter { uniques ->
+                    uniques.none { it::class.qualifiedName.equals(obj::class.qualifiedName, true) }
+                }
                 .ifPresent { it.add(obj) }
-                .ifMissing { uniquesByParent[typeT] = mutableListOf(obj) }
+                .ifMissing { uniquesByParent[parent] = mutableListOf(obj) }
     }
-
-    private fun isNoSameUniqueInList(uniques: MutableList<Any>, obj: Any) =
-            uniques.none { it::class.qualifiedName.equals(obj::class.qualifiedName, ignoreCase = true) }
 
     private fun <T : Any> buildListUsingStrings(results: ResultSet?, typeT: T): MutableList<T> {
 
@@ -138,7 +145,7 @@ open class ObjectBuilder {
                 .map(list::add)
     }
 
-    private fun <T : Any> buildListOfSingleDepthCustoms(results: ResultSet?, typeT: T): MutableList<T> {
+    private fun <T : Any> buildListOfCustomsMadeOfPrimitives(results: ResultSet?, typeT: T): MutableList<T> {
 
         val listT = mutableListOf<T>()
         val constructorForT = narrowDownConstructorForT(results, typeT)
