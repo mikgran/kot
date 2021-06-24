@@ -38,7 +38,7 @@ class MySqlInsertBuilder {
                 .map { field -> FieldAccessor.fieldGet(field, dp.typeT) as List<*> }
                 .map { buildInsertSqlOneToMany(it, sql.t) }
 
-        return sqls.joinToString(";")
+        return sqls.joinToString(";").also { println(it) }
     }
 
     private fun buildInsertSql(type: Any): String =

@@ -2,6 +2,7 @@ package mg.util.db.dsl
 
 import mg.util.common.Common
 import mg.util.common.PredicateComposition.Companion.or
+import mg.util.common.flatten
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.FieldCache
@@ -9,9 +10,6 @@ import mg.util.db.UidBuilder
 import mg.util.db.dsl.MySqlImpl.Companion.buildUidAndAlias
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.javaField
 
 class MySqlSelectBuilder {
 
@@ -20,6 +18,21 @@ class MySqlSelectBuilder {
         val t = sql.t
         p.tableFragments.add(0, buildTableFragment(t))
         p.joinsMap.putAll(buildJoinsMap(t, mutableMapOf()))
+
+        p.joinsMap.entries.forEach { entry ->
+            println("key: ${Common.classSimpleName(entry.key)} ")
+            entry.value.toOpt()
+                    .mapTo(List::class)
+                    .xmap {
+                        flatten()
+                                .filterNotNull()
+                                .map(Common::classSimpleName)
+                                .joinToString(", ")
+                    }
+                    .getAndMap {
+                        println("value: $it")
+                    }
+        }
 
         p.toOpt()
                 .map { buildJoinsForNaturalRefs(it) }

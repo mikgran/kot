@@ -41,7 +41,13 @@ internal class ObjectBuilderTest {
                 OBMultipleComposition(
                         compotisionValue = 555,
                         obSimple = OBSimple(simple = "1111"),
-                        obSimpleComps = listOf(OBSimpleComp(comp = "AAAA"), OBSimpleComp(comp = "BBBB"))
+                        obSimpleComps = listOf(
+                                OBSimpleComp(
+                                        comp = "AAAA",
+                                        sub = OBSubComp(77)),
+                                OBSimpleComp(
+                                        comp = "BBBB",
+                                        sub = OBSubComp(88)))
                 )
 
         val connection = dbConfig.connection
@@ -61,8 +67,7 @@ internal class ObjectBuilderTest {
         val uid = buildUniqueId(t)
         val sql = Sql select t
         sql.parameters().isPrimaryIdIncluded = true
-        val sqlStr = DslMapperFactory.get().map(sql)
-        // println("sqlStr: $sqlStr")
+        val sqlStr = DslMapperFactory.get().map(sql).also { println(it) }
         return Opt2.of(connection.createStatement())
                 .map { it.executeQuery(sqlStr) }
                 .filter { it.next() }

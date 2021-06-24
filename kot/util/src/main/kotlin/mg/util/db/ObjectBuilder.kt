@@ -37,8 +37,10 @@ open class ObjectBuilder {
 
         val uniquesByParent = collectUniquesByParent(typeT)
                 .also { map ->
-                    map.keys.first().toOpt().map { it::class.simpleName }.x { print("\nk: $this v: ") }
-                    map.values.first().map { it::class.simpleName }.joinToString(", ").also(::println)
+                    map.entries.forEach { entry ->
+                        entry.key.toOpt().map(Common::classSimpleName).x { print("\nk: $this v: ") }
+                        entry.value.map(Common::classSimpleName).joinToString(", ").also(::println)
+                    }
                     println("\n\n")
                 }
 
@@ -46,7 +48,7 @@ open class ObjectBuilder {
 
         results.toOpt()
                 .x(ResultSet::beforeFirst)
-                .x(ResultSet::next)
+                .filter(ResultSet::next)
                 .x { setPrimitiveFieldValues(typeT, this) }
                 .x {
                     while (next()) {

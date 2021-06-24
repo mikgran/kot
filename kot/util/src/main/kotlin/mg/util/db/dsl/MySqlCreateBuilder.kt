@@ -13,6 +13,10 @@ open class MySqlCreateBuilder {
 
     fun build(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
 
+        // FIXME: 10000 Needs parent-child relationship HashMap
+        // k: OBMultipleComposition v: OBSimple, OBSimpleComp
+        // k: OBSimpleComp v: OBSubComp
+
         val dp = buildDslParameters(sql.t)
         val sqls = mutableListOf<String>()
 

@@ -31,6 +31,8 @@ object Common {
         }
     }
 
+    fun classSimpleName(obj: Any): String? = obj::class.simpleName
+
     fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
     private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.") // or startsWith
     private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
@@ -75,6 +77,11 @@ fun <T : Any> Field.isListOfCustoms(ownerOfField: T): Boolean =
                 .map(List<*>::first)
                 .filter(Common::hasCustomPackageName)
                 .isPresent()
+
+fun <E> List<E>.flatten(): List<Any?> =
+        this.flatMap {
+            (it as? List<*>)?.asSequence() ?: sequenceOf(it)
+        }
 
 operator fun StringBuilder.plus(s: String): StringBuilder = append(s)
 operator fun StringBuilder.plus(sb: StringBuilder): StringBuilder = append(sb.toString())
