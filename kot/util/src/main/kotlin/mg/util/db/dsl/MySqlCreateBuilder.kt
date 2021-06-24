@@ -16,6 +16,19 @@ open class MySqlCreateBuilder {
         // FIXME: 10000 Needs parent-child relationship HashMap
         // k: OBMultipleComposition v: OBSimple, OBSimpleComp
         // k: OBSimpleComp v: OBSubComp
+        /*
+                Parent(
+                        aValue = 1,
+                        oneToOneChild = Child(aStr = "AAAA"),
+                        oneToManyChildren = listOf(
+                                ListChild(
+                                        aStr = "AAAA",
+                                        subChild = SubChild(11)),
+                                ListChild(
+                                        aStr = "BBBB",
+                                        subChild = SubChild(22)))
+                )
+         */
 
         val dp = buildDslParameters(sql.t)
         val sqls = mutableListOf<String>()
