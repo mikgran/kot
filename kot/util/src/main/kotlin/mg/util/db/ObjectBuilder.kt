@@ -1,6 +1,7 @@
 package mg.util.db
 
 import mg.util.common.Common
+import mg.util.common.Common.classSimpleName
 import mg.util.common.Common.isCustomThatContainsCustoms
 import mg.util.common.Wrap
 import mg.util.db.dsl.FieldAccessor
@@ -38,8 +39,8 @@ open class ObjectBuilder {
         val uniquesByParent = collectUniquesByParent(typeT)
                 .also { map ->
                     map.entries.forEach { entry ->
-                        entry.key.toOpt().map(Common::classSimpleName).x { print("\nk: $this v: ") }
-                        entry.value.map(Common::classSimpleName).joinToString(", ").also(::println)
+                        entry.key.toOpt().map(::classSimpleName).x { print("\nk: $this v: ") }
+                        entry.value.map(::classSimpleName).joinToString(", ").also(::println)
                     }
                     println("\n\n")
                 }
@@ -96,6 +97,22 @@ open class ObjectBuilder {
                 // DATETIME?
                 else -> null
             }
+
+    private fun <T : Any> collectUniques(typeT: T, uniquesByParent: HashMap<Any, MutableList<Any>> = HashMap()): HashMap<Any, MutableList<Any>> {
+
+        val fields = FieldCache.fieldsFor(typeT)
+        (fields.customs.asSequence() + fields.listsOfCustoms.asSequence())
+                .mapNotNull { FieldAccessor.fieldGet(it, typeT) }
+                .toMutableList()
+                .toOpt()
+                .filter(MutableList<Any>::isNotEmpty)
+                .c {
+                    uniquesByParent[typeT] = it
+                    it.forEach(this::collectUniques)
+                }
+
+        return uniquesByParent
+    }
 
     private fun <T : Any> collectUniquesByParent(typeT: T): HashMap<Any, MutableList<Any>> {
         val uniquesByParent = HashMap<Any, MutableList<Any>>()
