@@ -38,8 +38,8 @@ open class ObjectBuilder {
                 .x(ResultSet::print)
 
         val uniquesByParent =
-                // collectUniquesByParent(typeT)
-                collectUniques(typeT, HashMap())
+                collectUniquesByParent(typeT)
+                        // collectUniques(typeT, HashMap())
                         .also { map ->
                             map.entries.forEach { entry ->
                                 entry.key.toOpt().map(::classSimpleName).x { print("\nk: $this v: ") }
@@ -101,46 +101,22 @@ open class ObjectBuilder {
                 else -> null
             }
 
-    private fun collectUniques(
-            t: Any,
-            uniquesByParent: HashMap<Any, MutableList<Any>> = HashMap(),
-    ): HashMap<Any, MutableList<Any>> {
-
+    private fun collectUniques(t: Any, uniquesByParent: HashMap<Any, List<Any>> = HashMap()): HashMap<Any, List<Any>> {
         when (t) {
-            is MutableList<*> -> {
+            is MutableList<*> ->
                 t.filterNotNull().forEach {
                     collectUniques(it, uniquesByParent)
                 }
-            }
-            else -> {
-                uniquesByParent[t] = children(t).toMutableList()
-                collectUniques(t, uniquesByParent)
-            }
+            else ->
+                getChildren(t).also {
+                    uniquesByParent[t] = it
+                    collectUniques(it, uniquesByParent)
+                }
         }
-
         return uniquesByParent
     }
 
-    fun collectUniques(t: Any) {
-
-        collectUniquesR(children(t), t, HashMap())
-
-    }
-
-    private fun collectUniquesR(t: Any, parent: Any, uniquesByParent: HashMap<Any, MutableList<Any>>): HashMap<Any, MutableList<Any>> {
-
-        val obj: List<Any> = when (t) {
-            is MutableList<*> -> {
-                uniquesByParent[parent] = t as MutableList<Any>
-                t
-            }
-            else -> children(t).also { }
-        }
-
-        return collectUniquesR(obj, t, uniquesByParent)
-    }
-
-    private fun children(obj: Any): List<Any> {
+    private fun getChildren(obj: Any): List<Any> {
         val fields = FieldCache.fieldsFor(obj)
         val customs = fields.customs
                 .map { FieldAccessor.fieldGet(it, obj) }
