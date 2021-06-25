@@ -4,6 +4,7 @@ import mg.util.common.Common
 import mg.util.common.Common.classSimpleName
 import mg.util.common.Common.isCustomThatContainsCustoms
 import mg.util.common.Wrap
+import mg.util.common.flatten
 import mg.util.db.dsl.FieldAccessor
 import mg.util.db.functional.print
 import mg.util.db.functional.toResultSetIterator
@@ -36,14 +37,16 @@ open class ObjectBuilder {
                 .x(ResultSet::beforeFirst)
                 .x(ResultSet::print)
 
-        val uniquesByParent = collectUniquesByParent(typeT)
-                .also { map ->
-                    map.entries.forEach { entry ->
-                        entry.key.toOpt().map(::classSimpleName).x { print("\nk: $this v: ") }
-                        entry.value.map(::classSimpleName).joinToString(", ").also(::println)
-                    }
-                    println("\n\n")
-                }
+        val uniquesByParent =
+                // collectUniquesByParent(typeT)
+                collectUniques(typeT, HashMap())
+                        .also { map ->
+                            map.entries.forEach { entry ->
+                                entry.key.toOpt().map(::classSimpleName).x { print("\nk: $this v: ") }
+                                entry.value.map(::classSimpleName).joinToString(", ").also(::println)
+                            }
+                            println("\n\n")
+                        }
 
         println("typeT: $typeT")
 
@@ -98,21 +101,56 @@ open class ObjectBuilder {
                 else -> null
             }
 
-    private fun <T : Any> collectUniques(typeT: T, uniquesByParent: HashMap<Any, MutableList<Any>> = HashMap()): HashMap<Any, MutableList<Any>> {
+    private fun collectUniques(
+            t: Any,
+            uniquesByParent: HashMap<Any, MutableList<Any>> = HashMap(),
+    ): HashMap<Any, MutableList<Any>> {
 
-        val fields = FieldCache.fieldsFor(typeT)
-        (fields.customs.asSequence() + fields.listsOfCustoms.asSequence())
-                .mapNotNull { FieldAccessor.fieldGet(it, typeT) }
-                .toMutableList()
-                .toOpt()
-                .filter(MutableList<Any>::isNotEmpty)
-                .x { distinctBy(UidBuilder::buildUniqueId) }
-                .c {
-                    uniquesByParent[typeT] = it
-                    it.forEach(this::collectUniques)
+        when (t) {
+            is MutableList<*> -> {
+                t.filterNotNull().forEach {
+                    collectUniques(it, uniquesByParent)
                 }
+            }
+            else -> {
+                uniquesByParent[t] = children(t).toMutableList()
+                collectUniques(t, uniquesByParent)
+            }
+        }
 
         return uniquesByParent
+    }
+
+    fun collectUniques(t: Any) {
+
+        collectUniquesR(children(t), t, HashMap())
+
+    }
+
+    private fun collectUniquesR(t: Any, parent: Any, uniquesByParent: HashMap<Any, MutableList<Any>>): HashMap<Any, MutableList<Any>> {
+
+        val obj: List<Any> = when (t) {
+            is MutableList<*> -> {
+                uniquesByParent[parent] = t as MutableList<Any>
+                t
+            }
+            else -> children(t).also { }
+        }
+
+        return collectUniquesR(obj, t, uniquesByParent)
+    }
+
+    private fun children(obj: Any): List<Any> {
+        val fields = FieldCache.fieldsFor(obj)
+        val customs = fields.customs
+                .map { FieldAccessor.fieldGet(it, obj) }
+        val listsOfCustoms = fields.listsOfCustoms
+                .map { FieldAccessor.fieldGet(it, obj) }
+                .flatten()
+                .filterNotNull()
+                .distinctBy(UidBuilder::buildUniqueId)
+
+        return customs + listsOfCustoms
     }
 
     private fun <T : Any> collectUniquesByParent(typeT: T): HashMap<Any, MutableList<Any>> {
