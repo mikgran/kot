@@ -106,6 +106,7 @@ open class ObjectBuilder {
                 .toMutableList()
                 .toOpt()
                 .filter(MutableList<Any>::isNotEmpty)
+                .x { distinctBy(UidBuilder::buildUniqueId) }
                 .c {
                     uniquesByParent[typeT] = it
                     it.forEach(this::collectUniques)
