@@ -2,6 +2,9 @@ package mg.util.db.dsl
 
 import mg.util.common.Common.isCustom
 import mg.util.common.Common.isList
+import mg.util.common.flatten
+import mg.util.db.FieldCache
+import mg.util.db.UidBuilder
 import java.lang.reflect.Field
 
 class FieldAccessor private constructor() {
@@ -44,5 +47,32 @@ class FieldAccessor private constructor() {
                         .distinctBy { i -> "${i::class.java.packageName}.${i::class.java.simpleName}" }
                         .size == 1
 
+        fun uniquesByParent(t: Any, uniquesByParent: HashMap<Any, List<Any>> = HashMap()): HashMap<Any, List<Any>> {
+            when (t) {
+                is MutableList<*> ->
+                    t.filterNotNull().forEach {
+                        uniquesByParent(it, uniquesByParent)
+                    }
+                else ->
+                    getChildren(t).also {
+                        uniquesByParent[t] = it
+                        uniquesByParent(it, uniquesByParent)
+                    }
+            }
+            return uniquesByParent
+        }
+
+        private fun getChildren(obj: Any): List<Any> {
+            val fields = FieldCache.fieldsFor(obj)
+            val customs = fields.customs
+                    .map { fieldGet(it, obj) }
+            val listsOfCustoms = fields.listsOfCustoms
+                    .map { fieldGet(it, obj) }
+                    .flatten()
+                    .filterNotNull()
+                    .distinctBy(UidBuilder::buildUniqueId)
+
+            return customs + listsOfCustoms
+        }
     }
 }
