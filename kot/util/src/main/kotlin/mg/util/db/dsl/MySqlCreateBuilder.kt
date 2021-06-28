@@ -1,12 +1,13 @@
 package mg.util.db.dsl
 
 import mg.util.db.AliasBuilder
+import mg.util.db.FieldCache
+import mg.util.db.FieldCache.Fields
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.FieldAccessor.Companion.fieldGet
-import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithCustoms
-import mg.util.db.dsl.FieldAccessor.Companion.getFieldsWithListOfCustoms
 import mg.util.db.dsl.Sql.Parameters
 import mg.util.functional.Opt2
+import mg.util.functional.toOpt
 import kotlin.reflect.full.declaredMemberProperties
 
 open class MySqlCreateBuilder {
@@ -36,15 +37,31 @@ open class MySqlCreateBuilder {
         sqls += buildSqlCreate(dp)
 
         // direct one to one Objects:
-        sqls += getFieldsWithCustoms(dp) // TOIMPROVE: add more test coverage
+        sqls += getFields(dp)
+                .map(Fields::customs)
+                .getOrElse { mutableListOf() }
                 .map { buildSqlCreateForChild(dp, fieldGet(it, dp.typeT)) }
 
+        // sqls +=
+        getFields(dp).x {
+            customs.map {
+                buildSqlCreateForChild(dp, fieldGet(it, dp.typeT))
+            }
+        }
+
         // lists of Objects:
-        sqls += getFieldsWithListOfCustoms(dp)
+//        sqls += getFieldsWithListOfCustoms(dp)
+//                .map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
+        sqls += getFields(dp)
+                .map(Fields::listsOfCustoms)
+                .getOrElse { mutableListOf() }
                 .map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
 
         return sqls.joinToString(";")
     }
+
+    private fun getFields(dp: DslParameters) = dp.typeT.toOpt()
+            .map(FieldCache::fieldsFor)
 
     private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String {
 
