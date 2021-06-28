@@ -2,6 +2,7 @@ package mg.util.db.dsl
 
 import mg.util.common.Common
 import mg.util.db.AliasBuilder
+import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2
 import mg.util.functional.toOpt
@@ -23,20 +24,21 @@ class MySqlInsertBuilder {
 
         sqls += buildInsertSql(sql.t)
 
-        val fieldsWithCustoms = FieldAccessor.getFieldsWithCustoms(dp)
-        val fieldsWithListsOfCustoms = FieldAccessor.getFieldsWithListOfCustoms(dp)
+        dp.typeT.toOpt()
+                .map(FieldCache::fieldsFor)
+                .x {
+                    if (customs.isNotEmpty() || listsOfCustoms.isNotEmpty()) {
+                        sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId"
+                    }
 
-        if (fieldsWithCustoms.size + fieldsWithListsOfCustoms.size > 0) {
-            sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId"
-        }
+                    sqls += customs
+                            .map { field -> FieldAccessor.fieldGet(field, dp.typeT) }
+                            .map { buildInsertSqlOneToOne(it, sql.t) }
 
-        sqls += fieldsWithCustoms
-                .map { field -> FieldAccessor.fieldGet(field, dp.typeT) }
-                .map { buildInsertSqlOneToOne(it, sql.t) }
-
-        sqls += fieldsWithListsOfCustoms
-                .map { field -> FieldAccessor.fieldGet(field, dp.typeT) as List<*> }
-                .map { buildInsertSqlOneToMany(it, sql.t) }
+                    sqls += listsOfCustoms
+                            .map { field -> FieldAccessor.fieldGet(field, dp.typeT) as List<*> }
+                            .map { buildInsertSqlOneToMany(it, sql.t) }
+                }
 
         return sqls.joinToString(";").also { println(it) }
     }

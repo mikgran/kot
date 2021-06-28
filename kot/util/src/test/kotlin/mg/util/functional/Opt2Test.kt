@@ -682,8 +682,6 @@ internal class Opt2Test {
 
     private fun intToAiString(i: Int): String = "A$i"
 
-    // private fun getTempValue() = TempValue(YYY)
-
     class TempValue(var a: String?) {
         fun set(s: String) {
             a = s
@@ -706,7 +704,5 @@ internal class Opt2Test {
         const val VALUE1 = "value1"
         const val VALUE2 = "value2"
         const val VALUE3 = "value2"
-//        const val XXX = "XXX"
-//        const val YYY = "YYY"
     }
 }

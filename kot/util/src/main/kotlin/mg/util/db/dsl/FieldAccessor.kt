@@ -1,7 +1,5 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common.isCustom
-import mg.util.common.Common.isList
 import mg.util.common.flatten
 import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
@@ -20,32 +18,6 @@ class FieldAccessor private constructor() {
             field.isAccessible = true
             field.set(type, value)
         }
-
-        // TODO 900: replace with FieldCache.fieldsFor(typeT)
-        fun getFieldsWithCustoms(dp: DslParameters): List<Field> =
-                getFieldsWithCustoms(dp.typeT!!)
-
-        fun getFieldsWithCustoms(type: Any): List<Field> =
-                type::class.java
-                        .declaredFields
-                        .filterNotNull()
-                        .filter(::isCustom)
-
-        fun getFieldsWithListOfCustoms(dp: DslParameters): List<Field> =
-                getFieldsWithListOfCustoms(dp.typeT!!)
-
-        fun getFieldsWithListOfCustoms(type: Any): List<Field> =
-                type::class.java
-                        .declaredFields
-                        .filterNotNull()
-                        .filter(::isList)
-                        .filter { isSingleTypeList(it, type) } // multiple type lists not supported atm.
-
-        private fun isSingleTypeList(field: Field, type: Any): Boolean =
-                (fieldGet(field, type) as List<*>)
-                        .filterNotNull()
-                        .distinctBy { i -> "${i::class.java.packageName}.${i::class.java.simpleName}" }
-                        .size == 1
 
         fun uniquesByParent(t: Any, uniquesByParent: HashMap<Any, List<Any>> = HashMap()): HashMap<Any, List<Any>> {
             when (t) {

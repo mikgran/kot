@@ -2,7 +2,6 @@ package mg.util.db.dsl
 
 import mg.util.db.AliasBuilder
 import mg.util.db.FieldCache
-import mg.util.db.FieldCache.Fields
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.FieldAccessor.Companion.fieldGet
 import mg.util.db.dsl.Sql.Parameters
@@ -30,44 +29,26 @@ open class MySqlCreateBuilder {
                                         subChild = SubChild(22)))
                 )
          */
-
         val dp = buildDslParameters(sql.t)
         val sqls = mutableListOf<String>()
 
         sqls += buildSqlCreate(dp)
 
-        // direct one to one Objects:
-        sqls += getFields(dp)
-                .map(Fields::customs)
-                .getOrElse { mutableListOf() }
-                .map { buildSqlCreateForChild(dp, fieldGet(it, dp.typeT)) }
-
-        // sqls +=
-        getFields(dp).x {
-            customs.map {
-                buildSqlCreateForChild(dp, fieldGet(it, dp.typeT))
-            }
-        }
-
-        // lists of Objects:
-//        sqls += getFieldsWithListOfCustoms(dp)
-//                .map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
-        sqls += getFields(dp)
-                .map(Fields::listsOfCustoms)
-                .getOrElse { mutableListOf() }
-                .map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
+        dp.typeT.toOpt()
+                .map(FieldCache::fieldsFor)
+                .x {
+                    sqls += customs.map { buildSqlCreateForChild(dp, fieldGet(it, dp.typeT)) }
+                    sqls += listsOfCustoms.map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
+                }
 
         return sqls.joinToString(";")
     }
-
-    private fun getFields(dp: DslParameters) = dp.typeT.toOpt()
-            .map(FieldCache::fieldsFor)
 
     private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String {
 
         val childDp = Opt2.of(t)
                 .map(::buildDslParameters)
-                .getOrElseThrow { Exception("Unable to get field for $t and to build DslParameters.") }!!
+                .getOrElseThrow { Exception("Unable to getField($t) and to build DslParameters.") }!!
 
         val childSqlCreate = buildSqlCreate(childDp)
         val childAlterTable = buildCreateTableForJoinTable(parentDp, childDp)

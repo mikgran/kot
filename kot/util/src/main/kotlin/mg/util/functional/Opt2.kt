@@ -181,6 +181,7 @@ class Opt2<T : Any> {
     }
 
     // synonymous with(lazyT) { this.extensionMapper() }
+    // is a renamed also() to avoid name clash
     fun x(extensionConsumer: T.() -> Unit): Opt2<T> {
         if (isPresent()) {
             lazyT.extensionConsumer()
