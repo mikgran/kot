@@ -1,9 +1,9 @@
 package mg.util.db
 
 import mg.util.common.Cache
-import mg.util.common.isCustom
-import mg.util.common.isListOfCustoms
-import mg.util.common.isType
+import mg.util.db.dsl.isCustom
+import mg.util.db.dsl.isListOfCustoms
+import mg.util.db.dsl.isType
 import java.lang.reflect.Field
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField

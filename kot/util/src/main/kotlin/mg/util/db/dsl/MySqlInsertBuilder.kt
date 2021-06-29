@@ -87,7 +87,7 @@ class MySqlInsertBuilder {
                     val javaFieldTypeName = p.javaField?.type?.toString() ?: ""
 
                     p.javaField != null
-                            && !Common.isCustom(p.javaField!!)
+                            && !FieldAccessor.isCustom(p.javaField!!)
                             && "Array" !in javaFieldTypeName
                             && "List" !in javaFieldTypeName
                             && "collection" !in javaFieldTypeName

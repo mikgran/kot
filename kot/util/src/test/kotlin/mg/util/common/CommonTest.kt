@@ -3,6 +3,7 @@ package mg.util.common
 import mg.util.common.Common.hasAnyContent
 import mg.util.common.Common.hasContent
 import mg.util.db.TestDataClasses.*
+import mg.util.db.dsl.FieldAccessor
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -77,11 +78,11 @@ internal class CommonTest {
     @Test
     fun testIsMultiDepthCustomObject() {
 
-        val isMultiDepthCustomObject = Common.isCustomThatContainsCustoms(CPerson1())
+        val isMultiDepthCustomObject = FieldAccessor.isCustomThatContainsCustoms(CPerson1())
         assertNotNull(isMultiDepthCustomObject)
         assertFalse(isMultiDepthCustomObject, "CPerson1 should not be a multidepth object.")
 
-        val isMultiDepthCustomObject2 = Common.isCustomThatContainsCustoms(CPerson2())
+        val isMultiDepthCustomObject2 = FieldAccessor.isCustomThatContainsCustoms(CPerson2())
         assertNotNull(isMultiDepthCustomObject2)
         assertTrue(isMultiDepthCustomObject2, "CPerson2 should be a multidepth object.")
     }

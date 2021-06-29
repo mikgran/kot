@@ -1,10 +1,10 @@
 package mg.util.db
 
-import mg.util.common.Common
 import mg.util.common.Common.classSimpleName
-import mg.util.common.Common.isCustomThatContainsCustoms
 import mg.util.common.Wrap
 import mg.util.db.dsl.FieldAccessor
+import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
+import mg.util.db.dsl.FieldAccessor.Companion.isCustomThatContainsCustoms
 import mg.util.db.functional.print
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
@@ -125,7 +125,7 @@ open class ObjectBuilder {
                     .mapTo(List::class)
                     .filter(List<*>::isNotEmpty)
                     .map(List<*>::first)
-                    .filter(Common::hasCustomPackageName)
+                    .filter(::hasCustomPackageName)
                     .ifPresent { addElementToListIfNotExists(uniquesByParent, typeT, it) }
         }
         return uniquesByParent

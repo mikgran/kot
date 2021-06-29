@@ -33,50 +33,8 @@ object Common {
 
     fun classSimpleName(obj: Any): String? = obj::class.simpleName
 
-    fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
-    private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.") // or startsWith
-    private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
 
-    // FIXME: -1 add testing, doesn't take primitives into count
-    fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
-
-    fun isCustomThatContainsCustoms(obj: Any): Boolean {
-        val fields = obj::class.java.declaredFields.toCollection(ArrayList())
-        val isAnyFieldCustom = fields.any(::isCustom)
-        val isCustomInsideAnyListsFirstElement = fields.any { it.isListOfCustoms(obj) }
-
-        return isAnyFieldCustom || isCustomInsideAnyListsFirstElement
-    }
-
-    fun hasCustomPackageName(obj: Any): Boolean {
-        val lowerCasePackageName = obj::class.java.packageName.lowercase()
-        return listOf("kotlin.", "java.").none(lowerCasePackageName::contains)
-    }
 }
-
-fun <T : Any> Field.isCustom(ownerOfField: T): Boolean =
-        this.also { isAccessible = true }
-                .get(ownerOfField)
-                .toOpt()
-                .filter(Common::hasCustomPackageName)
-                .isPresent()
-
-fun <T : Any> Field.isType(ownerOfField: T, type: KClass<*>): Boolean =
-        this.also { isAccessible = true }
-                .get(ownerOfField)
-                .toOpt()
-                .mapTo(type)
-                .isPresent()
-
-fun <T : Any> Field.isListOfCustoms(ownerOfField: T): Boolean =
-        this.also { isAccessible = true }
-                .get(ownerOfField)
-                .toOpt()
-                .mapTo(List::class)
-                .filter(List<*>::isNotEmpty)
-                .map(List<*>::first)
-                .filter(Common::hasCustomPackageName)
-                .isPresent()
 
 fun <E> List<E>.flatten(): List<Any?> =
         this.flatMap {

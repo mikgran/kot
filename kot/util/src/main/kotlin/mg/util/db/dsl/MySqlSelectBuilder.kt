@@ -7,6 +7,8 @@ import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
+import mg.util.db.dsl.FieldAccessor.Companion.isCustom
+import mg.util.db.dsl.FieldAccessor.Companion.isList
 import mg.util.db.dsl.MySqlImpl.Companion.buildUidAndAlias
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
@@ -150,7 +152,7 @@ class MySqlSelectBuilder {
     private fun childrenForParent(type: Any): List<Any> {
         return type::class.java.declaredFields.toList()
                 .toOpt()
-                .lfilter(Common::isCustom or Common::isList)
+                .lfilter(::isCustom or ::isList)
                 .lxmap<Field, Any> {
                     mapNotNull {
                         getFieldValue(it, type)

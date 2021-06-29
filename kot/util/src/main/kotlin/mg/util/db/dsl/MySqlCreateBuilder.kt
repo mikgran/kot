@@ -87,6 +87,4 @@ open class MySqlCreateBuilder {
                 .xmap { map(mapper::getTypeString).filter(String::isNotEmpty) }
                 .getOrElse(emptyList())
     }
-
-
 }
