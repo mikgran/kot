@@ -27,7 +27,7 @@ internal class CommonTest {
     fun `test hasContent with Any`() {
 
         val nullObj: Any? = null
-        val someObj: Int? = Int.MIN_VALUE
+        val someObj: Int = Int.MIN_VALUE
 
         val candidate = hasAnyContent(nullObj)
         assertFalse(candidate, "null should yield false")
@@ -40,7 +40,7 @@ internal class CommonTest {
     fun `test hasContent with List`() {
 
         val nullObj: List<Int>? = null
-        val someObj: List<Int>? = listOf(1, 2, 3, 4, 5)
+        val someObj: List<Int> = listOf(1, 2, 3, 4, 5)
 
         val candidate = hasContent(someObj)
         assertTrue(candidate, "a non null should yield true")
