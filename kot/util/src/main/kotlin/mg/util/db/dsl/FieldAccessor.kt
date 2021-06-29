@@ -9,6 +9,7 @@ import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 class FieldAccessor private constructor() {
 
@@ -53,11 +54,9 @@ class FieldAccessor private constructor() {
             return customs + listsOfCustoms
         }
 
-        fun isList(field: Field) = List::class.java.isAssignableFrom(field.type)
-        private fun isKotlinType(field: Field) = field.type.packageName.contains("kotlin.") // or startsWith
-        private fun isJavaType(field: Field) = field.type.packageName.contains("java.")
-
-        // FIXME: -1 add testing, doesn't take primitives into count
+        fun isList(field: Field) = field.type.kotlin.isSubclassOf(List::class)
+        private fun isKotlinType(field: Field) = "kotlin." in field.type.packageName // or startsWith
+        private fun isJavaType(field: Field) = "java." in field.type.packageName
         fun isCustom(field: Field) = (!(::isList or ::isKotlinType or ::isJavaType))(field)
 
         fun isCustomThatContainsCustoms(obj: Any): Boolean {
@@ -72,6 +71,7 @@ class FieldAccessor private constructor() {
             val lowerCasePackageName = obj::class.java.packageName.lowercase()
             return listOf("kotlin.", "java.").none(lowerCasePackageName::contains)
         }
+
     }
 }
 

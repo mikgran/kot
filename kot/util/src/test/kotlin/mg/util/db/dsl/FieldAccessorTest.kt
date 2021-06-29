@@ -2,8 +2,8 @@ package mg.util.db.dsl
 
 import mg.util.db.FieldCache
 import mg.util.db.FieldCache.Fields
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import mg.util.functional.toOpt
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Field
 
@@ -25,12 +25,6 @@ internal class FieldAccessorTest {
         assertTrue(listOfCandidates.containsAll(listOf(FIRST, LAST)))
     }
 
-    private val s: String
-        get() {
-            val vvvv = "VVVV"
-            return vvvv
-        }
-
     @Test
     fun testFieldSet() {
 
@@ -48,9 +42,27 @@ internal class FieldAccessorTest {
         assertEquals(VVVV, person.lastName)
     }
 
+    @Test
+    fun testIsList() {
 
-    // TOIMPROVE: Coverage
+        data class TestType(
+                val var1: Any = 1,
+                val var2: List<Any> = listOf(1, 2, 3, 4),
+        )
 
+        val fields = FieldCache.fieldsFor(TestType())
+
+        val var1 = fields.all.find { it.name == "var1" }.toOpt()
+        val var2 = fields.all.find { it.name == "var2" }.toOpt()
+
+        var2.map(FieldAccessor::isList)
+                .c(::assertTrue)
+                .ifMissing { fail() }
+
+        var1.map(FieldAccessor::isList)
+                .c(::assertFalse)
+                .ifMissing { fail() }
+    }
 
     companion object {
         const val VVVV = "VVVV"
