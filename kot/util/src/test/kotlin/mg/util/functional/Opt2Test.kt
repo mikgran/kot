@@ -839,7 +839,7 @@ internal class Opt2Test {
     }
 
     @Test
-    fun testMapIfWith() {
+    fun testMapIfWithPredicate() {
 
         Opt2.empty<Int>()
                 .mapIf(true) { 1 }
