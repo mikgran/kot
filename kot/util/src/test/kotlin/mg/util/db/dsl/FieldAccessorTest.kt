@@ -2,6 +2,7 @@ package mg.util.db.dsl
 
 import mg.util.db.FieldCache
 import mg.util.db.FieldCache.Fields
+import mg.util.db.dsl.FieldAccessor.Companion.isList
 import mg.util.functional.toOpt
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -55,13 +56,17 @@ internal class FieldAccessorTest {
         val var1 = fields.all.find { it.name == "var1" }.toOpt()
         val var2 = fields.all.find { it.name == "var2" }.toOpt()
 
-        var2.map(FieldAccessor::isList)
-                .c(::assertTrue)
-                .ifMissing { fail() }
+        var2.map(::isList)
+                .get()
+                .apply {
+                    assertTrue(this!!)
+                }
 
-        var1.map(FieldAccessor::isList)
-                .c(::assertFalse)
-                .ifMissing { fail() }
+        var1.map(::isList)
+                .get()
+                .apply {
+                    assertFalse(this!!)
+                }
     }
 
     companion object {
