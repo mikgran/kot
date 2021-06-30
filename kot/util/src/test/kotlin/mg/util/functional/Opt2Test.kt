@@ -697,6 +697,57 @@ internal class Opt2Test {
         assertEquals(someData, candidate.get())
     }
 
+    @Test
+    fun testToList() {
+
+        val str = "A"
+        val list = listOf(1, 2, 3, 4)
+        val list2: List<Any> = listOf(1, 2, 3, str, 4)
+        val strNull: String? = null
+
+        str.toOpt()
+                .toList<String>()
+                .apply {
+                    assertTrue(isNotEmpty())
+                    assertTrue(contains(str))
+                }
+
+        strNull.toOpt()
+                .toList<Any>()
+                .apply {
+                    assertTrue(isEmpty())
+                }
+
+        list.toOpt()
+                .toList<Int>()
+                .apply {
+                    assertTrue(isNotEmpty())
+                    assertTrue(containsAll(list))
+                }
+
+        list2.toOpt()
+                .toList<Int>()
+                .apply {
+                    assertTrue(isNotEmpty())
+                    assertTrue(containsAll(list))
+                }
+
+        list2.toOpt()
+                .toList<String>()
+                .apply {
+                    assertTrue(isNotEmpty())
+                    assertTrue(contains(str))
+                    assertEquals(1, size)
+                }
+
+        list2.toOpt()
+                .toList<Any>()
+                .apply {
+                    assertTrue(isNotEmpty())
+                    assertTrue(containsAll(list2))
+                }
+    }
+
     companion object {
         const val ANOTHER_STRING = "anotherString"
         const val NEW_STRING = "newString"

@@ -218,6 +218,7 @@ class Opt2<T : Any> {
     inline fun <reified V : Any> toList(): List<V> {
         return when (val value = get()) {
             is List<*> -> value.filterIsInstance<V>()
+            is V -> listOf(value)
             else -> emptyList()
         }
     }
