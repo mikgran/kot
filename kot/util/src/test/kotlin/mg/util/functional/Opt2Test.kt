@@ -603,19 +603,19 @@ internal class Opt2Test {
         Opt2.of(listOf(1, 2, 3, 4))
                 .lxmap(::twice)
                 .apply {
-                    assertEquals(listOf("2", "4", "6", "8"), this.get())
+                    assertEquals(listOf("2", "4", "6", "8"), get())
                 }
 
         Opt2.of(listOf(1, 2, 3, 4))
                 .lxmap<Int, String> { twice(this) }
                 .apply {
-                    assertEquals(listOf("2", "4", "6", "8"), this.get())
+                    assertEquals(listOf("2", "4", "6", "8"), get())
                 }
 
         Opt2.of(listOf(1, 2, 3, 4))
                 .lxmap(twiceFun)
                 .apply {
-                    assertEquals(listOf("2", "4", "6", "8"), this.get())
+                    assertEquals(listOf("2", "4", "6", "8"), get())
                 }
     }
 
