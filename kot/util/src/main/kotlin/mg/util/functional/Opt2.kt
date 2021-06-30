@@ -203,6 +203,7 @@ class Opt2<T : Any> {
         }
     }
 
+    // if value is true map
     fun <V : Any> mapIf(conditionalMapper: (T) -> V): Opt2<V> {
         return when {
             isPresent() && value is Boolean && value == true -> conditionalMapper(lazyT).toOpt()
@@ -210,9 +211,18 @@ class Opt2<T : Any> {
         }
     }
 
+    // if value is false map
     fun <V : Any> mapIfNot(conditionalMapper: (T) -> V): Opt2<V> {
         return when {
             isPresent() && value is Boolean && value == false -> conditionalMapper(lazyT).toOpt()
+            else -> empty()
+        }
+    }
+
+    // external predicate also decides if mapped or not
+    fun <V : Any> mapIf(predicate: Boolean, conditionalMapper: (T) -> V): Opt2<V> {
+        return when {
+            isPresent() && predicate -> conditionalMapper(lazyT).toOpt()
             else -> empty()
         }
     }

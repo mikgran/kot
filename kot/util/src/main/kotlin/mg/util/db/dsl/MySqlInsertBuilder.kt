@@ -1,10 +1,10 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common
 import mg.util.db.AliasBuilder
 import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2
+import mg.util.functional.mapIf
 import mg.util.functional.toOpt
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -27,9 +27,8 @@ class MySqlInsertBuilder {
         dp.typeT.toOpt()
                 .map(FieldCache::fieldsFor)
                 .x {
-                    if (customs.isNotEmpty() || listsOfCustoms.isNotEmpty()) {
-                        sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId"
-                    }
+                    (customs.isNotEmpty() || listsOfCustoms.isNotEmpty())
+                            .mapIf { sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId" }
 
                     sqls += customs
                             .map { field -> FieldAccessor.fieldGet(field, dp.typeT) }

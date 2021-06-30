@@ -760,36 +760,36 @@ internal class Opt2Test {
         // Boolean -> Opt2
         nullT.mapIf { TestClazz() }
                 .apply {
-                    assertNull(get())
+                    assertFalse(isPresent())
                 }
 
         trueT.mapIf { TestClazz() }
                 .apply {
-                    assertNotNull(get())
+                    assertTrue(isPresent())
                 }
 
         falseT.mapIf { TestClazz() }
                 .apply {
-                    assertNull(get())
+                    assertFalse(isPresent())
                 }
 
         // existing Opts
         nullT.toOpt()
                 .mapIf { TestClazz() }
                 .apply {
-                    assertNull(get())
+                    assertFalse(isPresent())
                 }
 
         trueT.toOpt()
                 .mapIf { TestClazz() }
                 .apply {
-                    assertNotNull(get())
+                    assertTrue(isPresent())
                 }
 
         falseT.toOpt()
                 .mapIf { TestClazz() }
                 .apply {
-                    assertNull(get())
+                    assertFalse(isPresent())
                 }
     }
 
@@ -805,38 +805,67 @@ internal class Opt2Test {
         // Boolean -> Opt2
         nullT.mapIfNot { TestClazzz() }
                 .apply {
-                    assertNull(get())
+                    assertFalse(isPresent())
                 }
 
         trueT.mapIfNot { TestClazzz() }
                 .apply {
-                    assertNull(get())
+                    assertFalse(isPresent())
                 }
 
         falseT.mapIfNot { TestClazzz() }
                 .apply {
-                    assertNotNull(get())
+                    assertTrue(isPresent())
                 }
 
         // existing Opts
         nullT.toOpt()
                 .mapIfNot { TestClazzz() }
                 .apply {
-                    assertNull(get())
+                    assertFalse(isPresent())
                 }
 
         trueT.toOpt()
-                .mapIfNot { TestClazzz()  }
+                .mapIfNot { TestClazzz() }
                 .apply {
-                    assertNull(get())
+                    assertFalse(isPresent())
                 }
 
         falseT.toOpt()
                 .mapIfNot { TestClazzz() }
                 .apply {
-                    assertNotNull(get())
+                    assertTrue(isPresent())
                 }
     }
+
+    @Test
+    fun testMapIfWith() {
+
+        Opt2.empty<Int>()
+                .mapIf(true) { 1 }
+                .apply {
+                    assertFalse(isPresent())
+                }
+
+        Opt2.of(1)
+                .mapIf(true) { it + 1 }
+                .apply {
+                    assertEquals(2, get())
+                }
+
+        Opt2.empty<Int>()
+                .mapIf(false) { 1 }
+                .apply {
+                    assertFalse(isPresent())
+                }
+
+        Opt2.empty<String>()
+                .mapIf(false) { 1 }
+                .apply {
+                    assertFalse(isPresent())
+                }
+    }
+
 
     companion object {
         const val ANOTHER_STRING = "anotherString"
