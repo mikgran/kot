@@ -6,6 +6,7 @@ import mg.util.common.flatten
 import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
 import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
+import mg.util.functional.mapIf
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
 import kotlin.reflect.KClass
@@ -32,10 +33,10 @@ class FieldAccessor private constructor() {
                         uniquesByParent(it, uniquesByParent)
                     }
                 else ->
-                    getChildren(t).also {
+                    getChildren(t).also { list ->
+                        list.isNotEmpty().mapIf { uniquesByParent[t] = list }
 
-                        uniquesByParent[t] = it
-                        uniquesByParent(it, uniquesByParent)
+                        uniquesByParent(list, uniquesByParent)
                     }
             }
             return uniquesByParent

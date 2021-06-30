@@ -203,6 +203,20 @@ class Opt2<T : Any> {
         }
     }
 
+    fun <V : Any> mapIf(conditionalMapper: (T) -> V): Opt2<V> {
+        return when {
+            isPresent() && value is Boolean && value == true -> conditionalMapper(lazyT).toOpt()
+            else -> empty()
+        }
+    }
+
+    fun <V : Any> mapIfNot(conditionalMapper: (T) -> V): Opt2<V> {
+        return when {
+            isPresent() && value is Boolean && value == false -> conditionalMapper(lazyT).toOpt()
+            else -> empty()
+        }
+    }
+
     /**
      * A non transforming through-to-list-for-each (lxforEach). Performs side-effect
      * on the contents, with no modification of the contents.
@@ -242,6 +256,10 @@ class Opt2<T : Any> {
     }
 }
 
-fun <T : Any> T?.toOpt(): Opt2<T> {
-    return Opt2.of(this)
-}
+fun <T : Any> T?.toOpt(): Opt2<T> = Opt2.of(this)
+
+fun <T : Any> Boolean?.mapIf(conditionalMapper: Boolean.() -> T): Opt2<T> =
+        this.toOpt().mapIf(conditionalMapper)
+
+fun <T : Any> Boolean?.mapIfNot(conditionalMapper: Boolean.() -> T): Opt2<T> =
+        this.toOpt().mapIfNot(conditionalMapper)

@@ -748,6 +748,96 @@ internal class Opt2Test {
                 }
     }
 
+    @Test
+    fun testMapIf() {
+
+        data class TestClazz(var s: String? = null)
+
+        val nullT: Boolean? = null
+        val trueT = true
+        val falseT = false
+
+        // Boolean -> Opt2
+        nullT.mapIf { TestClazz() }
+                .apply {
+                    assertNull(get())
+                }
+
+        trueT.mapIf { TestClazz() }
+                .apply {
+                    assertNotNull(get())
+                }
+
+        falseT.mapIf { TestClazz() }
+                .apply {
+                    assertNull(get())
+                }
+
+        // existing Opts
+        nullT.toOpt()
+                .mapIf { TestClazz() }
+                .apply {
+                    assertNull(get())
+                }
+
+        trueT.toOpt()
+                .mapIf { TestClazz() }
+                .apply {
+                    assertNotNull(get())
+                }
+
+        falseT.toOpt()
+                .mapIf { TestClazz() }
+                .apply {
+                    assertNull(get())
+                }
+    }
+
+    @Test
+    fun testMapIfNot() {
+
+        data class TestClazzz(var s: String? = null)
+
+        val nullT: Boolean? = null
+        val trueT = true
+        val falseT = false
+
+        // Boolean -> Opt2
+        nullT.mapIfNot { TestClazzz() }
+                .apply {
+                    assertNull(get())
+                }
+
+        trueT.mapIfNot { TestClazzz() }
+                .apply {
+                    assertNull(get())
+                }
+
+        falseT.mapIfNot { TestClazzz() }
+                .apply {
+                    assertNotNull(get())
+                }
+
+        // existing Opts
+        nullT.toOpt()
+                .mapIfNot { TestClazzz() }
+                .apply {
+                    assertNull(get())
+                }
+
+        trueT.toOpt()
+                .mapIfNot { TestClazzz()  }
+                .apply {
+                    assertNull(get())
+                }
+
+        falseT.toOpt()
+                .mapIfNot { TestClazzz() }
+                .apply {
+                    assertNotNull(get())
+                }
+    }
+
     companion object {
         const val ANOTHER_STRING = "anotherString"
         const val NEW_STRING = "newString"
