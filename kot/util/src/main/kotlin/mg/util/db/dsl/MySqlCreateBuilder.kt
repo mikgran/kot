@@ -72,19 +72,17 @@ open class MySqlCreateBuilder {
     }
 
     private fun buildSqlCreate(dp: DslParameters): String {
+        val mapper = MySqlTypeMapper()
         val fieldsSql = Opt2.of(dp.typeT)
-                .map(::buildSqlFieldDefinitions)
+                .map {
+                    it::class.declaredMemberProperties
+                            .map(mapper::getTypeString)
+                            .filter(String::isNotEmpty)
+                }
+                .filter(List<*>::isNotEmpty)
                 .map { it.joinToString(", ") }
                 .getOrElseThrow { Exception("Unable to build create") }
 
         return "CREATE TABLE IF NOT EXISTS ${dp.uniqueId}(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, $fieldsSql)"
-    }
-
-    open fun buildSqlFieldDefinitions(type: Any): List<String> {
-        val mapper = MySqlTypeMapper()
-        return Opt2.of(type)
-                .map { it::class.declaredMemberProperties }
-                .xmap { map(mapper::getTypeString).filter(String::isNotEmpty) }
-                .getOrElse(emptyList())
     }
 }
