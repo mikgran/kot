@@ -751,43 +751,42 @@ internal class Opt2Test {
     @Test
     fun testMapIf() {
 
-        data class TestClazz(var s: String? = null)
-
+        val testVar = "test"
         val nullT: Boolean? = null
         val trueT = true
         val falseT = false
 
         // Boolean -> Opt2
-        nullT.mapIf { TestClazz() }
+        nullT.mapIf { testVar }
                 .apply {
                     assertFalse(isPresent())
                 }
 
-        trueT.mapIf { TestClazz() }
+        trueT.mapIf { testVar }
                 .apply {
                     assertTrue(isPresent())
                 }
 
-        falseT.mapIf { TestClazz() }
+        falseT.mapIf { testVar }
                 .apply {
                     assertFalse(isPresent())
                 }
 
         // existing Opts
         nullT.toOpt()
-                .mapIf { TestClazz() }
+                .mapIf { testVar }
                 .apply {
                     assertFalse(isPresent())
                 }
 
         trueT.toOpt()
-                .mapIf { TestClazz() }
+                .mapIf { testVar }
                 .apply {
                     assertTrue(isPresent())
                 }
 
         falseT.toOpt()
-                .mapIf { TestClazz() }
+                .mapIf { testVar }
                 .apply {
                     assertFalse(isPresent())
                 }
@@ -796,45 +795,44 @@ internal class Opt2Test {
     @Test
     fun testMapIfNot() {
 
-        data class TestClazzz(var s: String? = null)
-
+        val testVar = "test"
         val nullT: Boolean? = null
         val trueT = true
         val falseT = false
 
         // Boolean -> Opt2
-        nullT.mapIfNot { TestClazzz() }
+        nullT.mapIfNot { testVar }
                 .apply {
                     assertFalse(isPresent())
                 }
 
-        trueT.mapIfNot { TestClazzz() }
+        trueT.mapIfNot { testVar }
                 .apply {
                     assertFalse(isPresent())
                 }
 
-        falseT.mapIfNot { TestClazzz() }
+        falseT.mapIfNot { testVar }
                 .apply {
-                    assertTrue(isPresent())
+                    assertEquals(testVar, get())
                 }
 
         // existing Opts
         nullT.toOpt()
-                .mapIfNot { TestClazzz() }
+                .mapIfNot { testVar }
                 .apply {
                     assertFalse(isPresent())
                 }
 
         trueT.toOpt()
-                .mapIfNot { TestClazzz() }
+                .mapIfNot { testVar }
                 .apply {
                     assertFalse(isPresent())
                 }
 
         falseT.toOpt()
-                .mapIfNot { TestClazzz() }
+                .mapIfNot { testVar }
                 .apply {
-                    assertTrue(isPresent())
+                    assertEquals(testVar, get())
                 }
     }
 
