@@ -219,7 +219,7 @@ class Opt2<T : Any> {
         }
     }
 
-    // external predicate also decides if mapped or not
+    // An external predicate also controls if contents are mapped or not
     fun <V : Any> mapIf(predicate: Boolean, conditionalMapper: (T) -> V): Opt2<V> {
         return when {
             isPresent() && predicate -> conditionalMapper(lazyT).toOpt()
