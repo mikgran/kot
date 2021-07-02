@@ -7,6 +7,7 @@ import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 
 // FIXME: 50 Fix all select, select-join, multitable inserts, creates
 internal class DslMapperTest {
@@ -42,6 +43,12 @@ internal class DslMapperTest {
                 "CREATE TABLE IF NOT EXISTS $buildingUid$floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${buildingUid}refid MEDIUMINT NOT NULL, ${floorUid}refid MEDIUMINT NOT NULL)"
 
         TestUtil.expect(expected, candidate)
+    }
+
+    @Test
+    fun testCreatingANewTableWithOneToManyMultipleDepthRelation() {
+
+        fail { "TODO" }
     }
 
     @Test

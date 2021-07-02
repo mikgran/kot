@@ -37,23 +37,23 @@ open class ObjectBuilder {
                 .x(ResultSet::print)
 
         // FIXME: 10000
-        val uniquesByParent2 = FieldAccessor.uniquesByParent(typeT, HashMap())
-                .also { map ->
-                    map.entries.forEach { entry ->
-                        entry.key.toOpt().map(::classSimpleName).x { print("\nk2: $this v2: ") }
-                        entry.value.map(::classSimpleName).joinToString(", ").also(::println)
-                    }
-                    println("\n\n")
-                }
+//        val uniquesByParent2 = FieldAccessor.uniquesByParent(typeT, HashMap())
+//                .also { map ->
+//                    map.entries.forEach { entry ->
+//                        entry.key.toOpt().map(::classSimpleName).x { print("\nk2: $this v2: ") }
+//                        entry.value.map(::classSimpleName).joinToString(", ").also(::println)
+//                    }
+//                    println("\n\n")
+//                }
 
         val uniquesByParent = collectUniquesByParent(typeT)
-                .also { map ->
-                    map.entries.forEach { entry ->
-                        entry.key.toOpt().map(::classSimpleName).x { print("\nk: $this v: ") }
-                        entry.value.map(::classSimpleName).joinToString(", ").also(::println)
-                    }
-                    println("\n\n")
-                }
+//                .also { map ->
+//                    map.entries.forEach { entry ->
+//                        entry.key.toOpt().map(::classSimpleName).x { print("\nk: $this v: ") }
+//                        entry.value.map(::classSimpleName).joinToString(", ").also(::println)
+//                    }
+//                    println("\n\n")
+//                }
 
         println("typeT: $typeT")
 

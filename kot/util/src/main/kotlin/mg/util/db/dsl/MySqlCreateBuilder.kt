@@ -11,37 +11,50 @@ import kotlin.reflect.full.declaredMemberProperties
 
 open class MySqlCreateBuilder {
 
+    /*
+        Parent(
+                aValue = 1,
+                oneToOneChild = Child(aStr = "AAAA"),
+                oneToManyChildren = listOf(
+                        ListChild(
+                                aStr = "AAAA",
+                                subChild = SubChild(11)),
+                        ListChild(
+                                aStr = "BBBB",
+                                subChild = SubChild(22)))
+        )
+    */
     fun build(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
 
         // FIXME: 10000 Needs parent-child relationship HashMap
         // k: OBMultipleComposition v: OBSimple, OBSimpleComp
         // k: OBSimpleComp v: OBSubComp
-        /*
-                Parent(
-                        aValue = 1,
-                        oneToOneChild = Child(aStr = "AAAA"),
-                        oneToManyChildren = listOf(
-                                ListChild(
-                                        aStr = "AAAA",
-                                        subChild = SubChild(11)),
-                                ListChild(
-                                        aStr = "BBBB",
-                                        subChild = SubChild(22)))
-                )
-         */
-        val dp = buildDslParameters(sql.t)
+
+        return FieldAccessor.uniquesByParent(sql.t).toOpt()
+                .filter { it.isNotEmpty() }
+                .getOrElse { hashMapOf(sql.t to emptyList()) }
+                .flatMap {
+                    buildParentAndChildSqls(it)
+                }
+                .joinToString(";")
+    }
+
+    private fun buildParentAndChildSqls(entry: Map.Entry<Any, List<Any>>): List<String> {
+        val dslParameters = buildDslParameters(entry.key)
+
         val sqls = mutableListOf<String>()
+        sqls += buildSqlCreate(dslParameters)
 
-        sqls += buildSqlCreate(dp)
-
-        dp.typeT.toOpt()
-                .map(FieldCache::fieldsFor)
+        FieldCache.fieldsFor(entry.key).toOpt()
+                .map { fields ->
+                    fields.customs.map { fieldGet(it, entry.key) } +
+                            fields.listsOfCustoms.mapNotNull { (fieldGet(it, entry.key) as List<*>)[0] }
+                }
                 .x {
-                    sqls += customs.map { buildSqlCreateForChild(dp, fieldGet(it, dp.typeT)) }
-                    sqls += listsOfCustoms.map { buildSqlCreateForChild(dp, (fieldGet(it, dp.typeT) as List<*>)[0]) }
+                    sqls += map { buildSqlCreateForChild(dslParameters, it) }
                 }
 
-        return sqls.joinToString(";")
+        return sqls
     }
 
     private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String {
