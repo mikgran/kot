@@ -57,15 +57,15 @@ internal class FieldAccessorTest {
         val var2 = fields.all.find { it.name == "var2" }.toOpt()
 
         var2.map(::isList)
-                .get()
                 .apply {
-                    assertTrue(this!!)
+                    assertNotNull(get())
+                    assertEquals(true, get())
                 }
 
         var1.map(::isList)
-                .get()
                 .apply {
-                    assertFalse(this!!)
+                    assertNotNull(get())
+                    assertEquals(false, get())
                 }
     }
 
