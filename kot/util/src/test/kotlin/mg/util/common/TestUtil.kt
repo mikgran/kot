@@ -36,7 +36,7 @@ class TestUtil {
                 println("\nE:\n<$expected>")
                 println("C:\n<$candidate>")
                 if (expected is String && candidate is String) {
-                    val common = Companion.longestCommonSubstring(expected, candidate)
+                    val common = longestCommonSubstring(expected, candidate)
                     if (common.size > 0) {
                         println("\nLongest common part:\n<${common.first()}>")
                     }
@@ -45,5 +45,4 @@ class TestUtil {
             assertEquals(expected, candidate)
         }
     }
-
 }
