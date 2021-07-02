@@ -33,7 +33,12 @@ object Common {
 
     fun classSimpleName(obj: Any): String? = obj::class.simpleName
 
-
+    fun printSimpleNames(map: HashMap<Any, List<Any>>) {
+        map.entries.forEach { entry ->
+            print("K: ${classSimpleName(entry.key)} V: ")
+            entry.value.joinToString(", ") { classSimpleName(it) ?: "null" }.also { println(it) }
+        }
+    }
 }
 
 fun <E> List<E>.flatten(): List<Any?> =
