@@ -10,9 +10,9 @@ import mg.util.functional.mapIf
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
 import java.util.*
-import kotlin.Comparator
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.collections.LinkedHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
@@ -30,7 +30,7 @@ class FieldAccessor private constructor() {
             field.set(type, value)
         }
 
-        fun uniquesByParent(t: Any, uniquesByParent: HashMap<Any, List<Any>> = HashMap()): HashMap<Any, List<Any>> {
+        fun uniquesByParent(t: Any, uniquesByParent: HashMap<Any, List<Any>> = LinkedHashMap()): HashMap<Any, List<Any>> {
             when (t) {
                 is MutableList<*> ->
                     t.filterNotNull().forEach {
@@ -43,8 +43,7 @@ class FieldAccessor private constructor() {
                         uniquesByParent(list, uniquesByParent)
                     }
             }
-            sortedMapOf()
-            return uniquesByParent.toSortedMap(Comparator.reverseOrder())
+            return uniquesByParent
         }
 
         private fun getChildren(obj: Any): List<Any> {

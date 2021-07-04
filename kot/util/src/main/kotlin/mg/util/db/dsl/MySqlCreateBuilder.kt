@@ -26,26 +26,10 @@ open class MySqlCreateBuilder {
     */
     fun build(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
 
-        // FIXME: 10000 Needs parent-child relationship HashMap
-        // k: OBMultipleComposition v: OBSimple, OBSimpleComp
-        // k: OBSimpleComp v: OBSubComp
-
         return FieldAccessor.uniquesByParent(sql.t).toOpt()
                 .filter { it.isNotEmpty() }
-                .map {
-                    it.entries.forEach { e->
-                        println(e.key)
-                    }
-                    it
-                }
                 .getOrElse { hashMapOf(sql.t to emptyList()) }
                 .map(::buildParentAndChildSqls)
-                // .reversed()
-                .onEach { list ->
-                    list.onEach {
-                        println("$it\n")
-                    }
-                }
                 .flatten()
                 .flatMap { it.split(";") }
                 .distinctBy { it }

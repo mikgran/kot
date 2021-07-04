@@ -39,7 +39,7 @@ class MySqlInsertBuilder {
                             .map { buildInsertSqlOneToMany(it, sql.t) }
                 }
 
-        return sqls.joinToString(";").also { println(it) }
+        return sqls.joinToString(";")// .also { println(it) }
     }
 
     private fun buildInsertSql(type: Any): String =
