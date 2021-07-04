@@ -9,6 +9,10 @@ import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
 import mg.util.functional.mapIf
 import mg.util.functional.toOpt
 import java.lang.reflect.Field
+import java.util.*
+import kotlin.Comparator
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
@@ -39,7 +43,8 @@ class FieldAccessor private constructor() {
                         uniquesByParent(list, uniquesByParent)
                     }
             }
-            return uniquesByParent
+            sortedMapOf()
+            return uniquesByParent.toSortedMap(Comparator.reverseOrder())
         }
 
         private fun getChildren(obj: Any): List<Any> {

@@ -7,7 +7,7 @@ import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
+import kotlin.math.exp
 
 // FIXME: 50 Fix all select, select-join, multitable inserts, creates
 internal class DslMapperTest {
@@ -48,7 +48,22 @@ internal class DslMapperTest {
     @Test
     fun testCreatingANewTableWithOneToManyMultipleDepthRelation() {
 
-        fail { "TODO" }
+        val dslAddressM1 = DSLAddressM1(10, DSLLocationM1("TTTT", listOf(DSLPersonM1("VVVV"))))
+        val sql = Sql create dslAddressM1
+
+        val addressM1Uid = UidBuilder.build(DSLAddressM1::class)
+        val locationM1Uid = UidBuilder.build(DSLLocationM1::class)
+        val personM1Uid = UidBuilder.build(DSLPersonM1::class)
+
+        val expected = "CREATE TABLE IF NOT EXISTS $addressM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rent MEDIUMINT NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS $locationM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, loc VARCHAR(64) NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS $addressM1Uid$locationM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${addressM1Uid}refid MEDIUMINT NOT NULL, ${locationM1Uid}refid MEDIUMINT NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS $personM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(64) NOT NULL);" +
+                "CREATE TABLE IF NOT EXISTS $locationM1Uid$personM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${locationM1Uid}refid MEDIUMINT NOT NULL, ${personM1Uid}refid MEDIUMINT NOT NULL)"
+
+        val candidate = mapper.map(sql)
+
+        TestUtil.expect(expected, candidate)
     }
 
     @Test
@@ -152,12 +167,6 @@ internal class DslMapperTest {
                 " WHERE $alias.firstName = 'firstName'"
 
         TestUtil.expect(expected, candidate)
-    }
-
-    // FIXME: 94
-    @Test
-    fun testUpdatingCustomJoinedObject() {
-
     }
 
     @Test

@@ -30,7 +30,7 @@ class TestUtil {
             return result
         }
 
-        fun <T : Any> expect(expected: T, candidate: T) {
+        fun <T : Any> expect(expected: T, candidate: T?) {
             assertNotNull(candidate)
             if (expected != candidate) {
                 println("\nE:\n<$expected>")

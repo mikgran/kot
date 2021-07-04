@@ -32,10 +32,23 @@ open class MySqlCreateBuilder {
 
         return FieldAccessor.uniquesByParent(sql.t).toOpt()
                 .filter { it.isNotEmpty() }
-                .getOrElse { hashMapOf(sql.t to emptyList()) }
-                .flatMap {
-                    buildParentAndChildSqls(it)
+                .map {
+                    it.entries.forEach { e->
+                        println(e.key)
+                    }
+                    it
                 }
+                .getOrElse { hashMapOf(sql.t to emptyList()) }
+                .map(::buildParentAndChildSqls)
+                // .reversed()
+                .onEach { list ->
+                    list.onEach {
+                        println("$it\n")
+                    }
+                }
+                .flatten()
+                .flatMap { it.split(";") }
+                .distinctBy { it }
                 .joinToString(";")
     }
 
@@ -50,9 +63,7 @@ open class MySqlCreateBuilder {
                     fields.customs.map { fieldGet(it, entry.key) } +
                             fields.listsOfCustoms.mapNotNull { (fieldGet(it, entry.key) as List<*>)[0] }
                 }
-                .x {
-                    sqls += map { buildSqlCreateForChild(dslParameters, it) }
-                }
+                .x { sqls += map { buildSqlCreateForChild(dslParameters, it) } }
 
         return sqls
     }
