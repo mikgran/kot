@@ -1,45 +1,36 @@
 package mg.util.db.dsl
 
-import mg.util.db.AliasBuilder
 import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2
 import mg.util.functional.mapIf
 import mg.util.functional.toOpt
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.javaField
 
 class MySqlInsertBuilder {
 
     fun build(@Suppress("UNUSED_PARAMETER") p: Sql.Parameters, sql: Sql): String {
 
-        val dp = DslParameters().apply {
-            typeT = sql.t
-            uniqueId = UidBuilder.buildUniqueId(sql.t)
-            uniqueIdAlias = AliasBuilder.build(uniqueId!!)
-        }
-
         val sqls = mutableListOf<String>()
+        val type = sql.t
 
-        sqls += buildInsertSql(sql.t)
+        sqls += buildInsertSql(type)
 
-        dp.typeT.toOpt()
+        type.toOpt()
                 .map(FieldCache::fieldsFor)
                 .x {
                     (customs.isNotEmpty() || listsOfCustoms.isNotEmpty())
                             .mapIf { sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId" }
 
                     sqls += customs
-                            .map { field -> FieldAccessor.fieldGet(field, dp.typeT) }
-                            .map { buildInsertSqlOneToOne(it, sql.t) }
+                            .map { field -> FieldAccessor.fieldGet(field, type) }
+                            .map { buildInsertSqlOneToOne(it, type) }
 
                     sqls += listsOfCustoms
-                            .map { field -> FieldAccessor.fieldGet(field, dp.typeT) as List<*> }
-                            .map { buildInsertSqlOneToMany(it, sql.t) }
+                            .map { field -> FieldAccessor.fieldGet(field, type) as List<*> }
+                            .map { buildInsertSqlOneToMany(it, type) }
                 }
 
-        return sqls.joinToString(";")// .also { println(it) }
+        return sqls.joinToString(";").also { println(it) }
     }
 
     private fun buildInsertSql(type: Any): String =
@@ -74,35 +65,12 @@ class MySqlInsertBuilder {
 
     private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
 
-        if ("array" in (type::class.simpleName ?: "")) {
-            return ""
-        }
+        val fieldsT = FieldCache.fieldsFor(type)
+        val fieldNames = fieldsT.primitives.joinToString(", ") { p -> p.name }
+        val fieldValues = fieldsT.primitives.joinToString(", ") { "'${FieldAccessor.fieldGet(it, type)}'" }
+        val uidT = UidBuilder.buildUniqueId(type)
 
-        val memberProperties = type
-                .toOpt()
-                .map { it::class.memberProperties }
-                .lfilter { p: KProperty1<*, *> ->
-
-                    val javaFieldTypeName = p.javaField?.type?.toString() ?: ""
-
-                    p.javaField != null
-                            && !FieldAccessor.isCustom(p.javaField!!)
-                            && "Array" !in javaFieldTypeName
-                            && "List" !in javaFieldTypeName
-                            && "collection" !in javaFieldTypeName
-                }
-
-        val fieldNames = memberProperties.map { it.joinToString(", ") { p -> p.name } }
-        val fieldValues = memberProperties.map { list: List<KProperty1<*, *>> ->
-
-            list.joinToString(", ") {
-                "'${MySqlImpl.getFieldValueAsString(it, type)}'"
-            }
-        }
-
-        val typeUid = UidBuilder.buildUniqueId(type)
-
-        return insertCreateFunction(typeUid, fieldNames, fieldValues)
+        return insertCreateFunction(uidT, fieldNames.toOpt(), fieldValues.toOpt())
     }
 
 }
