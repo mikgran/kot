@@ -30,15 +30,15 @@ class FieldAccessor private constructor() {
             field.set(type, value)
         }
 
-        fun uniquesByParent(t: Any, uniquesByParent: HashMap<Any, List<Any>> = LinkedHashMap()): HashMap<Any, List<Any>> {
-            when (t) {
+        fun uniquesByParent(type: Any, uniquesByParent: HashMap<Any, List<Any>> = LinkedHashMap()): HashMap<Any, List<Any>> {
+            when (type) {
                 is MutableList<*> ->
-                    t.filterNotNull().forEach {
+                    type.filterNotNull().forEach {
                         uniquesByParent(it, uniquesByParent)
                     }
                 else ->
-                    getChildren(t).also { list ->
-                        list.isNotEmpty().mapIf { uniquesByParent[t] = list }
+                    getChildren(type).also { list ->
+                        list.isNotEmpty().mapIf { uniquesByParent[type] = list }
 
                         uniquesByParent(list, uniquesByParent)
                     }
