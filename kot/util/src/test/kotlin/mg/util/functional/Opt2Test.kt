@@ -864,6 +864,43 @@ internal class Opt2Test {
                 }
     }
 
+    @Test
+    fun testMapWhen() {
+
+        Opt2.empty<Int>()
+                .mapWhen({ true }, { 1 })
+                .apply {
+                    assertFalse(isPresent())
+                }
+
+        fun isOdd(i: Int) = i % 2 == 1
+
+        Opt2.of(1)
+                .mapWhen(::isOdd) { it + 1 }
+                .apply {
+                    assertEquals(2, get())
+                }
+
+        Opt2.of(2)
+                .mapWhen(::isOdd) { it + 1 }
+                .apply {
+                    assertEquals(2, get())
+                }
+
+        fun hasLetters(a: Any) = a.toString().isNotBlank()
+
+        Opt2.of("str")
+                .mapWhen(::hasLetters) { "${it}1" }
+                .apply {
+                    assertEquals("str1", get())
+                }
+
+        Opt2.of("str")
+                .mapWhen({ it.length > 3 }, { "$it!" })
+                .apply {
+                    assertEquals("str", get())
+                }
+    }
 
     companion object {
         const val ANOTHER_STRING = "anotherString"

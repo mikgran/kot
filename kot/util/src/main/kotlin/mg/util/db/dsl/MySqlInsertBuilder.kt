@@ -13,11 +13,17 @@ class MySqlInsertBuilder {
         val sqls = mutableListOf<String>()
         val type = sql.t
 
-        sqls += buildInsertSql(type)
+        FieldAccessor.uniquesByParent(type).toOpt()
+                .mapWhen({ it.isEmpty() }) { hashMap ->
+                    hashMap[type] = emptyList()
+                    hashMap
+                }
 
         type.toOpt()
                 .map(FieldCache::fieldsFor)
                 .x {
+                    sqls += buildInsertSql(type)
+
                     (customs.isNotEmpty() || listsOfCustoms.isNotEmpty())
                             .mapIf { sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId" }
 
