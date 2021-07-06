@@ -4,7 +4,6 @@ import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2.Factory.of
-import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
@@ -182,8 +181,6 @@ class MySqlImpl {
             val alias = AliasBuilder.build(uid)
             return uid to alias
         }
-
-        fun <T : Any> getFieldValueAsString(p: KCallable<*>, type: T): String = p.call(type).toString()
 
         private fun buildFieldFragment(type: Any): String {
             val (_, alias) = buildUidAndAlias(type)
