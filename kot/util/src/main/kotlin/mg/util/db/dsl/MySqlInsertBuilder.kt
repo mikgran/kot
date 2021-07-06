@@ -14,29 +14,32 @@ class MySqlInsertBuilder {
         val type = sql.t
 
         FieldAccessor.uniquesByParent(type).toOpt()
-                .mapWhen({ it.isEmpty() }) { hashMap ->
-                    hashMap[type] = emptyList()
-                    hashMap
+                .mapWhen({ it.isEmpty() }) { hashMap -> hashMap[type] = emptyList(); hashMap }
+                .x {
+                    entries.forEach { buildParentAndItsChildSqls(it, sqls) }
                 }
 
-        type.toOpt()
+        return sqls.joinToString(";").also { println(it) }
+    }
+
+    private fun buildParentAndItsChildSqls(entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
+        val parent = entry.key
+        parent.toOpt()
                 .map(FieldCache::fieldsFor)
                 .x {
-                    sqls += buildInsertSql(type)
+                    sqls += buildInsertSql(parent)
 
                     (customs.isNotEmpty() || listsOfCustoms.isNotEmpty())
                             .mapIf { sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId" }
 
                     sqls += customs
-                            .map { field -> FieldAccessor.fieldGet(field, type) }
-                            .map { buildInsertSqlOneToOne(it, type) }
+                            .map { field -> FieldAccessor.fieldGet(field, parent) }
+                            .map { buildInsertSqlOneToOne(it, parent) }
 
                     sqls += listsOfCustoms
-                            .map { field -> FieldAccessor.fieldGet(field, type) as List<*> }
-                            .map { buildInsertSqlOneToMany(it, type) }
+                            .map { field -> FieldAccessor.fieldGet(field, parent) as List<*> }
+                            .map { buildInsertSqlOneToMany(it, parent) }
                 }
-
-        return sqls.joinToString(";").also { println(it) }
     }
 
     private fun buildInsertSql(type: Any): String =
