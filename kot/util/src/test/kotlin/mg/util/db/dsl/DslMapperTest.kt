@@ -118,9 +118,23 @@ internal class DslMapperTest {
 
         val candidate = mapper.map(sql)
 
-        val expected = "CREATE TABLE IF NOT EXISTS $placeUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rentInCents MEDIUMINT NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $placeUid$addressUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${placeUid}refid MEDIUMINT NOT NULL, ${addressUid}refid MEDIUMINT NOT NULL)"
+        val expected = "" +
+                SqlBuilder()
+                        .createTable(placeUid)
+                        .id()
+                        .mediumInt("rentInCents")
+                        .buildWithSemiColon() +
+                SqlBuilder()
+                        .createTable(addressUid)
+                        .id()
+                        .varChar64("fullAddress")
+                        .buildWithSemiColon() +
+                SqlBuilder()
+                        .createTable(placeUid + addressUid)
+                        .id()
+                        .mediumInt(placeUid.refidPostFix())
+                        .mediumInt(addressUid.refidPostFix())
+                        .build()
 
         TestUtil.expect(expected, candidate)
     }
