@@ -900,6 +900,18 @@ internal class Opt2Test {
                 .apply {
                     assertEquals("str", get())
                 }
+
+        Opt2.of("str")
+                .mapWhen(true) { it + 1 }
+                .apply {
+                    assertEquals("str1", get())
+                }
+
+        Opt2.of("str")
+                .mapWhen(false) { it + 1 }
+                .apply {
+                    assertEquals("str", get())
+                }
     }
 
     companion object {
