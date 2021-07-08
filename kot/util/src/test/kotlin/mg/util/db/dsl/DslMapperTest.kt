@@ -130,23 +130,25 @@ internal class DslMapperTest {
         val dslAddress3Uid = UidBuilder.buildUniqueId(dslAddress3)
         val dslPlace3Uid = UidBuilder.buildUniqueId(dslPlace3)
         val dslFloor3Uid = UidBuilder.buildUniqueId(DSLFloor3())
-        val placeAddressJoinUid = dslPlace3Uid + dslAddress3Uid
-        val placeFloorJoinUid = dslPlace3Uid + dslFloor3Uid
 
         val sql = Sql insert dslPlace3
         val candidate: String = mapper.map(sql)
 
-        val expected = "INSERT INTO $dslPlace3Uid (rentInCents) VALUES ('80000');" +
-                "SELECT LAST_INSERT_ID() INTO @parentLastId;" +
-                "INSERT INTO $dslAddress3Uid (fullAddress) VALUES ('anAddress');" +
-                "SELECT LAST_INSERT_ID() INTO @childLastId;" +
-                "INSERT INTO $placeAddressJoinUid (${dslPlace3Uid}refid, ${dslAddress3Uid}refid) VALUES (@parentLastId, @childLastId);" +
-                "INSERT INTO $dslFloor3Uid (number) VALUES ('10');" +
-                "SELECT LAST_INSERT_ID() INTO @childLastId;" +
-                "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId);" +
-                "INSERT INTO $dslFloor3Uid (number) VALUES ('20');" +
-                "SELECT LAST_INSERT_ID() INTO @childLastId;" +
-                "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId)"
+        val expected = "" +
+                buildInsertInto(dslPlace3Uid, l("rentInCents"), l("80000")) +
+                buildSelectLastInsertId(PARENT_LAST_ID) +
+
+                buildInsertInto(dslAddress3Uid, l("fullAddress"), l("anAddress")) +
+                buildSelectLastInsertId(CHILD_LAST_ID) +
+                buildInsertJoinForParentAndChild(dslPlace3Uid, dslAddress3Uid) +
+
+                buildInsertInto(dslFloor3Uid, l("number"), l("10")) +
+                buildSelectLastInsertId(CHILD_LAST_ID) +
+                buildInsertJoinForParentAndChild(dslPlace3Uid, dslFloor3Uid) +
+
+                buildInsertInto(dslFloor3Uid, l("number"), l("20")) +
+                buildSelectLastInsertId(CHILD_LAST_ID) +
+                buildInsertJoinForParentAndChild(dslPlace3Uid, dslFloor3Uid, "")
 
         TestUtil.expect(expected, candidate)
     }
@@ -188,7 +190,7 @@ internal class DslMapperTest {
                 buildInsertJoinForParentAndChild(dslPlace4Uid, dslFloor4Uid) +
 
                 buildInsertInto(dslPerson4Uid, l(), l())
-                // when creating a new child, add a new childNumberLastId
+        // when creating a new child, add a new childNumberLastId
 
 
         TestUtil.expect(expected, candidate)
@@ -196,7 +198,7 @@ internal class DslMapperTest {
 
     private fun buildSelectLastInsertId(lastId: String, trail: String = ";"): String {
         return "SELECT LAST_INSERT_ID() INTO @$lastId".toOpt()
-                .mapIf(trail.isNotEmpty()) { it + trail }
+                .mapWhen({ trail.isNotEmpty() }) { it + trail }
                 .toString()
     }
 
@@ -360,17 +362,17 @@ internal class DslMapperTest {
     }
 
     private fun buildInsertInto(tableName: String, cols: List<String>, values: List<String>, trail: String = ";"): String {
-        val colsSql = cols.joinToString(", ") { "'$it'" }
+        val colsSql = cols.joinToString(", ") { "$it" }
         val valuesSql = values.joinToString(", ") { "'$it'" }
 
         return "INSERT INTO $tableName ($colsSql) VALUES ($valuesSql)".toOpt()
-                .mapIf(trail.isNotEmpty()) { it + trail }
+                .mapWhen({ trail.isNotEmpty() }) { it + trail }
                 .toString()
     }
 
     private fun buildInsertJoinForParentAndChild(parentUid: String, childUid: String, trail: String = ";"): String {
         return "INSERT INTO $parentUid$childUid (${parentUid}refid, ${childUid}refid) VALUES (@${PARENT_LAST_ID}, @${CHILD_LAST_ID})".toOpt()
-                .mapIf(trail.isNotEmpty()) { it + trail }
+                .mapWhen({ trail.isNotEmpty() }) { it + trail }
                 .toString()
     }
 
