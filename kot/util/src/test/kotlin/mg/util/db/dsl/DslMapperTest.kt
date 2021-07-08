@@ -25,7 +25,13 @@ internal class DslMapperTest {
         val uid = UidBuilder.build(DSLPersonB::class)
         val candidate = mapper.map(sql)
 
-        val expected = "CREATE TABLE IF NOT EXISTS $uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, firstName VARCHAR(64) NOT NULL, lastName VARCHAR(64) NOT NULL)"
+        val expected = SqlBuilder()
+                .createTable(uid)
+                .id()
+                .varChar64("firstName")
+                .varChar64("lastName")
+                .build()
+
         TestUtil.expect(expected, candidate)
     }
 
@@ -38,9 +44,23 @@ internal class DslMapperTest {
 
         val candidate = mapper.map(sql)
 
-        val expected = "CREATE TABLE IF NOT EXISTS $buildingUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, fullAddress VARCHAR(64) NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, number MEDIUMINT NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $buildingUid$floorUid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${buildingUid}refid MEDIUMINT NOT NULL, ${floorUid}refid MEDIUMINT NOT NULL)"
+        val expected = "" +
+                SqlBuilder()
+                        .createTable(buildingUid)
+                        .id()
+                        .varChar64("fullAddress")
+                        .buildWithSemiColon() +
+                SqlBuilder()
+                        .createTable(floorUid)
+                        .id()
+                        .mediumInt("number")
+                        .buildWithSemiColon() +
+                SqlBuilder()
+                        .createTable(buildingUid + floorUid)
+                        .id()
+                        .mediumInt("${buildingUid}refid")
+                        .mediumInt("${floorUid}refid")
+                        .build()
 
         TestUtil.expect(expected, candidate)
     }
@@ -55,11 +75,34 @@ internal class DslMapperTest {
         val locationM1Uid = UidBuilder.build(DSLLocationM1::class)
         val personM1Uid = UidBuilder.build(DSLPersonM1::class)
 
-        val expected = "CREATE TABLE IF NOT EXISTS $addressM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, rent MEDIUMINT NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $locationM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, loc VARCHAR(64) NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $addressM1Uid$locationM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${addressM1Uid}refid MEDIUMINT NOT NULL, ${locationM1Uid}refid MEDIUMINT NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $personM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(64) NOT NULL);" +
-                "CREATE TABLE IF NOT EXISTS $locationM1Uid$personM1Uid(id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY, ${locationM1Uid}refid MEDIUMINT NOT NULL, ${personM1Uid}refid MEDIUMINT NOT NULL)"
+        val expected = "" +
+                SqlBuilder()
+                        .createTable(addressM1Uid)
+                        .id()
+                        .mediumInt("rent")
+                        .buildWithSemiColon() +
+                SqlBuilder()
+                        .createTable(locationM1Uid)
+                        .id()
+                        .varChar64("loc")
+                        .buildWithSemiColon() +
+                SqlBuilder()
+                        .createTable(addressM1Uid + locationM1Uid)
+                        .id()
+                        .mediumInt(addressM1Uid.refidPostFix())
+                        .mediumInt(locationM1Uid.refidPostFix())
+                        .buildWithSemiColon() +
+                SqlBuilder()
+                        .createTable(personM1Uid)
+                        .id()
+                        .varChar64("name")
+                        .buildWithSemiColon() +
+                SqlBuilder()
+                        .createTable(locationM1Uid + personM1Uid)
+                        .id()
+                        .mediumInt(locationM1Uid.refidPostFix())
+                        .mediumInt(personM1Uid.refidPostFix())
+                        .build()
 
         val candidate = mapper.map(sql)
 
@@ -385,4 +428,31 @@ internal class DslMapperTest {
         private const val CHILD_LAST_ID = "childLastId"
     }
 
+    fun String.refidPostFix() = this + "refid"
+
+    private class SqlBuilder {
+        fun String.addTableSql() = tableSqls.add(this)
+        fun String.addColumnSql() = columnSqls.add(this)
+
+        /*
+            val expected = "CREATE TABLE IF NOT EXISTS $uid" +
+                "(" +
+                "id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY" +
+                "," +
+                " firstName VARCHAR(64) NOT NULL" +
+                "," +
+                " lastName VARCHAR(64) NOT NULL" +
+                ")"
+         */
+
+        private val tableSqls = mutableListOf<String>()
+        private val columnSqls = mutableListOf<String>()
+
+        fun createTable(str: String) = this.also { "CREATE TABLE IF NOT EXISTS $str".addTableSql() }
+        fun id() = this.also { "id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY".addColumnSql() }
+        fun varChar64(columnName: String) = this.also { "$columnName VARCHAR(64) NOT NULL".addColumnSql() }
+        fun build() = tableSqls.joinToString(" ") + "(${columnSqls.joinToString(", ")})"
+        fun buildWithSemiColon() = build() + ";"
+        fun mediumInt(str: String) = this.also { "$str MEDIUMINT NOT NULL".addColumnSql() }
+    }
 }
