@@ -5,9 +5,9 @@ import mg.util.common.TestUtil
 import mg.util.db.AliasBuilder
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
+import mg.util.functional.toOpt
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlin.math.exp
 
 // FIXME: 50 Fix all select, select-join, multitable inserts, creates
 internal class DslMapperTest {
@@ -136,7 +136,6 @@ internal class DslMapperTest {
         val sql = Sql insert dslPlace3
         val candidate: String = mapper.map(sql)
 
-        // TOIMPROVE: if two inserts that create id hit at the same time with same column values this may fail, replace with lastid()?
         val expected = "INSERT INTO $dslPlace3Uid (rentInCents) VALUES ('80000');" +
                 "SELECT LAST_INSERT_ID() INTO @parentLastId;" +
                 "INSERT INTO $dslAddress3Uid (fullAddress) VALUES ('anAddress');" +
@@ -150,6 +149,55 @@ internal class DslMapperTest {
                 "INSERT INTO $placeFloorJoinUid (${dslPlace3Uid}refid, ${dslFloor3Uid}refid) VALUES (@parentLastId, @childLastId)"
 
         TestUtil.expect(expected, candidate)
+    }
+
+    @Test
+    fun testInsertOneToManyMultiDepth() {
+
+        val dslAddress4 = DSLAddress4("AAAA")
+        val dslPerson4 = DSLPerson4("FFFF", "LLLL", dslAddress4)
+        val dslFloors4 = listOf(DSLFloor4(1), DSLFloor4(2), DSLFloor4(3))
+        val dslPlace4 = DSLPlace4(dslPerson4, dslFloors4, rentInCents = 50000)
+
+        val dslPerson4Uid = UidBuilder.buildUniqueId(dslPerson4)
+        val dslAddress4Uid = UidBuilder.buildUniqueId(dslAddress4)
+        val dslPlace4Uid = UidBuilder.buildUniqueId(dslPlace4)
+        val dslFloor4Uid = UidBuilder.buildUniqueId(DSLFloor4())
+
+        val sql = Sql insert dslPlace4
+        val candidate: String = mapper.map(sql)
+
+        val expected = "" +
+                buildInsertInto(dslPlace4Uid, l("rentInCents"), l("'50000'")) +
+                buildSelectLastInsertId(PARENT_LAST_ID) +
+
+                buildInsertInto(dslPerson4Uid, l("firstName", "lastName"), l("'FFFF'", "'LLLL'")) +
+                buildSelectLastInsertId(CHILD_LAST_ID) +
+                buildInsertJoinForParentAndChild(dslPlace4Uid, dslPerson4Uid) +
+
+                buildInsertInto(dslFloor4Uid, l("number"), l("1")) +
+                buildSelectLastInsertId(CHILD_LAST_ID) +
+                buildInsertJoinForParentAndChild(dslPlace4Uid, dslFloor4Uid) +
+
+                buildInsertInto(dslFloor4Uid, l("number"), l("2")) +
+                buildSelectLastInsertId(CHILD_LAST_ID) +
+                buildInsertJoinForParentAndChild(dslPlace4Uid, dslFloor4Uid) +
+
+                buildInsertInto(dslFloor4Uid, l("number"), l("3")) +
+                buildSelectLastInsertId(CHILD_LAST_ID) +
+                buildInsertJoinForParentAndChild(dslPlace4Uid, dslFloor4Uid) +
+
+                buildInsertInto(dslPerson4Uid, l(), l())
+                // when creating a new child, add a new childNumberLastId
+
+
+        TestUtil.expect(expected, candidate)
+    }
+
+    private fun buildSelectLastInsertId(lastId: String, trail: String = ";"): String {
+        return "SELECT LAST_INSERT_ID() INTO @$lastId".toOpt()
+                .mapIf(trail.isNotEmpty()) { it + trail }
+                .toString()
     }
 
     @Test
@@ -310,4 +358,30 @@ internal class DslMapperTest {
         val p = AliasBuilder.build(uid)
         return uid to p
     }
+
+    private fun buildInsertInto(tableName: String, cols: List<String>, values: List<String>, trail: String = ";"): String {
+        val colsSql = cols.joinToString(", ") { "'$it'" }
+        val valuesSql = values.joinToString(", ") { "'$it'" }
+
+        return "INSERT INTO $tableName ($colsSql) VALUES ($valuesSql)".toOpt()
+                .mapIf(trail.isNotEmpty()) { it + trail }
+                .toString()
+    }
+
+    private fun buildInsertJoinForParentAndChild(parentUid: String, childUid: String, trail: String = ";"): String {
+        return "INSERT INTO $parentUid$childUid (${parentUid}refid, ${childUid}refid) VALUES (@${PARENT_LAST_ID}, @${CHILD_LAST_ID})".toOpt()
+                .mapIf(trail.isNotEmpty()) { it + trail }
+                .toString()
+    }
+
+    // for brevity in reading tests
+    private fun <T : Any> l(vararg any: T): List<T> {
+        return listOf(*any)
+    }
+
+    companion object {
+        private const val PARENT_LAST_ID = "parentLastId"
+        private const val CHILD_LAST_ID = "childLastId"
+    }
+
 }
