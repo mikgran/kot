@@ -89,7 +89,7 @@ internal class DslMapperTest {
 
         val (personUid, _) = buildUidAndAlias(DSLPerson())
 
-        val expected = "INSERT INTO $personUid (firstName, lastName) VALUES ('first', 'last')"
+        val expected = buildInsertInto(personUid, l("firstName", "lastName"), l("first", "last"), "")
 
         val candidate = mapper.map(sql)
 
@@ -169,10 +169,10 @@ internal class DslMapperTest {
         val candidate: String = mapper.map(sql)
 
         val expected = "" +
-                buildInsertInto(dslPlace4Uid, l("rentInCents"), l("'50000'")) +
+                buildInsertInto(dslPlace4Uid, l("rentInCents"), l("50000")) +
                 buildSelectLastInsertId(PARENT_LAST_ID) +
 
-                buildInsertInto(dslPerson4Uid, l("firstName", "lastName"), l("'FFFF'", "'LLLL'")) +
+                buildInsertInto(dslPerson4Uid, l("firstName", "lastName"), l("FFFF", "LLLL")) +
                 buildSelectLastInsertId(CHILD_LAST_ID) +
                 buildInsertJoinForParentAndChild(dslPlace4Uid, dslPerson4Uid) +
 
@@ -197,7 +197,7 @@ internal class DslMapperTest {
 
     private fun buildSelectLastInsertId(lastId: String, trail: String = ";"): String {
         return "SELECT LAST_INSERT_ID() INTO @$lastId".toOpt()
-                .mapWhen({ trail.isNotEmpty() }) { it + trail }
+                .mapWhen(trail.isNotEmpty()) { it + trail }
                 .toString()
     }
 
@@ -361,21 +361,21 @@ internal class DslMapperTest {
     }
 
     private fun buildInsertInto(tableName: String, cols: List<String>, values: List<String>, trail: String = ";"): String {
-        val colsSql = cols.joinToString(", ") { "$it" }
+        val colsSql = cols.joinToString(", ") { it }
         val valuesSql = values.joinToString(", ") { "'$it'" }
 
         return "INSERT INTO $tableName ($colsSql) VALUES ($valuesSql)".toOpt()
-                .mapWhen({ trail.isNotEmpty() }) { it + trail }
+                .mapWhen(trail.isNotEmpty()) { it + trail }
                 .toString()
     }
 
     private fun buildInsertJoinForParentAndChild(parentUid: String, childUid: String, trail: String = ";"): String {
         return "INSERT INTO $parentUid$childUid (${parentUid}refid, ${childUid}refid) VALUES (@${PARENT_LAST_ID}, @${CHILD_LAST_ID})".toOpt()
-                .mapWhen({ trail.isNotEmpty() }) { it + trail }
+                .mapWhen(trail.isNotEmpty()) { it + trail }
                 .toString()
     }
 
-    // for brevity in reading tests
+    // for brevity with reading tests
     private fun <T : Any> l(vararg any: T): List<T> {
         return listOf(*any)
     }
