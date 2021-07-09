@@ -83,22 +83,9 @@ internal class DslMapperTest {
         val candidate = mapper.map(sql)
 
         val expected = "" +
-                SqlBuilder()
-                        .createTable(placeUid)
-                        .id()
-                        .mediumInt("rentInCents")
-                        .buildWithSemiColon() +
-                SqlBuilder()
-                        .createTable(addressUid)
-                        .id()
-                        .varChar64("fullAddress")
-                        .buildWithSemiColon() +
-                SqlBuilder()
-                        .createTable(placeUid + addressUid)
-                        .id()
-                        .mediumInt(placeUid.refidPostFix())
-                        .mediumInt(addressUid.refidPostFix())
-                        .build()
+                createTable(placeUid) { mediumInt("rentInCents") } +
+                createTable(addressUid) { varChar64("fullAddress") } +
+                createJoinTable(placeUid, addressUid, "")
 
         TestUtil.expect(expected, candidate)
     }
