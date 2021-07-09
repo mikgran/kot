@@ -252,11 +252,8 @@ internal class DslMapperTest {
         TestUtil.expect(expected, candidate)
     }
 
-    private fun buildSelectLastInsertId(lastId: String, trail: String = ";"): String {
-        return "SELECT LAST_INSERT_ID() INTO @$lastId".toOpt()
-                .mapWhen(trail.isNotEmpty()) { it + trail }
-                .toString()
-    }
+    private fun buildSelectLastInsertId(lastId: String, trail: String = ";"): String =
+            "SELECT LAST_INSERT_ID() INTO @$lastId$trail"
 
     @Test
     fun testUpdate() {
@@ -421,16 +418,11 @@ internal class DslMapperTest {
         val colsSql = cols.joinToString(", ") { it }
         val valuesSql = values.joinToString(", ") { "'$it'" }
 
-        return "INSERT INTO $tableName ($colsSql) VALUES ($valuesSql)".toOpt()
-                .mapWhen(trail.isNotEmpty()) { it + trail }
-                .toString()
+        return "INSERT INTO $tableName ($colsSql) VALUES ($valuesSql)$trail"
     }
 
-    private fun buildInsertJoinForParentAndChild(parentUid: String, childUid: String, trail: String = ";"): String {
-        return "INSERT INTO $parentUid$childUid (${parentUid}refid, ${childUid}refid) VALUES (@${PARENT_LAST_ID}, @${CHILD_LAST_ID})".toOpt()
-                .mapWhen(trail.isNotEmpty()) { it + trail }
-                .toString()
-    }
+    private fun buildInsertJoinForParentAndChild(parentUid: String, childUid: String, trail: String = ";"): String =
+            "INSERT INTO $parentUid$childUid (${parentUid}refid, ${childUid}refid) VALUES (@${PARENT_LAST_ID}, @${CHILD_LAST_ID})$trail"
 
     // for brevity with reading tests
     private fun <T : Any> l(vararg any: T): List<T> {
@@ -442,7 +434,7 @@ internal class DslMapperTest {
         private const val CHILD_LAST_ID = "childLastId"
     }
 
-    fun String.refidPostFix() = this + "refid"
+    private fun String.refidPostFix() = this + "refid"
 
     private class SqlBuilder {
         fun String.addTableSql() = tableSqls.add(this)
