@@ -5,7 +5,8 @@ import mg.util.common.TestUtil
 import mg.util.db.AliasBuilder
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder
-import mg.util.functional.toOpt
+import mg.util.db.dsl.DslMapperTest.SqlBuilder.Companion.createJoinTable
+import mg.util.db.dsl.DslMapperTest.SqlBuilder.Companion.createTable
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -25,12 +26,10 @@ internal class DslMapperTest {
         val uid = UidBuilder.build(DSLPersonB::class)
         val candidate = mapper.map(sql)
 
-        val expected = SqlBuilder()
-                .createTable(uid)
-                .id()
-                .varChar64("firstName")
-                .varChar64("lastName")
-                .build()
+        val expected = createTable(uid, "") {
+            varChar64("firstName")
+            varChar64("lastName")
+        }
 
         TestUtil.expect(expected, candidate)
     }
@@ -45,22 +44,9 @@ internal class DslMapperTest {
         val candidate = mapper.map(sql)
 
         val expected = "" +
-                SqlBuilder()
-                        .createTable(buildingUid)
-                        .id()
-                        .varChar64("fullAddress")
-                        .buildWithSemiColon() +
-                SqlBuilder()
-                        .createTable(floorUid)
-                        .id()
-                        .mediumInt("number")
-                        .buildWithSemiColon() +
-                SqlBuilder()
-                        .createTable(buildingUid + floorUid)
-                        .id()
-                        .mediumInt("${buildingUid}refid")
-                        .mediumInt("${floorUid}refid")
-                        .build()
+                createTable(buildingUid) { varChar64("fullAddress") } +
+                createTable(floorUid) { mediumInt("number") } +
+                createJoinTable(buildingUid, floorUid, "")
 
         TestUtil.expect(expected, candidate)
     }
@@ -76,33 +62,11 @@ internal class DslMapperTest {
         val personM1Uid = UidBuilder.build(DSLPersonM1::class)
 
         val expected = "" +
-                SqlBuilder()
-                        .createTable(addressM1Uid)
-                        .id()
-                        .mediumInt("rent")
-                        .buildWithSemiColon() +
-                SqlBuilder()
-                        .createTable(locationM1Uid)
-                        .id()
-                        .varChar64("loc")
-                        .buildWithSemiColon() +
-                SqlBuilder()
-                        .createTable(addressM1Uid + locationM1Uid)
-                        .id()
-                        .mediumInt(addressM1Uid.refidPostFix())
-                        .mediumInt(locationM1Uid.refidPostFix())
-                        .buildWithSemiColon() +
-                SqlBuilder()
-                        .createTable(personM1Uid)
-                        .id()
-                        .varChar64("name")
-                        .buildWithSemiColon() +
-                SqlBuilder()
-                        .createTable(locationM1Uid + personM1Uid)
-                        .id()
-                        .mediumInt(locationM1Uid.refidPostFix())
-                        .mediumInt(personM1Uid.refidPostFix())
-                        .build()
+                createTable(addressM1Uid) { mediumInt("rent") } +
+                createTable(locationM1Uid) { varChar64("loc") } +
+                createJoinTable(addressM1Uid, locationM1Uid) +
+                createTable(personM1Uid) { varChar64("name") } +
+                createJoinTable(locationM1Uid, personM1Uid, "")
 
         val candidate = mapper.map(sql)
 
@@ -434,25 +398,13 @@ internal class DslMapperTest {
         private const val CHILD_LAST_ID = "childLastId"
     }
 
-    private fun String.refidPostFix() = this + "refid"
-
     private class SqlBuilder {
-        fun String.addTableSql() = tableSqls.add(this)
-        fun String.addColumnSql() = columnSqls.add(this)
-
-        /*
-            val expected = "CREATE TABLE IF NOT EXISTS $uid" +
-                "(" +
-                "id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY" +
-                "," +
-                " firstName VARCHAR(64) NOT NULL" +
-                "," +
-                " lastName VARCHAR(64) NOT NULL" +
-                ")"
-         */
 
         private val tableSqls = mutableListOf<String>()
         private val columnSqls = mutableListOf<String>()
+
+        fun String.addTableSql() = tableSqls.add(this)
+        fun String.addColumnSql() = columnSqls.add(this)
 
         fun createTable(str: String) = this.also { "CREATE TABLE IF NOT EXISTS $str".addTableSql() }
         fun id() = this.also { "id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY".addColumnSql() }
@@ -460,5 +412,26 @@ internal class DslMapperTest {
         fun build() = tableSqls.joinToString(" ") + "(${columnSqls.joinToString(", ")})"
         fun buildWithSemiColon() = build() + ";"
         fun mediumInt(str: String) = this.also { "$str MEDIUMINT NOT NULL".addColumnSql() }
+
+        companion object {
+            fun createJoinTable(table1: String, table2: String, trail: String = ";"): String {
+                return SqlBuilder()
+                        .createTable(table1 + table2)
+                        .id()
+                        .mediumInt(table1.refidPostFix())
+                        .mediumInt(table2.refidPostFix())
+                        .build() + trail
+            }
+
+            fun createTable(table1: String, trail: String = ";", fieldSupplier: SqlBuilder.() -> Unit): String {
+                val builder = SqlBuilder()
+                        .createTable(table1)
+                        .id()
+                fieldSupplier(builder)
+                return builder.build() + trail
+            }
+        }
     }
 }
+
+fun String.refidPostFix() = this + "refid"
