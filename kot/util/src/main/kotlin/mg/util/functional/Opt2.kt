@@ -202,8 +202,7 @@ class Opt2<T : Any> {
             else -> empty()
         }
     }
-
-
+    
     // if value is true map
     fun <V : Any> mapIf(conditionalMapper: (T) -> V): Opt2<V> {
         return when {

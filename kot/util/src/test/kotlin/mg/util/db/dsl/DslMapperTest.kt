@@ -26,10 +26,11 @@ internal class DslMapperTest {
         val uid = UidBuilder.build(DSLPersonB::class)
         val candidate = mapper.map(sql)
 
-        val expected = createTable(uid, "") {
-            varChar64("firstName")
-            varChar64("lastName")
-        }
+        val expected =
+                createTable(uid, "") {
+                    varChar64("firstName")
+                    varChar64("lastName")
+                }
 
         TestUtil.expect(expected, candidate)
     }

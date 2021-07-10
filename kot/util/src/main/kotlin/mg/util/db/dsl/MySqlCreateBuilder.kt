@@ -29,36 +29,36 @@ open class MySqlCreateBuilder {
         return FieldAccessor.uniquesByParent(sql.t).toOpt()
                 .filter { it.isNotEmpty() }
                 .getOrElse { hashMapOf(sql.t to emptyList()) }
-                .map(::buildParentAndChildSqls)
+                .map(::buildParentAndChildCreateTables)
                 .flatten()
                 .flatMap { it.split(";") }
                 .distinctBy { it }
                 .joinToString(";")
     }
 
-    private fun buildParentAndChildSqls(entry: Map.Entry<Any, List<Any>>): List<String> {
+    private fun buildParentAndChildCreateTables(entry: Map.Entry<Any, List<Any>>): List<String> {
         val dslParameters = buildDslParameters(entry.key)
 
         val sqls = mutableListOf<String>()
-        sqls += buildSqlCreate(dslParameters)
+        sqls += buildCreateTable(dslParameters)
 
         FieldCache.fieldsFor(entry.key).toOpt()
                 .map { fields ->
                     fields.customs.map { fieldGet(it, entry.key) } +
                             fields.listsOfCustoms.mapNotNull { (fieldGet(it, entry.key) as List<*>)[0] }
                 }
-                .x { sqls += map { buildSqlCreateForChild(dslParameters, it) } }
+                .x { sqls += map { buildCreateTableForChild(dslParameters, it) } }
 
         return sqls
     }
 
-    private fun buildSqlCreateForChild(parentDp: DslParameters, t: Any?): String {
+    private fun buildCreateTableForChild(parentDp: DslParameters, t: Any?): String {
 
         val childDp = Opt2.of(t)
                 .map(::buildDslParameters)
                 .getOrElseThrow { Exception("Unable to getField($t) and to build DslParameters.") }!!
 
-        val childSqlCreate = buildSqlCreate(childDp)
+        val childSqlCreate = buildCreateTable(childDp)
         val childAlterTable = buildCreateTableForJoinTable(parentDp, childDp)
 
         return "$childSqlCreate;$childAlterTable"
@@ -79,7 +79,7 @@ open class MySqlCreateBuilder {
         }
     }
 
-    private fun buildSqlCreate(dp: DslParameters): String {
+    private fun buildCreateTable(dp: DslParameters): String {
         val mapper = MySqlTypeMapper()
         val fieldsSql = Opt2.of(dp.typeT)
                 .map {
