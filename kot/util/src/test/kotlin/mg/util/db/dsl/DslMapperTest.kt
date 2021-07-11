@@ -197,7 +197,8 @@ internal class DslMapperTest {
                 buildSelectLastInsertId(CHILD_LAST_ID) +
                 buildInsertJoinForParentAndChild(dslPlace4Uid, dslFloor4Uid) +
 
-                buildInsertInto(dslPerson4Uid, l(), l())
+                buildInsertInto(dslAddress4Uid, l("fullAddress"), l("AAAA"))
+                buildSelectLastInsertId(CHILD_LAST_ID)
         // when creating a new child, add a new childNumberLastId
 
 

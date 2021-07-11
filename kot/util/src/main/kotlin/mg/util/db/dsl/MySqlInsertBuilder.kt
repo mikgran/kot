@@ -16,13 +16,13 @@ class MySqlInsertBuilder {
         FieldAccessor.uniquesByParent(type).toOpt()
                 .mapWhen({ it.isEmpty() }) { hashMap -> hashMap[type] = emptyList(); hashMap }
                 .x {
-                    entries.forEach { buildSqlsForParentAndItsChildren(it, sqls) }
+                    entries.forEach { buildInsertIntos(it, sqls) }
                 }
 
         return sqls.joinToString(";").also { println(it) }
     }
 
-    private fun buildSqlsForParentAndItsChildren(entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
+    private fun buildInsertIntos(entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
         val parent = entry.key
         parent.toOpt()
                 .map(FieldCache::fieldsFor)
