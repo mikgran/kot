@@ -1,9 +1,5 @@
 package mg.util.common
 
-import mg.util.common.PredicateComposition.Companion.not
-import mg.util.common.PredicateComposition.Companion.or
-import mg.util.functional.toOpt
-import java.lang.reflect.Field
 import kotlin.reflect.KClass
 
 object Common {
@@ -31,12 +27,12 @@ object Common {
         }
     }
 
-    fun classSimpleName(obj: Any): String? = obj::class.simpleName
+    fun <T : Any> T.classSimpleName(): String? = this::class.simpleName
 
     fun printSimpleNames(map: HashMap<Any, List<Any>>) {
         map.entries.forEach { entry ->
-            print("K: ${classSimpleName(entry.key)} V: ")
-            entry.value.joinToString(", ") { classSimpleName(it) ?: "null" }.also { println(it) }
+            print("K: ${entry.key.classSimpleName()} V: ")
+            entry.value.joinToString(", ") { it.classSimpleName() ?: "null" }.also { println(it) }
         }
     }
 }

@@ -1,6 +1,7 @@
 package mg.util.db.dsl
 
 import mg.util.common.Common
+import mg.util.common.Common.classSimpleName
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.flatten
 import mg.util.common.plus
@@ -22,13 +23,13 @@ class MySqlSelectBuilder {
         p.joinsMap.putAll(buildJoinsMap(t, mutableMapOf()))
 
         p.joinsMap.entries.forEach { entry ->
-            println("key: ${Common.classSimpleName(entry.key)} ")
+            println("key: ${entry.key.classSimpleName()} ")
             entry.value.toOpt()
                     .mapTo(List::class)
                     .xmap {
                         flatten()
                                 .filterNotNull()
-                                .map(Common::classSimpleName)
+                                .map { it.classSimpleName() }
                                 .joinToString(", ")
                     }
                     .getAndMap {
