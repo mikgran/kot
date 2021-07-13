@@ -1,5 +1,6 @@
 package mg.util.db.dsl
 
+import mg.util.common.Common.classSimpleName
 import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2
@@ -14,16 +15,24 @@ class MySqlInsertBuilder {
         val type = sql.t
 
         FieldAccessor.uniquesByParent(type).toOpt()
-                .mapWhen({ it.isEmpty() }) { hashMap -> hashMap[type] = emptyList(); hashMap }
                 .x {
-                    entries.forEach { buildInsertIntos(it, sqls) }
+                    putIfAbsent(type, listOf())
+                    entries.forEachIndexed { index, entry -> buildInsertIntos(index, entry, sqls) }
                 }
 
         return sqls.joinToString(";").also { println(it) }
     }
 
-    private fun buildInsertIntos(entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
+    private fun buildInsertIntos(index: Int, entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
         val parent = entry.key
+        val parentLastId =
+                (index == 0).mapIf {
+                    NextIdBuilder.build(parent.toString())
+                }.getOrElse {
+                    val name = "" + parent.classSimpleName()
+                    name + NextIdBuilder[name]
+                }
+
         parent.toOpt()
                 .map(FieldCache::fieldsFor)
                 .x {
