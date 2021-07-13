@@ -13,7 +13,7 @@ internal class NextIdBuilderTest {
         data class TestClass1(var s: String = "s", var s2: String = "s")
         data class SomeTestClass2(var s: String = "s")
 
-        var className = "" + TestClass1().classSimpleName()
+        val className = "" + TestClass1().classSimpleName()
         var idCandidate: String?
 
         assertEquals(0, nextIdBuilderContentSize())
@@ -38,6 +38,8 @@ internal class NextIdBuilderTest {
         val contents = NextIdBuilder.contents().contents()
         assertTrue(contents.entries.containsAll(expectedMap.entries))
 
+        assertEquals(2, NextIdBuilder[className])
+        assertEquals(1, NextIdBuilder[className2])
     }
 
     private fun nextIdBuilderContentSize() = NextIdBuilder.contents().contents().size
