@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class NextIdBuilderTest {
+internal class IdBuilderTest {
 
     @Test
     fun testBuildingLastId() {
@@ -13,34 +13,34 @@ internal class NextIdBuilderTest {
         data class TestClass1(var s: String = "s", var s2: String = "s")
         data class SomeTestClass2(var s: String = "s")
 
-        val className = "" + TestClass1().classSimpleName()
-        var idCandidate: String?
+        val className = TestClass1().classSimpleName()
+        var idCandidate: Int?
 
         assertEquals(0, nextIdBuilderContentSize())
 
-        idCandidate = NextIdBuilder.build(className)
+        idCandidate = IdBuilder.next(className)
 
-        assertEquals("TestClass11", idCandidate)
+        assertEquals(1, idCandidate)
         assertEquals(1, nextIdBuilderContentSize())
 
-        idCandidate = NextIdBuilder.build(className)
+        idCandidate = IdBuilder.next(className)
 
-        assertEquals("TestClass12", idCandidate)
+        assertEquals(2, idCandidate)
         assertEquals(1, nextIdBuilderContentSize())
 
-        val className2 = "" + SomeTestClass2().classSimpleName()
-        idCandidate = NextIdBuilder.build(className2)
+        val className2 = SomeTestClass2().classSimpleName()
+        idCandidate = IdBuilder.next(className2)
 
-        assertEquals("SomeTestClass21", idCandidate)
+        assertEquals(1, idCandidate)
         assertEquals(2, nextIdBuilderContentSize())
 
         val expectedMap = mutableMapOf(className to 2, className2 to 1)
-        val contents = NextIdBuilder.contents().contents()
+        val contents = IdBuilder.contents().contents()
         assertTrue(contents.entries.containsAll(expectedMap.entries))
 
-        assertEquals(2, NextIdBuilder[className])
-        assertEquals(1, NextIdBuilder[className2])
+        assertEquals(2, IdBuilder[className])
+        assertEquals(1, IdBuilder[className2])
     }
 
-    private fun nextIdBuilderContentSize() = NextIdBuilder.contents().contents().size
+    private fun nextIdBuilderContentSize() = IdBuilder.contents().contents().size
 }

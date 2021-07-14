@@ -27,12 +27,12 @@ object Common {
         }
     }
 
-    fun <T : Any> T.classSimpleName(): String? = this::class.simpleName
+    fun <T : Any> T.classSimpleName(): String = this::class.simpleName ?: ""
 
     fun printSimpleNames(map: HashMap<Any, List<Any>>) {
         map.entries.forEach { entry ->
             print("K: ${entry.key.classSimpleName()} V: ")
-            entry.value.joinToString(", ") { it.classSimpleName() ?: "null" }.also { println(it) }
+            entry.value.joinToString(", ") { it.classSimpleName() }.also { println(it) }
         }
     }
 }

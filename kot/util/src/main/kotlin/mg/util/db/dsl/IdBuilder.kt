@@ -3,18 +3,18 @@ package mg.util.db.dsl
 import mg.util.common.Cache
 import mg.util.functional.toOpt
 
-class NextIdBuilder private constructor() {
+class IdBuilder private constructor() {
 
     companion object {
 
         private val cache = Cache.of<String, Int>()
 
-        fun build(str: String): String {
+        fun next(str: String): Int {
             return cache[str].toOpt()
                     .ifEmpty { 0 }
                     .map { it + 1 }
                     .c { cache[str] = it }
-                    .toString()
+                    .toString().toInt()
         }
 
         operator fun get(key: String): Int? = cache[key]
