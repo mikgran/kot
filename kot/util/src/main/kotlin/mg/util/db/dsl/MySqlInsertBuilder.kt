@@ -26,12 +26,10 @@ class MySqlInsertBuilder {
     private fun buildInsertIntos(index: Int, entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
         val parent = entry.key
         val name = "" + parent.classSimpleName()
-        val parentLastId =
-                (index == 0).mapIf {
-                    name + IdBuilder.next(name)
-                }.getOrElse {
-                    name + IdBuilder[name]
-                }
+        val parentLastId = (index == 0)
+                .mapIf { IdBuilder.next(name) }
+                .ifEmpty { IdBuilder[name] ?: 0 }
+                .map { name + it }
 
         parent.toOpt()
                 .map(FieldCache::fieldsFor)
