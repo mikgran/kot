@@ -18,29 +18,29 @@ internal class IdBuilderTest {
 
         assertEquals(0, nextIdBuilderContentSize())
 
-        idCandidate = IdBuilder.next(className)
+        idCandidate = IncrementalIdBuilder.next(className)
 
         assertEquals(1, idCandidate)
         assertEquals(1, nextIdBuilderContentSize())
 
-        idCandidate = IdBuilder.next(className)
+        idCandidate = IncrementalIdBuilder.next(className)
 
         assertEquals(2, idCandidate)
         assertEquals(1, nextIdBuilderContentSize())
 
         val className2 = SomeTestClass2().classSimpleName()
-        idCandidate = IdBuilder.next(className2)
+        idCandidate = IncrementalIdBuilder.next(className2)
 
         assertEquals(1, idCandidate)
         assertEquals(2, nextIdBuilderContentSize())
 
         val expectedMap = mutableMapOf(className to 2, className2 to 1)
-        val contents = IdBuilder.contents().contents()
+        val contents = IncrementalIdBuilder.contents().contents()
         assertTrue(contents.entries.containsAll(expectedMap.entries))
 
-        assertEquals(2, IdBuilder[className])
-        assertEquals(1, IdBuilder[className2])
+        assertEquals(2, IncrementalIdBuilder[className])
+        assertEquals(1, IncrementalIdBuilder[className2])
     }
 
-    private fun nextIdBuilderContentSize() = IdBuilder.contents().contents().size
+    private fun nextIdBuilderContentSize() = IncrementalIdBuilder.contents().contents().size
 }
