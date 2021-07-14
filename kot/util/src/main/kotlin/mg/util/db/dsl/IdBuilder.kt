@@ -10,7 +10,7 @@ class NextIdBuilder private constructor() {
         private val cache = Cache.of<String, Int>()
 
         fun build(str: String): String {
-            return str + cache[str].toOpt()
+            return cache[str].toOpt()
                     .ifEmpty { 0 }
                     .map { it + 1 }
                     .c { cache[str] = it }
