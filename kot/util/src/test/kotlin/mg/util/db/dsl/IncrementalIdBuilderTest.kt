@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class IdBuilderTest {
+internal class IncrementalIdBuilderTest {
+
+    private val idBuilder = IncrementalIdBuilder()
 
     @Test
     fun testBuildingLastId() {
@@ -18,29 +20,29 @@ internal class IdBuilderTest {
 
         assertEquals(0, nextIdBuilderContentSize())
 
-        idCandidate = IncrementalIdBuilder.next(className)
+        idCandidate = idBuilder.next(className)
 
         assertEquals(1, idCandidate)
         assertEquals(1, nextIdBuilderContentSize())
 
-        idCandidate = IncrementalIdBuilder.next(className)
+        idCandidate = idBuilder.next(className)
 
         assertEquals(2, idCandidate)
         assertEquals(1, nextIdBuilderContentSize())
 
         val className2 = SomeTestClass2().classSimpleName()
-        idCandidate = IncrementalIdBuilder.next(className2)
+        idCandidate = idBuilder.next(className2)
 
         assertEquals(1, idCandidate)
         assertEquals(2, nextIdBuilderContentSize())
 
         val expectedMap = mutableMapOf(className to 2, className2 to 1)
-        val contents = IncrementalIdBuilder.contents().contents()
+        val contents = idBuilder.contents().contents()
         assertTrue(contents.entries.containsAll(expectedMap.entries))
 
-        assertEquals(2, IncrementalIdBuilder[className])
-        assertEquals(1, IncrementalIdBuilder[className2])
+        assertEquals(2, idBuilder[className])
+        assertEquals(1, idBuilder[className2])
     }
 
-    private fun nextIdBuilderContentSize() = IncrementalIdBuilder.contents().contents().size
+    private fun nextIdBuilderContentSize() = idBuilder.contents().contents().size
 }

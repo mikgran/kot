@@ -1,6 +1,5 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common.classSimpleName
 import mg.util.db.FieldCache
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2
@@ -8,6 +7,8 @@ import mg.util.functional.mapIf
 import mg.util.functional.toOpt
 
 class MySqlInsertBuilder {
+
+    val idBuilder = IncrementalIdBuilder()
 
     fun build(@Suppress("UNUSED_PARAMETER") p: Sql.Parameters, sql: Sql): String {
 
@@ -25,11 +26,11 @@ class MySqlInsertBuilder {
 
     private fun buildInsertIntos(index: Int, entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
         val parent = entry.key
-        val name = "" + parent.classSimpleName()
-        val parentLastId = (index == 0)
-                .mapIf { IdBuilder.next(name) }
-                .ifEmpty { IdBuilder[name] ?: 0 }
-                .map { name + it }
+        val parentUid = UidBuilder.buildUniqueId(parent)
+        val parentLastId =
+                (index == 0).mapIf { idBuilder.next(parentUid) }
+                        .ifEmpty { idBuilder[parentUid] ?: 0 }
+                        .map { parentUid + it }
 
         parent.toOpt()
                 .map(FieldCache::fieldsFor)
@@ -37,7 +38,7 @@ class MySqlInsertBuilder {
                     sqls += buildInsertSql(parent)
 
                     (customs.isNotEmpty() || listsOfCustoms.isNotEmpty())
-                            .mapIf { sqls += "SELECT LAST_INSERT_ID() INTO @parentLastId" }
+                            .mapIf { sqls += "SELECT LAST_INSERT_ID() INTO @$parentLastId" }
 
                     sqls += customs
                             .map { field -> FieldAccessor.fieldGet(field, parent) }
@@ -73,10 +74,12 @@ class MySqlInsertBuilder {
     private fun buildInsertForParentToChildRelation(parent: Any, childUid: String, childFields: Opt2<String>, childFieldsValues: Opt2<String>): String {
         val parentUid = UidBuilder.buildUniqueId(parent)
         val tableJoinUid = parentUid + childUid
+        val parentLastId = parentUid + idBuilder[parentUid]
+        val childLastId = childUid + idBuilder.next(childUid)
 
         return "INSERT INTO $childUid ($childFields) VALUES ($childFieldsValues);" +
-                "SELECT LAST_INSERT_ID() INTO @childLastId;" +
-                "INSERT INTO $tableJoinUid (${parentUid}refid, ${childUid}refid) VALUES (@parentLastId, @childLastId)"
+                "SELECT LAST_INSERT_ID() INTO @$childLastId;" +
+                "INSERT INTO $tableJoinUid (${parentUid}refid, ${childUid}refid) VALUES (@$parentLastId, @$childLastId)"
     }
 
     private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
