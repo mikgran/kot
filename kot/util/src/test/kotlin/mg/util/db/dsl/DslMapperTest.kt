@@ -169,7 +169,7 @@ internal class DslMapperTest {
         TestUtil.expect(expected, candidate)
     }
 
-    // @Test // FIXME 10000
+    @Test // F IXME 10000
     fun testInsertOneToManyMultiDepth() {
 
         val idBuilder = IncrementalIdBuilder()
@@ -182,6 +182,11 @@ internal class DslMapperTest {
         val dslAddress4Uid = UidBuilder.buildUniqueId(dslAddress4)
         val dslPlace4Uid = UidBuilder.buildUniqueId(dslPlace4)
         val dslFloor4Uid = UidBuilder.buildUniqueId(DSLFloor4())
+
+        idBuilder.next(dslPlace4Uid)
+        idBuilder.next(dslPerson4Uid)
+        idBuilder.next(dslAddress4Uid)
+        idBuilder.next(dslFloor4Uid)
 
         val sql = Sql insert dslPlace4
         val candidate: String = mapper.map(sql)
@@ -198,17 +203,21 @@ internal class DslMapperTest {
                 buildSelectLastInsertId(idBuilder, dslFloor4Uid) +
                 buildInsertJoinForParentAndChild(idBuilder, dslPlace4Uid, dslFloor4Uid) +
 
+                "".also { idBuilder.next(dslFloor4Uid) } +
+
                 buildInsertInto(dslFloor4Uid, l("number"), l("2")) +
                 buildSelectLastInsertId(idBuilder, dslFloor4Uid) +
                 buildInsertJoinForParentAndChild(idBuilder, dslPlace4Uid, dslFloor4Uid) +
+
+                "".also { idBuilder.next(dslFloor4Uid) } +
 
                 buildInsertInto(dslFloor4Uid, l("number"), l("3")) +
                 buildSelectLastInsertId(idBuilder, dslFloor4Uid) +
                 buildInsertJoinForParentAndChild(idBuilder, dslPlace4Uid, dslFloor4Uid) +
 
                 buildInsertInto(dslAddress4Uid, l("fullAddress"), l("AAAA")) +
-                buildSelectLastInsertId(idBuilder, dslAddress4Uid)
-        // when creating a new child, add a new childNumberLastId
+                buildSelectLastInsertId(idBuilder, dslAddress4Uid) +
+                buildInsertJoinForParentAndChild(idBuilder, dslPerson4Uid, dslAddress4Uid, "")
 
         TestUtil.expect(expected, candidate)
     }

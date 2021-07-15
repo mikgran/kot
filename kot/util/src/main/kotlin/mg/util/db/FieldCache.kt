@@ -17,7 +17,9 @@ class FieldCache {
             val collections: MutableList<Field> = mutableListOf(),
             val listsOfCustoms: MutableList<Field> = mutableListOf(),
             val primitives: MutableList<Field> = mutableListOf(),
-    )
+    ) {
+        fun hasChildren() = customs.isNotEmpty() || listsOfCustoms.isNotEmpty()
+    }
 
     companion object {
 

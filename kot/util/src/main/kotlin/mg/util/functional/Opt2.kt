@@ -63,6 +63,16 @@ class Opt2<T : Any> {
         else -> empty()
     }
 
+    fun <V : Any> match(predicate: Boolean, mapper: (T) -> V): BiOpt2<T, V> =
+            this.match({ predicate }, mapper)
+
+    fun <V : Any> match(predicate: (T) -> Boolean, mapper: (T) -> V): BiOpt2<T, V> {
+        return this.filter { isPresent() && predicate(lazyT) }
+                .map(mapper)
+                .map { v -> BiOpt2.of(lazyT, v) }
+                .getOrElse(getBiOpt2OfValueAndEmpty())
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun <R : Any, V : Any> match(
             ref: R,
@@ -202,7 +212,7 @@ class Opt2<T : Any> {
             else -> empty()
         }
     }
-    
+
     // if value is true map
     fun <V : Any> mapIf(conditionalMapper: (T) -> V): Opt2<V> {
         return when {

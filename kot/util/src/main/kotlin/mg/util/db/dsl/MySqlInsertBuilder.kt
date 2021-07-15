@@ -1,14 +1,15 @@
 package mg.util.db.dsl
 
+import mg.util.common.PredicateComposition.Companion.and
 import mg.util.db.FieldCache
+import mg.util.db.FieldCache.Fields
 import mg.util.db.UidBuilder
 import mg.util.functional.Opt2
-import mg.util.functional.mapIf
 import mg.util.functional.toOpt
 
 class MySqlInsertBuilder {
 
-    val idBuilder = IncrementalIdBuilder()
+    private val idBuilder = IncrementalIdBuilder()
 
     fun build(@Suppress("UNUSED_PARAMETER") p: Sql.Parameters, sql: Sql): String {
 
@@ -27,24 +28,22 @@ class MySqlInsertBuilder {
     private fun buildInsertIntos(index: Int, entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
         val parent = entry.key
         val parentUid = UidBuilder.buildUniqueId(parent)
-        val parentLastId =
-                (index == 0).mapIf { idBuilder.next(parentUid) }
-                        .ifEmpty { idBuilder[parentUid] ?: 0 }
-                        .map { parentUid + it }
+        val isFirstEntry = index == 0
 
         parent.toOpt()
                 .map(FieldCache::fieldsFor)
-                .x {
+                .match(isFirstEntry) {
                     sqls += buildInsert(parent)
-
-                    (customs.isNotEmpty() || listsOfCustoms.isNotEmpty())
-                            .mapIf { sqls += "SELECT LAST_INSERT_ID() INTO @$parentLastId" }
-
-                    sqls += customs
+                }
+                .match({ isFirstEntry && it.hasChildren() }) {
+                    sqls += "SELECT LAST_INSERT_ID() INTO @${(parentUid + idBuilder.next(parentUid))}"
+                }
+                .match(Fields::hasChildren) { fields ->
+                    sqls += fields.customs
                             .map { field -> FieldAccessor.fieldGet(field, parent) }
                             .map { buildOneToOne(it, parent) }
 
-                    sqls += listsOfCustoms
+                    sqls += fields.listsOfCustoms
                             .map { field -> FieldAccessor.fieldGet(field, parent) as List<*> }
                             .map { buildOneToMany(it, parent) }
                 }

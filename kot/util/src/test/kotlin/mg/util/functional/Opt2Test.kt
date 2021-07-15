@@ -330,6 +330,21 @@ internal class Opt2Test {
         assertEquals(expected.get(), candidate.right().get())
     }
 
+    @Test
+    fun test_matchStringContent() {
+
+        val value = Opt2.of(VALUE)
+
+        val candidate = TempValue("")
+
+        value.match(String::isNotBlank) {
+            candidate.a = it
+        }
+
+        assertNotNull(candidate.a)
+        assertEquals(VALUE, candidate.a)
+    }
+
     // ifPresent consumer & producer
     @Test
     fun test_ifPresentConsumer() {

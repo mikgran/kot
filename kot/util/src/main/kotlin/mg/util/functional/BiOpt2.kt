@@ -15,25 +15,26 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
     fun rightElseLeft() = if (right.isPresent()) right else left
     fun resultElseOrig() = rightElseLeft()
 
-    fun <R : Any, V : Any> match(ref: R,
-                                 predicate: (R) -> Boolean,
-                                 mapper: (R) -> V): BiOpt2<T, V> {
+    fun <V : Any> match(predicate: Boolean, mapper: (T) -> V): BiOpt2<T, V> =
+            left.match({ predicate }, mapper)
 
-        return left.match(ref, predicate, mapper)
-    }
+    fun <V : Any> match(predicate: (T) -> Boolean, mapper: (T) -> V): BiOpt2<T, V> =
+            left.match(predicate, mapper)
 
-    fun <R : Any, V : Any> matchRight(ref: R,
-                                      predicate: (R) -> Boolean,
-                                      mapper: (R) -> V): BiOpt2<T, V> {
+    fun <R : Any, V : Any> match(ref: R, predicate: (R) -> Boolean, mapper: (R) -> V): BiOpt2<T, V> =
+            left.match(ref, predicate, mapper)
 
+    fun <R : Any, V : Any> matchRight(ref: R, predicate: (R) -> Boolean, mapper: (R) -> V): BiOpt2<T, V> {
         val matchedRight = right.match(ref, predicate, mapper)
 
         @Suppress("UNCHECKED_CAST")
         return of(right, matchedRight.right()) as BiOpt2<T, V> // the new match situation is <old right, new right> type, force into T, V
     }
 
-    fun case(predicate: (T) -> Boolean,
-             mapper: (T) -> V): BiOpt2<T, V> {
+    fun case(
+            predicate: (T) -> Boolean,
+            mapper: (T) -> V,
+    ): BiOpt2<T, V> {
 
         return this.filter { !right.isPresent() && left.isPresent() && predicate(left.get() as T) }
                 .left()
@@ -42,7 +43,7 @@ class BiOpt2<T : Any, V : Any>(l: Opt2<T>, r: Opt2<V>) {
                 .getOrElse(this)
     }
 
-    fun caseDefault(mapper: (T) -> V) : BiOpt2<T, V> = when {
+    fun caseDefault(mapper: (T) -> V): BiOpt2<T, V> = when {
         left.isPresent() && !right.isPresent() -> of(left(), Opt2.of(mapper(left.get() as T)))
         else -> this
     }
