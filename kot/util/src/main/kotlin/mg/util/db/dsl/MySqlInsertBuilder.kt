@@ -35,43 +35,43 @@ class MySqlInsertBuilder {
         parent.toOpt()
                 .map(FieldCache::fieldsFor)
                 .x {
-                    sqls += buildInsertSql(parent)
+                    sqls += buildInsert(parent)
 
                     (customs.isNotEmpty() || listsOfCustoms.isNotEmpty())
                             .mapIf { sqls += "SELECT LAST_INSERT_ID() INTO @$parentLastId" }
 
                     sqls += customs
                             .map { field -> FieldAccessor.fieldGet(field, parent) }
-                            .map { buildInsertSqlOneToOne(it, parent) }
+                            .map { buildOneToOne(it, parent) }
 
                     sqls += listsOfCustoms
                             .map { field -> FieldAccessor.fieldGet(field, parent) as List<*> }
-                            .map { buildInsertSqlOneToMany(it, parent) }
+                            .map { buildOneToMany(it, parent) }
                 }
     }
 
-    private fun buildInsertSql(type: Any): String =
-            buildInsertSql(type) { uid, fields, fieldsValues ->
+    private fun buildInsert(type: Any): String =
+            buildInsert(type) { uid, fields, fieldsValues ->
                 "INSERT INTO $uid ($fields) VALUES ($fieldsValues)"
             }
 
-    private fun buildInsertSqlOneToOne(child: Any, parent: Any): String =
-            buildInsertSql(child) { childUid, childFields, childFieldsValues ->
-                buildInsertForParentToChildRelation(parent, childUid, childFields, childFieldsValues)
+    private fun buildOneToOne(child: Any, parent: Any): String =
+            buildInsert(child) { childUid, childFields, childFieldsValues ->
+                buildForParentToChild(parent, childUid, childFields, childFieldsValues)
             }
 
     // TODO: 90 add test coverage: one-to-many relation
-    private fun buildInsertSqlOneToMany(children: List<*>, parent: Any): String {
+    private fun buildOneToMany(children: List<*>, parent: Any): String {
         return children
                 .filterNotNull()
                 .joinToString(";") {
-                    buildInsertSql(it) { childUid, childFields, childFieldsValues ->
-                        buildInsertForParentToChildRelation(parent, childUid, childFields, childFieldsValues)
+                    buildInsert(it) { childUid, childFields, childFieldsValues ->
+                        buildForParentToChild(parent, childUid, childFields, childFieldsValues)
                     }
                 }
     }
 
-    private fun buildInsertForParentToChildRelation(parent: Any, childUid: String, childFields: Opt2<String>, childFieldsValues: Opt2<String>): String {
+    private fun buildForParentToChild(parent: Any, childUid: String, childFields: Opt2<String>, childFieldsValues: Opt2<String>): String {
         val parentUid = UidBuilder.buildUniqueId(parent)
         val tableJoinUid = parentUid + childUid
         val parentLastId = parentUid + idBuilder[parentUid]
@@ -82,7 +82,7 @@ class MySqlInsertBuilder {
                 "INSERT INTO $tableJoinUid (${parentUid}refid, ${childUid}refid) VALUES (@$parentLastId, @$childLastId)"
     }
 
-    private fun buildInsertSql(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
+    private fun buildInsert(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
 
         val fieldsT = FieldCache.fieldsFor(type)
         val fieldNames = fieldsT.primitives.joinToString(", ") { p -> p.name }
