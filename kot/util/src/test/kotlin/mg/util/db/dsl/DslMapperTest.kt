@@ -148,7 +148,7 @@ internal class DslMapperTest {
         val sql = Sql insert dslPlace3
         val candidate: String = mapper.map(sql)
 
-        var expected = "" +
+        val expected = "" +
                 buildInsertInto(dslPlace3Uid, l("rentInCents"), l("80000")) +
                 buildSelectLastInsertId(idBuilder, dslPlace3Uid) +
 
@@ -407,7 +407,6 @@ internal class DslMapperTest {
         fun id() = this.also { "id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY".addColumnSql() }
         fun varChar64(columnName: String) = this.also { "$columnName VARCHAR(64) NOT NULL".addColumnSql() }
         fun build() = tableSqls.joinToString(" ") + "(${columnSqls.joinToString(", ")})"
-        fun buildWithSemiColon() = build() + ";"
         fun mediumInt(str: String) = this.also { "$str MEDIUMINT NOT NULL".addColumnSql() }
 
         companion object {
