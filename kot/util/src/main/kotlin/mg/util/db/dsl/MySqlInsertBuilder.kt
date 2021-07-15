@@ -57,7 +57,7 @@ class MySqlInsertBuilder {
 
     private fun buildOneToOne(child: Any, parent: Any): String =
             buildInsert(child) { childUid, childFields, childFieldsValues ->
-                buildForParentToChild(parent, childUid, childFields, childFieldsValues)
+                buildParentToChild(parent, childUid, childFields, childFieldsValues)
             }
 
     // TODO: 90 add test coverage: one-to-many relation
@@ -66,12 +66,12 @@ class MySqlInsertBuilder {
                 .filterNotNull()
                 .joinToString(";") {
                     buildInsert(it) { childUid, childFields, childFieldsValues ->
-                        buildForParentToChild(parent, childUid, childFields, childFieldsValues)
+                        buildParentToChild(parent, childUid, childFields, childFieldsValues)
                     }
                 }
     }
 
-    private fun buildForParentToChild(parent: Any, childUid: String, childFields: Opt2<String>, childFieldsValues: Opt2<String>): String {
+    private fun buildParentToChild(parent: Any, childUid: String, childFields: Opt2<String>, childFieldsValues: Opt2<String>): String {
         val parentUid = UidBuilder.buildUniqueId(parent)
         val tableJoinUid = parentUid + childUid
         val parentLastId = parentUid + idBuilder[parentUid]
@@ -84,12 +84,12 @@ class MySqlInsertBuilder {
 
     private fun buildInsert(type: Any, insertCreateFunction: (String, Opt2<String>, Opt2<String>) -> String): String {
 
-        val fieldsT = FieldCache.fieldsFor(type)
-        val fieldNames = fieldsT.primitives.joinToString(", ") { p -> p.name }
-        val fieldValues = fieldsT.primitives.joinToString(", ") { "'${FieldAccessor.fieldGet(it, type)}'" }
-        val uidT = UidBuilder.buildUniqueId(type)
+        val fields = FieldCache.fieldsFor(type)
+        val fieldNames = fields.primitives.joinToString(", ") { p -> p.name }
+        val fieldValues = fields.primitives.joinToString(", ") { "'${FieldAccessor.fieldGet(it, type)}'" }
+        val typeUid = UidBuilder.buildUniqueId(type)
 
-        return insertCreateFunction(uidT, fieldNames.toOpt(), fieldValues.toOpt())
+        return insertCreateFunction(typeUid, fieldNames.toOpt(), fieldValues.toOpt())
     }
 
 }
