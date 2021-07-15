@@ -1,6 +1,5 @@
 package mg.util.db.dsl
 
-import mg.util.common.PredicateComposition.Companion.and
 import mg.util.db.FieldCache
 import mg.util.db.FieldCache.Fields
 import mg.util.db.UidBuilder
@@ -40,11 +39,11 @@ class MySqlInsertBuilder {
                 }
                 .match(Fields::hasChildren) { fields ->
                     sqls += fields.customs
-                            .map { field -> FieldAccessor.fieldGet(field, parent) }
+                            .map { FieldAccessor.fieldGet(it, parent) }
                             .map { buildOneToOne(it, parent) }
 
                     sqls += fields.listsOfCustoms
-                            .map { field -> FieldAccessor.fieldGet(field, parent) as List<*> }
+                            .map { FieldAccessor.fieldGet(it, parent) as List<*> }
                             .map { buildOneToMany(it, parent) }
                 }
     }
