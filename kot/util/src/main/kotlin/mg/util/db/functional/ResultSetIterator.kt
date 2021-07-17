@@ -1,6 +1,5 @@
 package mg.util.db.functional
 
-import mg.util.functional.toOpt
 import java.sql.ResultSet
 
 // Iterates over ResultSet. Meant only for rewindable ResultSets.
@@ -47,17 +46,32 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
 fun ResultSet.toResultSetIterator(): ResultSetIterator = ResultSetIterator.of(this)
 
 fun ResultSet.print(): ResultSet {
-    this.toOpt()
-            .filter(ResultSet::next)
-            .x {
-                (1..this.metaData.columnCount).forEach { print("${this.metaData.getColumnName(it)} ") }
-                println()
-                this.beforeFirst()
-                toResultSetIterator().map {
-                    (1..this.metaData.columnCount).forEach { print(this.getString(it) + " ") }
-                    println()
-                }
+    val headerLengths = mutableListOf<Int>()
+    val columnCount = metaData.columnCount
+    val headers = (1..columnCount).map { index ->
+        metaData.getColumnName(index)
+                .also { headerLengths.add(it.length) }
+    }
+
+    beforeFirst()
+    val rows: List<List<String>> = toResultSetIterator().map {
+        (1..columnCount).map { index ->
+            val column = getString(index)
+            if (headerLengths[index - 1] < column.length) {
+                headerLengths[index - 1] = column.length
             }
+            column
+        }
+    }
+
+    (listOf(headers) + rows).forEach { row ->
+        (0 until columnCount).forEach { index ->
+            print(" " + headerLengths[index])
+            // print(row[index].format("%-" + headerLengths[index] + "s"))
+        }
+        println()
+    }
+
     return this
 }
 
