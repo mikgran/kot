@@ -9,15 +9,12 @@ import mg.util.db.dsl.DefaultDslMapper
 import mg.util.db.dsl.DslMapperFactory
 import mg.util.db.dsl.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
-import mg.util.db.functional.toResultSetIterator
+import mg.util.db.functional.print
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
-import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import java.sql.Connection
 import java.sql.ResultSet
 
@@ -144,7 +141,7 @@ internal class DBOTest {
 
         val connection = dbConfig.connection
         dbo.ensureTable(DBOBilling2(), connection)
-        val dboBilling2 = DBOBilling2("10", listOf(DBOPerson3("A", "AA"), DBOPerson3("B", "BB"), DBOPerson3("C", "CC")))
+        val dboBilling2 = DBOBilling2("10", listOf(DBOPerson3("A1", "AA1"), DBOPerson3("B1", "BB1"), DBOPerson3("C1", "CC1")))
         dbo.save(dboBilling2, connection)
 
         val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10//  and DBOPerson3::firstName eq "Firstname" and DBOPerson3::lastName eq "Lastname"
@@ -163,25 +160,13 @@ internal class DBOTest {
                 .map { it.executeQuery(sqlStr) }
 
         // FIXME: 200 asserts
-        var isColumnsPrinted = false
-        results.map(ResultSet::toResultSetIterator)
-                .x {
-                    map { rs: ResultSet ->
-                        if (!isColumnsPrinted) {
-                            (1..rs.metaData.columnCount).forEach { print(rs.metaData.getColumnName(it) + " ") }
-                            println()
-                            isColumnsPrinted = true
-                        }
-                        (1..rs.metaData.columnCount).forEach { print(rs.getString(it) + " ") }
-                        println()
-                    }
-                }
+
         // XXX: 500 Fix composition building
         val dboBillingCandidate: MutableList<DBOBilling2> =
                 ObjectBuilder()
                         .buildListOfT(results.get(), DBOBilling2())
 
-        // println("\ndboBillingCandidate: $dboBillingCandidate")
+        println("\ndboBillingCandidate: $dboBillingCandidate")
         // fail("")
     }
 

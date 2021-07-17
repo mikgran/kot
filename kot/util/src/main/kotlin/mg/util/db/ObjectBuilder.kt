@@ -24,8 +24,8 @@ open class ObjectBuilder {
     fun <T : Any> buildListOfT(results: ResultSet?, typeT: T): MutableList<T> {
         return typeT
                 .toOpt()
-                .case({ it is String }, { buildListUsingStrings(results, it) })
-                .case({ isCustomThatContainsCustoms(it) }, { buildListOfCustomsMadeOfCustoms(results, it) })
+                .case({ it is String }) { buildListUsingStrings(results, it) }
+                .case(::isCustomThatContainsCustoms) { buildListOfCustomsMadeOfCustoms(results, it) }
                 .caseDefault { buildListOfCustomsMadeOfPrimitives(results, it) }
                 .result()
                 .getOrElse(mutableListOf())

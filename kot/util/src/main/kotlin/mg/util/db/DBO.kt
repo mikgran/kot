@@ -94,8 +94,9 @@ class DBO(private val mapper: DefaultDslMapper) {
     }
 
     fun <T : Any> ensureTable(t: T, connection: Connection) {
-        val createTable = t.toOpt().map(::buildMetadata)
-                .map(mapper::buildCreateTable).also { println(it) }
+        val createTable = t.toOpt()
+                .map(::buildMetadata)
+                .map(mapper::buildCreateTable)
 
         createTable
                 .map { it.split(";") }

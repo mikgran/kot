@@ -1,7 +1,5 @@
 package mg.util.common
 
-import kotlin.reflect.KClass
-
 object Common {
 
     fun hasContent(candidate: String?): Boolean = when (candidate) {
@@ -29,6 +27,7 @@ object Common {
 
     fun <T : Any> T.classSimpleName(): String = this::class.simpleName ?: ""
 
+    @Suppress("unused")
     fun printSimpleNames(map: HashMap<Any, List<Any>>) {
         map.entries.forEach { entry ->
             print("K: ${entry.key.classSimpleName()} V: ")

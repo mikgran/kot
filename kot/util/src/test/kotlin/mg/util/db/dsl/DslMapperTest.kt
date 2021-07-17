@@ -169,7 +169,7 @@ internal class DslMapperTest {
         TestUtil.expect(expected, candidate)
     }
 
-    @Test // F IXME 10000
+    @Test
     fun testInsertOneToManyMultiDepth() {
 
         val idBuilder = IncrementalIdBuilder()

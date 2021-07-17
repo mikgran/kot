@@ -21,7 +21,7 @@ class MySqlInsertBuilder {
                     entries.forEachIndexed { index, entry -> buildInsertIntos(index, entry, sqls) }
                 }
 
-        return sqls.joinToString(";").also { println(it) }
+        return sqls.joinToString(";")
     }
 
     private fun buildInsertIntos(index: Int, entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
