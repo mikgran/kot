@@ -8,6 +8,7 @@ import mg.util.functional.toOpt
 import java.sql.Connection
 import java.sql.Statement
 
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class TestSupport {
 
     companion object {
@@ -62,7 +63,7 @@ class TestSupport {
 
             DBConfig(TestConfig())
                     .toOpt()
-                    .map { it.connection }
+                    .map(DBConfig::connection)
                     .map(Connection::createStatement)
                     .ifPresent { stmt ->
                         deleteFromUid(stmt, dropId)
@@ -70,4 +71,27 @@ class TestSupport {
                     }
         }
     }
+}
+
+@Suppress("unused", "MemberVisibilityCanBePrivate")
+class TableDrop {
+
+    private val tablesToDrop = mutableListOf<Any>()
+    private val joinTablesToDrop = mutableListOf<Pair<Any, Any>>()
+
+    fun clean() = dropAll()
+
+    fun dropAll() {
+        TestSupport.dropTables(tablesToDrop)
+        TestSupport.dropJoinTables(joinTablesToDrop)
+    }
+
+    fun registerJoin(pair: Pair<Any, Any>): Pair<Any, Any> =
+            pair.also { joinTablesToDrop += it }
+
+    fun registerJoin(obj1: Any, obj2: Any): Pair<Any, Any> =
+            registerJoin(obj1 to obj2)
+
+    fun register(obj: Any): Any =
+            obj.also { tablesToDrop += it }
 }

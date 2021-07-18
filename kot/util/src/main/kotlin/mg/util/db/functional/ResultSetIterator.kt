@@ -45,7 +45,9 @@ class ResultSetIterator private constructor(private val resultSet: ResultSet) : 
 
 fun ResultSet.toResultSetIterator(): ResultSetIterator = ResultSetIterator.of(this)
 
-fun ResultSet.print(): ResultSet {
+data class PrintData(var headerLengths: MutableList<Int>, var columnCount: Int, var headers: List<String>, var rows: List<List<String>>)
+
+internal fun ResultSet.preparePrintData(): PrintData {
     val headerLengths = mutableListOf<Int>()
     val columnCount = metaData.columnCount
     val headers = (1..columnCount).map { index ->
@@ -63,14 +65,26 @@ fun ResultSet.print(): ResultSet {
             column
         }
     }
+    return PrintData(headerLengths, columnCount, headers, rows)
+}
 
-    (listOf(headers) + rows).forEach { row ->
+fun PrintData.prettyFormat(): List<List<String>> {
+    val all = listOf(headers) + rows
+
+    all.forEach { row ->
         (0 until columnCount).forEach { index ->
             print(" " + headerLengths[index])
             // print(row[index].format("%-" + headerLengths[index] + "s"))
         }
-        println()
     }
+
+    return emptyList()
+}
+
+fun ResultSet.print(): ResultSet {
+    val prettyFormat: List<List<String>> = preparePrintData().prettyFormat()
+
+    println("TODO")
 
     return this
 }
