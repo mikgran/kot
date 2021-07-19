@@ -68,7 +68,7 @@ internal class ResultSetIteratorTest {
     @Test
     fun testPrint() {
 
-        val person = cleaner.register(RSIPerson2())
+        val person = cleaner.register(RSIPerson2("AAAAAAAAAAAA", "BBBB"))
 
         dbo.toOpt().x {
 
@@ -83,16 +83,15 @@ internal class ResultSetIteratorTest {
                     .mapWith(uid) { stmt, tableUid -> stmt.executeQuery("SELECT * FROM $tableUid") }
                     .get()!!
 
-            val prettyFormat = resultSet.preparePrintData().prettyFormat()
+            val candidate: List<List<String>> = resultSet.getPrintData().prettyFormat()
 
-            prettyFormat.forEach { list ->
-                list.forEach { column ->
-                    print(column)
-                }
-            }
+            val expected = listOf(
+                    listOf("id", "firstName   ", "lastName"),
+                    listOf("1 ", "AAAAAAAAAAAA", "BBBB    ")
+            )
+
+            assertEquals(expected, candidate)
         }
-
-
     }
 
 

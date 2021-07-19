@@ -86,12 +86,12 @@ class TableDrop {
         TestSupport.dropJoinTables(joinTablesToDrop)
     }
 
-    fun registerJoin(pair: Pair<Any, Any>): Pair<Any, Any> =
+    fun <T: Any, V: Any> registerJoin(pair: Pair<T, V>): Pair<T, V> =
             pair.also { joinTablesToDrop += it }
 
-    fun registerJoin(obj1: Any, obj2: Any): Pair<Any, Any> =
+    fun <T: Any, V: Any> registerJoin(obj1: T, obj2: V): Pair<T, V> =
             registerJoin(obj1 to obj2)
 
-    fun register(obj: Any): Any =
+    fun <T: Any> register(obj: T): T =
             obj.also { tablesToDrop += it }
 }

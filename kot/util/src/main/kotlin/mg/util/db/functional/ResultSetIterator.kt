@@ -47,7 +47,7 @@ fun ResultSet.toResultSetIterator(): ResultSetIterator = ResultSetIterator.of(th
 
 data class PrintData(var headerLengths: MutableList<Int>, var columnCount: Int, var headers: List<String>, var rows: List<List<String>>)
 
-internal fun ResultSet.preparePrintData(): PrintData {
+internal fun ResultSet.getPrintData(): PrintData {
     val headerLengths = mutableListOf<Int>()
     val columnCount = metaData.columnCount
     val headers = (1..columnCount).map { index ->
@@ -65,26 +65,28 @@ internal fun ResultSet.preparePrintData(): PrintData {
             column
         }
     }
+
     return PrintData(headerLengths, columnCount, headers, rows)
 }
 
 fun PrintData.prettyFormat(): List<List<String>> {
-    val all = listOf(headers) + rows
+    val allRows = listOf(headers) + rows
 
-    all.forEach { row ->
-        (0 until columnCount).forEach { index ->
-            print(" " + headerLengths[index])
-            // print(row[index].format("%-" + headerLengths[index] + "s"))
+    return allRows.map { row ->
+        (0 until columnCount).map { index ->
+            val column = row[index]
+            String.format(column + " ".repeat(headerLengths[index] - column.length))
         }
     }
-
-    return emptyList()
 }
 
 fun ResultSet.print(): ResultSet {
-    val prettyFormat: List<List<String>> = preparePrintData().prettyFormat()
-
-    println("TODO")
+    getPrintData()
+            .prettyFormat()
+            .joinToString("\n") {
+                it.joinToString(" ")
+            }
+            .also(::print)
 
     return this
 }
