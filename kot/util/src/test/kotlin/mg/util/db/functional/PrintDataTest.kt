@@ -2,7 +2,6 @@ package mg.util.db.functional
 
 import mg.util.db.DBO
 import mg.util.db.TableDrop
-import mg.util.db.TestDataClasses
 import mg.util.db.TestDataClasses.RSIPerson2
 import mg.util.db.UidBuilder
 import mg.util.db.config.DBConfig
@@ -21,7 +20,6 @@ internal class PrintDataTest {
     private val dbo = DBO(DefaultDslMapper("mysql"))
     private val connection = dbConfig.connection
 
-
     @Test
     fun testPrint() {
 
@@ -34,10 +32,11 @@ internal class PrintDataTest {
                 save(person, connection)
             }
 
-            val uid = UidBuilder.buildUniqueId(person)
             val resultSet = connection.toOpt()
                     .map(Connection::createStatement)
-                    .mapWith(uid) { stmt, tableUid -> stmt.executeQuery("SELECT * FROM $tableUid") }
+                    .mapWith(UidBuilder.buildUniqueId(person)) { stmt, personUid ->
+                        stmt.executeQuery("SELECT * FROM $personUid")
+                    }
                     .get()!!
 
             val candidate: List<List<String>> = resultSet.getPrintData().prettyFormat()

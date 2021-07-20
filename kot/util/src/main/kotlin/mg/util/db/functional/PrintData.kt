@@ -4,10 +4,10 @@ import java.sql.ResultSet
 
 class PrintData(resultSet: ResultSet) {
 
-    private var headerLengths: List<Int>
-    private var columnCount: Int
-    private var headers: List<String>
-    private var rows: List<List<String>>
+    private val headerLengths: List<Int>
+    private val columnCount: Int
+    private val headers: List<String>
+    private val rows: List<List<String>>
 
     init {
         val headerLengthsMut = mutableListOf<Int>()
@@ -16,8 +16,9 @@ class PrintData(resultSet: ResultSet) {
             resultSet.metaData.getColumnName(index)
                     .also { headerLengthsMut.add(it.length) }
         }
+
         resultSet.beforeFirst()
-        val rowsMut = resultSet.toResultSetIterator().map {
+        rows = resultSet.toResultSetIterator().map {
             (1..columnCount).map { index ->
                 val column = resultSet.getString(index)
                 if (headerLengthsMut[index - 1] < column.length) {
@@ -27,7 +28,6 @@ class PrintData(resultSet: ResultSet) {
             }
         }
         headerLengths = headerLengthsMut
-        rows = rowsMut
     }
 
     fun prettyFormat(): List<List<String>> {
@@ -41,15 +41,14 @@ class PrintData(resultSet: ResultSet) {
         }
     }
 
-    fun print() = prettyFormat().also(::printListOfColumns)
+    fun print() = printListOfColumns(prettyFormat())
 
-    private fun printListOfColumns(listList: List<List<String>>) {
-        listList.joinToString(", ") {
-            it.joinToString(" ")
+    private fun printListOfColumns(rowsOfColumns: List<List<String>>) {
+        rowsOfColumns.joinToString("\n") { column ->
+            column.joinToString(" ")
         }.also(::print)
     }
 }
 
-internal fun ResultSet.getPrintData() = PrintData(this)
-
+fun ResultSet.getPrintData() = PrintData(this)
 fun ResultSet.print(): ResultSet = this.also { getPrintData().print() }
