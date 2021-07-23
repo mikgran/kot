@@ -223,6 +223,40 @@ internal class DslMapperTest {
     }
 
     @Test
+    fun testInsertOneToManyMultiDepth2() {
+
+        val idBuilder = IncrementalIdBuilder()
+        val dslPlace5 = DSLPlace5(
+                l(
+                        DSLCar5(name = "AAAA", type = DSLType5(typeName = "TTTT")),
+                        DSLCar5(name = "BBBB", type = DSLType5(typeName = "TTTT")),
+                ),
+                rentInCents = 555
+        )
+        val sql = Sql insert dslPlace5
+        val candidate: String = mapper.map(sql)
+
+        val dslPlace5Uid = UidBuilder.buildUniqueId(dslPlace5)
+        val dslCar5Uid = UidBuilder.buildUniqueId(DSLCar5())
+
+        val expected = "" +
+                buildInsertInto(dslPlace5Uid, l("rentInCents"), l("50000")) +
+                buildSelectLastInsertId(idBuilder, dslPlace5Uid) +
+
+                buildInsertInto(dslCar5Uid, l("name"), l("AAAA")) +
+                buildSelectLastInsertId(idBuilder, dslCar5Uid) +
+                buildInsertJoinForParentAndChild(idBuilder, dslPlace5Uid, dslCar5Uid) +
+
+                "".also { idBuilder.next(dslCar5Uid) } +
+
+                buildInsertInto(dslCar5Uid, l("name"), l("BBBB")) +
+                buildSelectLastInsertId(idBuilder, dslCar5Uid) +
+                buildInsertJoinForParentAndChild(idBuilder, dslPlace5Uid, dslCar5Uid) +
+                ""
+        TestUtil.expect(expected, candidate)
+    }
+
+    @Test
     fun testUpdate() {
 
         // UPDATE personb12345 SET field1 = new-value1, field2 = new-value2

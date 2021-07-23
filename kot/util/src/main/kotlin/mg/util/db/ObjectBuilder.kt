@@ -1,6 +1,5 @@
 package mg.util.db
 
-import mg.util.common.Common.classSimpleName
 import mg.util.common.Wrap
 import mg.util.db.dsl.FieldAccessor
 import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
@@ -33,8 +32,19 @@ open class ObjectBuilder {
 
     private fun <T : Any> buildListOfCustomsMadeOfCustoms(results: ResultSet?, typeT: T): MutableList<T> {
         results.toOpt()
-                .x(ResultSet::beforeFirst)
-                .x(ResultSet::print)
+                .x { beforeFirst() }
+                .x { print() }
+        println()
+
+        results.toOpt()
+                .x {
+                    beforeFirst()
+                    (1..metaData.columnCount).joinToString(" ") {
+                        "\n${metaData.getTableName(it)}.${metaData.getColumnName(it)}"
+                    }.also { println(it) }
+                    println()
+                }
+
 
         // FIXME: 10000
 //        val uniquesByParent2 = FieldAccessor.uniquesByParent(typeT, HashMap())
@@ -45,6 +55,7 @@ open class ObjectBuilder {
 //                    }
 //                    println("\n\n")
 //                }
+
 
         val uniquesByParent = collectUniquesByParent(typeT)
 //                .also { map ->
@@ -107,7 +118,6 @@ open class ObjectBuilder {
                 // DATETIME?
                 else -> null
             }
-
 
 
     private fun <T : Any> collectUniquesByParent(typeT: T): HashMap<Any, MutableList<Any>> {
