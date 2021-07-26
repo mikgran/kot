@@ -28,13 +28,23 @@ object Common {
     fun <T : Any> T.classSimpleName(): String = this::class.simpleName ?: ""
 
     @Suppress("unused")
-    fun printSimpleNames(map: HashMap<Any, List<Any>>) {
+    fun printSimpleNames(map: Map<Any, Any>) {
         map.entries.forEach { entry ->
             print("K: ${entry.key.classSimpleName()} V: ")
-            entry.value.joinToString(", ") { it.classSimpleName() }.also { println(it) }
+            when (entry.value) {
+                is List<*> -> {
+                    val list = entry.value as List<*>
+                    if (list.isNotEmpty()) {
+                        list.filterNotNull()
+                                .joinToString(", ") { it.classSimpleName() }.also { println(it) }
+                    }
+                }
+                else -> println(entry.value.classSimpleName())
+            }
         }
     }
 }
+
 
 fun <E> List<E>.flatten(): List<Any?> =
         this.flatMap {

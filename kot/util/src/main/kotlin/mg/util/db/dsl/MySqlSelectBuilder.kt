@@ -22,20 +22,7 @@ class MySqlSelectBuilder {
         p.tableFragments.add(0, buildTableFragment(t))
         p.joinsMap.putAll(buildJoinsMap(t, mutableMapOf()))
 
-        p.joinsMap.entries.forEach { entry ->
-            println("key: ${entry.key.classSimpleName()} ")
-            entry.value.toOpt()
-                    .mapTo(List::class)
-                    .xmap {
-                        flatten()
-                                .filterNotNull()
-                                .map { it.classSimpleName() }
-                                .joinToString(", ")
-                    }
-                    .getAndMap {
-                        println("value: $it")
-                    }
-        }
+        p.joinsMap.also { Common.printSimpleNames(it.toMap()) }
 
         p.toOpt()
                 .map { buildJoinsForNaturalRefs(it) }
