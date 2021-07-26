@@ -54,7 +54,6 @@ class FieldAccessor private constructor() {
                     .map { fieldGet(it, obj) }
                     .flatten()
                     .filterNotNull()
-                    .distinctBy(UidBuilder::buildUniqueId)
 
             return customs + listsOfCustoms
         }

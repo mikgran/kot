@@ -226,21 +226,22 @@ internal class DslMapperTest {
     fun testInsertOneToManyMultiDepth2() {
 
         val idBuilder = IncrementalIdBuilder()
-        val dslPlace5 = DSLPlace5(
-                l(
-                        DSLCar5(name = "AAAA", type = DSLType5(typeName = "TTTT")),
-                        DSLCar5(name = "BBBB", type = DSLType5(typeName = "TTTT")),
-                ),
-                rentInCents = 555
-        )
+        val dslType5 = DSLType5(typeName = "TTTT")
+        val dslCar5a = DSLCar5(name = "AAAA", type = dslType5)
+        val dslCar5b = DSLCar5(name = "BBBB", type = dslType5)
+        val dslPlace5 = DSLPlace5(l(dslCar5a, dslCar5b), rentInCents = 555)
         val sql = Sql insert dslPlace5
         val candidate: String = mapper.map(sql)
 
         val dslPlace5Uid = UidBuilder.buildUniqueId(dslPlace5)
-        val dslCar5Uid = UidBuilder.buildUniqueId(DSLCar5())
+        val dslCar5Uid = UidBuilder.buildUniqueId(dslCar5a)
+        val dslType5Uid = UidBuilder.buildUniqueId(dslType5)
+        idBuilder.next(dslPlace5Uid)
+        idBuilder.next(dslCar5Uid)
+        idBuilder.next(dslType5Uid)
 
         val expected = "" +
-                buildInsertInto(dslPlace5Uid, l("rentInCents"), l("50000")) +
+                buildInsertInto(dslPlace5Uid, l("rentInCents"), l("555")) +
                 buildSelectLastInsertId(idBuilder, dslPlace5Uid) +
 
                 buildInsertInto(dslCar5Uid, l("name"), l("AAAA")) +
@@ -252,7 +253,17 @@ internal class DslMapperTest {
                 buildInsertInto(dslCar5Uid, l("name"), l("BBBB")) +
                 buildSelectLastInsertId(idBuilder, dslCar5Uid) +
                 buildInsertJoinForParentAndChild(idBuilder, dslPlace5Uid, dslCar5Uid) +
-                ""
+
+                buildInsertInto(dslType5Uid, l("typeName"), l("TTTT")) +
+                buildSelectLastInsertId(idBuilder, dslType5Uid) +
+                buildInsertJoinForParentAndChild(idBuilder, dslCar5Uid, dslType5Uid) +
+
+                "".also { idBuilder.next(dslType5Uid) } +
+
+                buildInsertInto(dslType5Uid, l("typeName"), l("TTTT")) +
+                buildSelectLastInsertId(idBuilder, dslType5Uid) +
+                buildInsertJoinForParentAndChild(idBuilder, dslCar5Uid, dslType5Uid, "")
+
         TestUtil.expect(expected, candidate)
     }
 

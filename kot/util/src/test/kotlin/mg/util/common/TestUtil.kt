@@ -44,5 +44,20 @@ class TestUtil {
             }
             assertEquals(expected, candidate)
         }
+
+        fun expect(expected: String, candidate: String?, splitDelimeter: String = ";") {
+            assertNotNull(candidate)
+            if (candidate != null && expected != candidate) {
+                val splitExpected = expected.split(splitDelimeter).joinToString("\n")
+                val splitCandidate = candidate.split(splitDelimeter).joinToString("\n")
+                println("\nE:\n<$splitExpected>")
+                println("C:\n<$splitCandidate>")
+                val common = longestCommonSubstring(expected, candidate)
+                if (common.size > 0) {
+                    println("\nLongest common part:\n<${common.first().split(splitDelimeter).joinToString("\n")}>")
+                }
+            }
+            assertEquals(expected, candidate)
+        }
     }
 }

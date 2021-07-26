@@ -1,5 +1,6 @@
 package mg.util.db.dsl
 
+import mg.util.common.Common
 import mg.util.db.FieldCache
 import mg.util.db.FieldCache.Fields
 import mg.util.db.UidBuilder
@@ -18,7 +19,9 @@ class MySqlInsertBuilder {
         FieldAccessor.uniquesByParent(type).toOpt()
                 .x {
                     putIfAbsent(type, listOf())
-                    entries.forEachIndexed { index, entry -> buildInsertIntos(index, entry, sqls) }
+                    entries.forEachIndexed { index, entry ->
+                        buildInsertIntos(index, entry, sqls)
+                    }
                 }
 
         return sqls.joinToString(";")
