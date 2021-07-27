@@ -15,11 +15,7 @@ class Opt2<T : Any> {
     }
 
     fun isPresent(): Boolean = value != null
-
     fun get() = value
-    /**
-     * Returns a Non-nullable value.
-     */
     fun value(): T = value!!
 
     fun <R : Any> map(mapper: (T) -> R?): Opt2<R> = when {
@@ -33,7 +29,7 @@ class Opt2<T : Any> {
     }
 
     fun ifEmptyUse(conditionalSupplier: (() -> T)?): Opt2<T> = when {
-        conditionalSupplier.toOpt().isPresent() && !isPresent() -> Opt2(conditionalSupplier?.invoke())
+        of(conditionalSupplier).isPresent() && !isPresent() -> Opt2(conditionalSupplier?.invoke())
         else -> this
     }
 
@@ -237,16 +233,16 @@ class Opt2<T : Any> {
 
     inline fun <reified V : Any> mapWhen(predicate: Boolean, conditionalMapper: ((T) -> V)): Opt2<V> {
         return when {
-            isPresent() && predicate -> conditionalMapper(get()!!).toOpt()
-            isPresent() && get()!! is V -> (get() as? V).toOpt()
+            isPresent() && predicate -> conditionalMapper(value()).toOpt()
+            isPresent() && value() is V -> (get() as? V).toOpt()
             else -> empty()
         }
     }
 
     inline fun <reified V : Any> mapWhen(predicateFunction: (T) -> Boolean, conditionalMapper: ((T) -> V)): Opt2<V> {
         return when {
-            isPresent() && predicateFunction(get()!!) -> conditionalMapper(get()!!).toOpt()
-            isPresent() && get()!! is V -> (get() as? V).toOpt()
+            isPresent() && predicateFunction(value()) -> conditionalMapper(value()).toOpt()
+            isPresent() && value() is V -> (get() as? V).toOpt()
             else -> empty()
         }
     }

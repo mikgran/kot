@@ -37,7 +37,7 @@ internal class PrintDataTest {
                     .mapWith(UidBuilder.buildUniqueId(person)) { stmt, personUid ->
                         stmt.executeQuery("SELECT * FROM $personUid")
                     }
-                    .get()!!
+                    .value()
 
             val candidate: List<List<String>> = resultSet.getPrintData().prettyFormat()
 
