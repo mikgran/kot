@@ -97,14 +97,8 @@ class Opt2<T : Any> {
                 .getOrElse(getBiOpt2OfValueAndEmpty())
     }
 
-    private fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean {
-
-        // no reified
-        return value?.let {
-            val valueAsAny = it as Any
-            valueAsAny::class == ref::class
-        } ?: false
-    }
+    private fun <R : Any> isValueClassSameAsRefClass(ref: R): Boolean =
+            value?.let { it::class == ref::class } ?: false
 
     fun getOrElse(default: T): T = when {
         isPresent() -> value!!
@@ -160,19 +154,19 @@ class Opt2<T : Any> {
     }
 
     fun <R : Any, V : Any> mapWith(r: R?, mapper: (T, R) -> V): Opt2<V> {
-        val ropt = of(r)
+        val rOpt = of(r)
         return when {
-            isPresent() && ropt.isPresent() -> of(mapper(value!!, ropt.value!!))
+            isPresent() && rOpt.isPresent() -> of(mapper(value!!, rOpt.value!!))
             else -> empty()
         }
     }
 
     // TOIMPROVE: find a better way for arity of type N objects
     fun <R : Any, S : Any, V : Any> mapWith(r: R?, s: S?, mapper: (T, R, S) -> V): Opt2<V> {
-        val ropt = of(r)
-        val sopt = of(s)
+        val rOpt = of(r)
+        val sOpt = of(s)
         return when {
-            isPresent() && ropt.isPresent() && sopt.isPresent() -> of(mapper(value!!, ropt.value!!, sopt.value!!))
+            isPresent() && rOpt.isPresent() && sOpt.isPresent() -> of(mapper(value!!, rOpt.value!!, sOpt.value!!))
             else -> empty()
         }
     }
