@@ -28,7 +28,7 @@ object Common {
     fun <T : Any> T.classSimpleName(): String = this::class.simpleName ?: ""
 
     @Suppress("unused")
-    fun printSimpleNames(map: Map<Any, Any>) {
+    fun printClassSimpleNames(map: Map<Any, Any>) {
         map.entries.forEach { entry ->
             print("K: ${entry.key.classSimpleName()} V: ")
             when (entry.value) {
