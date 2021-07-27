@@ -23,7 +23,8 @@ internal class PrintDataTest {
     @Test
     fun testPrint() {
 
-        val person = cleaner.register(RSIPerson2("AAAAAAAAAAAA", "BBBB"))
+        val person = RSIPerson2("AAAAAAAAAAAA", "BBBB")
+        cleaner.register(person)
 
         dbo.toOpt().x {
 
