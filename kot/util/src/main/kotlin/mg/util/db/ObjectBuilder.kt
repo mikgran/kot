@@ -31,9 +31,10 @@ open class ObjectBuilder {
     }
 
     private fun <T : Any> buildListOfCustomsMadeOfCustoms(results: ResultSet?, typeT: T): MutableList<T> {
-        results.toOpt()
-                .x { beforeFirst() }
-                .x { print() }
+        results.toOpt().x {
+                    beforeFirst()
+                    print()
+                }
         println()
 
         results.toOpt()

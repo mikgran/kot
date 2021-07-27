@@ -1,9 +1,7 @@
 package mg.util.db.dsl
 
 import mg.util.common.Common
-import mg.util.common.Common.classSimpleName
 import mg.util.common.PredicateComposition.Companion.or
-import mg.util.common.flatten
 import mg.util.common.plus
 import mg.util.db.AliasBuilder
 import mg.util.db.FieldCache
@@ -22,6 +20,7 @@ class MySqlSelectBuilder {
         p.tableFragments.add(0, buildTableFragment(t))
         p.joinsMap.putAll(buildJoinsMap(t, mutableMapOf()))
 
+        // XXX: 100000, joinsmap is not getting all sub-relations
         p.joinsMap.also { Common.printClassSimpleNames(it.toMap()) }
 
         p.toOpt()

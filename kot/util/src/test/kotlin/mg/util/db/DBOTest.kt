@@ -9,7 +9,6 @@ import mg.util.db.dsl.DefaultDslMapper
 import mg.util.db.dsl.DslMapperFactory
 import mg.util.db.dsl.Sql
 import mg.util.db.functional.ResultSetIterator.Companion.iof
-import mg.util.db.functional.print
 import mg.util.functional.Opt2
 import mg.util.functional.Opt2.Factory.of
 import org.junit.jupiter.api.AfterAll

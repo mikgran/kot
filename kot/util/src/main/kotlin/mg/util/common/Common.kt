@@ -1,4 +1,8 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package mg.util.common
+
+import mg.util.functional.toOpt
 
 object Common {
 
@@ -31,20 +35,30 @@ object Common {
     fun printClassSimpleNames(map: Map<Any, Any>) {
         map.entries.forEach { entry ->
             print("K: ${entry.key.classSimpleName()} V: ")
-            when (entry.value) {
-                is List<*> -> {
-                    val list = entry.value as List<*>
-                    if (list.isNotEmpty()) {
-                        list.filterNotNull()
-                                .joinToString(", ") { it.classSimpleName() }.also { println(it) }
+            entry.value.toOpt()
+                    .mapTo(List::class)
+                    .map(List<*>::flattenTo)
+                    .x {
+                        joinToString(", ") {
+                            it.classSimpleName()
+                        }.also(::print)
+                        println()
                     }
-                }
-                else -> println(entry.value.classSimpleName())
-            }
         }
     }
 }
 
+// shameless rip from the net:
+fun List<*>.flattenTo(toFlatList: MutableList<Any> = mutableListOf()): MutableList<Any> {
+    this.filterNotNull()
+            .forEach {
+                when (it) {
+                    !is List<*> -> toFlatList.add(it)
+                    else -> it.flattenTo(toFlatList)
+                }
+            }
+    return toFlatList
+}
 
 fun <E> List<E>.flatten(): List<Any?> =
         this.flatMap {

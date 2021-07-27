@@ -14,6 +14,11 @@ class Opt2<T : Any> {
     private val lazyT: T by lazy { value!! }
     private var value: T? = null
 
+    /**
+     * Returns Non-nullable value.
+     */
+    fun value(): T = value!!
+
     constructor()
 
     constructor(t: T?) {
