@@ -6,18 +6,7 @@ import kotlin.reflect.full.safeCast
 
 class Opt2<T : Any> {
 
-    /*
-        The lazyT should be operated behind an isPresent() null check always,
-        therefore value!! will never throw an exception.
-        The cost is a lot slower eval with mapper(lazyT) than with mapper(value).
-    */
-    private val lazyT: T by lazy { value!! }
     private var value: T? = null
-
-    /**
-     * Returns Non-nullable value.
-     */
-    fun value(): T = value!!
 
     constructor()
 
@@ -28,9 +17,13 @@ class Opt2<T : Any> {
     fun isPresent(): Boolean = value != null
 
     fun get() = value
+    /**
+     * Returns a Non-nullable value.
+     */
+    fun value(): T = value!!
 
     fun <R : Any> map(mapper: (T) -> R?): Opt2<R> = when {
-        isPresent() -> of(mapper(lazyT))
+        isPresent() -> of(mapper(value!!))
         else -> empty()
     }
 
@@ -59,12 +52,12 @@ class Opt2<T : Any> {
     }
 
     fun filter(predicate: (T) -> Boolean): Opt2<T> = when {
-        isPresent() && predicate(lazyT) -> this
+        isPresent() && predicate(value!!) -> this
         else -> empty()
     }
 
     fun filterNot(predicate: (T) -> Boolean): Opt2<T> = when {
-        isPresent() && !predicate(lazyT) -> this
+        isPresent() && !predicate(value!!) -> this
         else -> empty()
     }
 
@@ -72,9 +65,9 @@ class Opt2<T : Any> {
             this.match({ predicate }, mapper)
 
     fun <V : Any> match(predicate: (T) -> Boolean, mapper: (T) -> V): BiOpt2<T, V> {
-        return this.filter { isPresent() && predicate(lazyT) }
+        return this.filter { isPresent() && predicate(value!!) }
                 .map(mapper)
-                .map { v -> BiOpt2.of(lazyT, v) }
+                .map { v -> BiOpt2.of(value!!, v) }
                 .getOrElse(getBiOpt2OfValueAndEmpty())
     }
 
@@ -91,7 +84,7 @@ class Opt2<T : Any> {
                 .map { it as R }
                 .filter(predicate)
                 .map(mapper)
-                .map { v -> BiOpt2.of(lazyT, v) }
+                .map { v -> BiOpt2.of(value!!, v) }
                 .getOrElse(getBiOpt2OfValueAndEmpty())
     }
 
@@ -102,9 +95,9 @@ class Opt2<T : Any> {
             mapper: (T) -> V,
     ): BiOpt2<T, V> {
 
-        return this.filter { isPresent() && predicate(lazyT) }
+        return this.filter { isPresent() && predicate(value!!) }
                 .map(mapper)
-                .map { newRight -> BiOpt2.of(lazyT, newRight) }
+                .map { newRight -> BiOpt2.of(value!!, newRight) }
                 .getOrElse(getBiOpt2OfValueAndEmpty())
     }
 
@@ -118,17 +111,17 @@ class Opt2<T : Any> {
     }
 
     fun getOrElse(default: T): T = when {
-        isPresent() -> lazyT
+        isPresent() -> value!!
         else -> default
     }
 
     fun getOrElse(defaultProducer: () -> T) = when {
-        isPresent() -> lazyT
+        isPresent() -> value!!
         else -> defaultProducer()
     }
 
     fun <R : Any> getAndMap(mapper: (T) -> R): R? = when {
-        isPresent() -> mapper(lazyT)
+        isPresent() -> mapper(value!!)
         else -> null
     }
 
@@ -139,14 +132,14 @@ class Opt2<T : Any> {
 
     fun ifPresent(consumer: (T) -> Unit): Opt2<T> {
         if (isPresent()) {
-            consumer(lazyT)
+            consumer(value!!)
         }
         return this
     }
 
     fun <R : Any> ifPresentWith(r: Opt2<R>, consumer: (T, R) -> Unit): Opt2<T> {
         if (isPresent() && r.isPresent()) {
-            consumer(lazyT, r.lazyT)
+            consumer(value!!, r.value!!)
         }
         return this
     }
@@ -173,7 +166,7 @@ class Opt2<T : Any> {
     fun <R : Any, V : Any> mapWith(r: R?, mapper: (T, R) -> V): Opt2<V> {
         val ropt = of(r)
         return when {
-            isPresent() && ropt.isPresent() -> of(mapper(lazyT, ropt.lazyT))
+            isPresent() && ropt.isPresent() -> of(mapper(value!!, ropt.value!!))
             else -> empty()
         }
     }
@@ -183,23 +176,23 @@ class Opt2<T : Any> {
         val ropt = of(r)
         val sopt = of(s)
         return when {
-            isPresent() && ropt.isPresent() && sopt.isPresent() -> of(mapper(lazyT, ropt.lazyT, sopt.lazyT))
+            isPresent() && ropt.isPresent() && sopt.isPresent() -> of(mapper(value!!, ropt.value!!, sopt.value!!))
             else -> empty()
         }
     }
 
-    fun <V : Any> mapTo(toType: KClass<V>): Opt2<V> = of(toType.safeCast(lazyT))
+    fun <V : Any> mapTo(toType: KClass<V>): Opt2<V> = of(toType.safeCast(value!!))
 
     fun <R : Any> xmap(extensionMapper: T.() -> R): Opt2<R> = when {
-        isPresent() -> of(lazyT.extensionMapper())
+        isPresent() -> of(value!!.extensionMapper())
         else -> empty()
     }
 
-    // synonymous with(lazyT) { this.extensionMapper() }
+    // synonymous with(value!!) { this.extensionMapper() }
     // is a renamed also() to avoid name clash
     fun x(extensionConsumer: T.() -> Unit): Opt2<T> {
         if (isPresent()) {
-            lazyT.extensionConsumer()
+            value!!.extensionConsumer()
         }
         return this
     }
@@ -221,7 +214,7 @@ class Opt2<T : Any> {
     // if value is true map
     fun <V : Any> mapIf(conditionalMapper: (T) -> V): Opt2<V> {
         return when {
-            isPresent() && value is Boolean && value == true -> conditionalMapper(lazyT).toOpt()
+            isPresent() && value is Boolean && value == true -> conditionalMapper(value!!).toOpt()
             else -> empty()
         }
     }
@@ -229,7 +222,7 @@ class Opt2<T : Any> {
     // if value is false map
     fun <V : Any> mapIfNot(conditionalMapper: (T) -> V): Opt2<V> {
         return when {
-            isPresent() && value is Boolean && value == false -> conditionalMapper(lazyT).toOpt()
+            isPresent() && value is Boolean && value == false -> conditionalMapper(value!!).toOpt()
             else -> empty()
         }
     }
@@ -237,7 +230,7 @@ class Opt2<T : Any> {
     // An external predicate also controls if contents are mapped or not
     fun <V : Any> mapIf(externalState: Boolean, conditionalMapper: (T) -> V): Opt2<V> {
         return when {
-            isPresent() && externalState -> conditionalMapper(lazyT).toOpt()
+            isPresent() && externalState -> conditionalMapper(value!!).toOpt()
             else -> empty()
         }
     }
@@ -288,7 +281,7 @@ class Opt2<T : Any> {
 
         @JvmStatic
         fun <T : Any> of(t: Opt2<T>): Opt2<T> = when {
-            t.isPresent() -> Opt2(t.lazyT)
+            t.isPresent() -> Opt2(t.value!!)
             else -> empty()
         }
 
