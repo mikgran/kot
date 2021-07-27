@@ -879,16 +879,19 @@ internal class Opt2Test {
                 }
     }
 
+    @Suppress("UNUSED_PARAMETER")
+    private fun isTrue(any: Any) = true
+    private fun isOdd(i: Int) = i % 2 == 1
+    private fun hasLetters(a: Any) = a.toString().isNotBlank()
+
     @Test
     fun testMapWhen() {
 
         Opt2.empty<Int>()
-                .mapWhen({ true }, { 1 })
+                .mapWhen(::isTrue) { 1 }
                 .apply {
                     assertFalse(isPresent())
                 }
-
-        fun isOdd(i: Int) = i % 2 == 1
 
         Opt2.of(1)
                 .mapWhen(::isOdd) { it + 1 }
@@ -902,8 +905,6 @@ internal class Opt2Test {
                     assertEquals(2, get())
                 }
 
-        fun hasLetters(a: Any) = a.toString().isNotBlank()
-
         Opt2.of("str")
                 .mapWhen(::hasLetters) { "${it}1" }
                 .apply {
@@ -911,7 +912,7 @@ internal class Opt2Test {
                 }
 
         Opt2.of("str")
-                .mapWhen({ it.length > 3 }, { "$it!" })
+                .mapWhen({ it.length > 3 }) { "$it!" }
                 .apply {
                     assertEquals("str", get())
                 }
