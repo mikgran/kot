@@ -32,7 +32,7 @@ class FieldAccessor private constructor() {
         fun uniquesByParent(type: Any): HashMap<Any, List<Any>> =
                 uniquesByParentImpl(type)
 
-        private fun uniquesByParentImpl(
+        private tailrec fun uniquesByParentImpl(
                 type: Any?,
                 queue: List<Any> = LinkedList(),
                 uniquesByParentMap: HashMap<Any, List<Any>> = LinkedHashMap(),
