@@ -4,7 +4,6 @@ import mg.util.common.PredicateComposition.Companion.not
 import mg.util.common.PredicateComposition.Companion.or
 import mg.util.common.flatten
 import mg.util.db.FieldCache
-import mg.util.db.UidBuilder
 import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
 import mg.util.functional.mapIf
 import mg.util.functional.toOpt
@@ -30,20 +29,55 @@ class FieldAccessor private constructor() {
             field.set(type, value)
         }
 
-        fun uniquesByParent(type: Any, uniquesByParent: HashMap<Any, List<Any>> = LinkedHashMap()): HashMap<Any, List<Any>> {
+        fun uniquesByParent(type: Any): HashMap<Any, List<Any>> =
+                uniquesByParentImpl(type)
+
+        private fun uniquesByParentImpl(
+                type: Any?,
+                queue: List<Any> = LinkedList(),
+                uniquesByParentMap: HashMap<Any, List<Any>> = LinkedHashMap(),
+        ): HashMap<Any, List<Any>> {
+
+            if (type == null) {
+                return uniquesByParentMap
+            }
+            // parent -> childrenList
+            // 0 -> 1, 2, 3, queue = 1, 2, 3
+            // 1 -> 4, 5, queue =  2, 3, 4, 5
+            // 2 -> 6, 7, queue = 3, 4, 5, 6, 7
+            // queue = 4, 5, 6, 7
+            // queue = 5, 6, 7
+            // 5 -> 8, 9, list = 6, 7, 8, 9
+            // queue = 7, 8, 9
+            // queue = 8, 9
+            // queue = 9
+            // queue = []
+            val children = getChildren(type)
+            children.isNotEmpty().mapIf { uniquesByParentMap[type] = children }
+
+            return uniquesByParentImpl(
+                    children.firstOrNull(),
+                    queue + (children.subList(1, children.size)),
+                    uniquesByParentMap
+            )
+        }
+
+        fun childrenByParent(type: Any, childrenByParentMap: HashMap<Any, List<Any>> = LinkedHashMap()): HashMap<Any, List<Any>> {
             when (type) {
                 is MutableList<*> ->
-                    type.filterNotNull().forEach {
-                        uniquesByParent(it, uniquesByParent)
-                    }
+                    type.filterNotNull()
+                            .forEach {
+                                childrenByParent(it, childrenByParentMap)
+                            }
                 else ->
                     getChildren(type).also { list ->
-                        list.isNotEmpty().mapIf { uniquesByParent[type] = list }
+                        list.isNotEmpty()
+                                .mapIf { childrenByParentMap[type] = list }
 
-                        uniquesByParent(list, uniquesByParent)
+                        childrenByParent(list, childrenByParentMap)
                     }
             }
-            return uniquesByParent
+            return childrenByParentMap
         }
 
         private fun getChildren(obj: Any): List<Any> {

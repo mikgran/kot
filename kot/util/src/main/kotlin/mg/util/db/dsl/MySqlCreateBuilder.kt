@@ -26,7 +26,7 @@ open class MySqlCreateBuilder {
     */
     fun build(@Suppress("UNUSED_PARAMETER") p: Parameters, sql: Sql): String {
 
-        return FieldAccessor.uniquesByParent(sql.t).toOpt()
+        return FieldAccessor.childrenByParent(sql.t).toOpt()
                 .filter { it.isNotEmpty() }
                 .getOrElse { hashMapOf(sql.t to emptyList()) }
                 .map(::buildParentAndChildCreateTables)

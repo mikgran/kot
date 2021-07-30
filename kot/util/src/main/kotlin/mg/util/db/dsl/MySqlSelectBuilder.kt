@@ -18,7 +18,12 @@ class MySqlSelectBuilder {
 
         val t = sql.t
         p.tableFragments.add(0, buildTableFragment(t))
-        p.joinsMap.putAll(buildJoinsMap(t, mutableMapOf()))
+        // p.joinsMap.putAll(buildJoinsMap(t, mutableMapOf()))
+
+        FieldAccessor.childrenByParent(t)
+                .also {
+                    p.joinsMap.putAll(it)
+                }
 
         // XXX: 100000, joinsmap is not getting all sub-relations
         p.joinsMap.also { Common.printClassSimpleNames(it.toMap()) }

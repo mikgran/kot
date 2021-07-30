@@ -1,6 +1,5 @@
 package mg.util.db.dsl
 
-import mg.util.common.Common
 import mg.util.db.FieldCache
 import mg.util.db.FieldCache.Fields
 import mg.util.db.UidBuilder
@@ -16,7 +15,7 @@ class MySqlInsertBuilder {
         val sqls = mutableListOf<String>()
         val type = sql.t
 
-        FieldAccessor.uniquesByParent(type).toOpt()
+        FieldAccessor.childrenByParent(type).toOpt()
                 .x {
                     putIfAbsent(type, listOf())
                     entries.forEachIndexed { index, entry ->
