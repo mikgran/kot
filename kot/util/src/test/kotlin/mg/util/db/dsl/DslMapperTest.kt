@@ -172,7 +172,8 @@ internal class DslMapperTest {
     @Test
     fun testInsertOneToManyMultiDepth() {
 
-        val idBuilder = IncrementalIdBuilder()
+        val parentIdBuilder = IncrementalIdBuilder()
+        val childIdBuilder = IncrementalIdBuilder()
         val dslAddress4 = DSLAddress4("AAAA")
         val dslPerson4 = DSLPerson4("FFFF", "LLLL", dslAddress4)
         val dslFloors4 = listOf(DSLFloor4(1), DSLFloor4(2), DSLFloor4(3))

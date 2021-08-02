@@ -8,7 +8,8 @@ import mg.util.functional.toOpt
 
 class MySqlInsertBuilder {
 
-    private val idBuilder = IncrementalIdBuilder()
+    private val childIdBuilder = IncrementalIdBuilder()
+    private val parentIdBuilder = IncrementalIdBuilder()
 
     fun build(@Suppress("UNUSED_PARAMETER") p: Sql.Parameters, sql: Sql): String {
 
@@ -17,13 +18,14 @@ class MySqlInsertBuilder {
 
         FieldAccessor.childrenByParent(type).toOpt()
                 .x {
+                    // this.entries.forEach { println("key: ${it.key}, value: ${it.value}") }
                     putIfAbsent(type, listOf())
                     entries.forEachIndexed { index, entry ->
                         buildInsertIntos(index, entry, sqls)
                     }
                 }
 
-        return sqls.joinToString(";")
+        return sqls.joinToString(";")//.also { println("insertIntos:\n${it.split(";").joinToString(";\n")}\n")}
     }
 
     private fun buildInsertIntos(index: Int, entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
@@ -31,13 +33,15 @@ class MySqlInsertBuilder {
         val parentUid = UidBuilder.buildUniqueId(parent)
         val isFirstEntry = index == 0
 
+        // println("\nbuildInsertIntos: parent: $parent")
+
         parent.toOpt()
                 .map(FieldCache::fieldsFor)
                 .match(isFirstEntry) {
                     sqls += buildInsert(parent)
                 }
                 .match({ isFirstEntry && it.hasChildren() }) {
-                    sqls += "SELECT LAST_INSERT_ID() INTO @${(parentUid + idBuilder.next(parentUid))}"
+                    sqls += "SELECT LAST_INSERT_ID() INTO @${(parentUid + childIdBuilder.next(parentUid))}"
                 }
                 .match(Fields::hasChildren) { fields ->
                     sqls += fields.customs
@@ -67,15 +71,23 @@ class MySqlInsertBuilder {
                 .joinToString(";") {
                     buildInsert(it) { childUid, childFields, childFieldsValues ->
                         buildParentToChild(parent, childUid, childFields, childFieldsValues)
+                        // .also { sql -> println("buildParentToChild: $sql") }
                     }
                 }
     }
 
-    private fun buildParentToChild(parent: Any, childUid: String, childFields: Opt2<String>, childFieldsValues: Opt2<String>): String {
+    private fun buildParentToChild(
+            parent: Any,
+            childUid: String,
+            childFields: Opt2<String>,
+            childFieldsValues: Opt2<String>,
+    ): String {
         val parentUid = UidBuilder.buildUniqueId(parent)
         val tableJoinUid = parentUid + childUid
-        val parentLastId = parentUid + idBuilder[parentUid]
-        val childLastId = childUid + idBuilder.next(childUid)
+        val parentLastId = parentUid + parentIdBuilder.next(parentUid)
+        println("\nbuildParentToChild: parentLastId: $parentLastId")
+        val childLastId = childUid + childIdBuilder.next(childUid)
+        println("buildParentToChild: childLastId: $childLastId")
 
         return "INSERT INTO $childUid ($childFields) VALUES ($childFieldsValues);" +
                 "SELECT LAST_INSERT_ID() INTO @$childLastId;" +

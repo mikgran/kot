@@ -23,7 +23,7 @@ class MySqlSelectBuilder {
         p.joinsMap.putAll(FieldAccessor.uniqueChildrenByParent(t))
 
         // XXX: 100000, joinsmap is not getting all sub-relations
-        Common.printClassSimpleNames(p.joinsMap.toMap())
+        // Common.printClassSimpleNames(p.joinsMap.toMap())
 
         p.toOpt()
                 .map { buildJoinsForNaturalRefs(it) }

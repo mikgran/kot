@@ -58,6 +58,7 @@ internal class ObjectBuilderTest {
         cleaner.registerJoin(obSimpleComp to obSubComp)
 
         dbo.ensureTable(obMultipleComp, connection)
+
         dbo.save(obMultipleComposition, connection)
 
         val results = queryResults(obMultipleComposition, connection)
@@ -72,7 +73,7 @@ internal class ObjectBuilderTest {
         val uid = buildUniqueId(t)
         val sql = Sql select t
         sql.parameters().isPrimaryIdIncluded = true
-        val sqlStr = DslMapperFactory.get().map(sql).also { println(it) }
+        val sqlStr = DslMapperFactory.get().map(sql)//.also { println(it) }
         return Opt2.of(connection.createStatement())
                 .map { it.executeQuery(sqlStr) }
                 .filter { it.next() }
