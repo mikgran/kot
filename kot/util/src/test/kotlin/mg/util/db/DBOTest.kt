@@ -146,7 +146,7 @@ internal class DBOTest {
         val sql = Sql select DBOBilling2() where DBOBilling2::amount eq 10//  and DBOPerson3::firstName eq "Firstname" and DBOPerson3::lastName eq "Lastname"
         sql.parameters().isPrimaryIdIncluded = true
 
-        val sqlStr = DslMapperFactory.get().map(sql)// .also { println(it) }
+        val sqlStr = DslMapperFactory.get().map(sql).also { println(it) }
 
 //        println()
 //        println("dboBilling2: $dboBilling2")

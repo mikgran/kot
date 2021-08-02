@@ -70,7 +70,7 @@ class FieldAccessor private constructor() {
             )
         }
 
-        private fun getChildrenImpl(obj: Any, buildLists: (List<Any>, List<Any>) -> List<Any>): List<Any> {
+        private fun getChildrenImpl(obj: Any, combineLists: (List<Any>, List<Any>) -> List<Any>): List<Any> {
             val fields = FieldCache.fieldsFor(obj)
             val customs = fields.customs
                     .map { fieldGet(it, obj) }
@@ -78,7 +78,7 @@ class FieldAccessor private constructor() {
                     .map { fieldGet(it, obj) }
                     .flatten()
                     .filterNotNull()
-            return buildLists(customs, listsOfCustoms)
+            return combineLists(customs, listsOfCustoms)
         }
 
         private fun getUniqueChildren(obj: Any): List<Any> =

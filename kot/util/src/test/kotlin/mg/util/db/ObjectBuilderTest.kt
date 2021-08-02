@@ -44,12 +44,8 @@ internal class ObjectBuilderTest {
                         compositionValue = 555,
                         obSimple = OBSimple(simple = "1111"),
                         obSimpleComps = listOf(
-                                OBSimpleComp(
-                                        comp = "AAAA",
-                                        sub = OBSubComp(sub = 77)),
-                                OBSimpleComp(
-                                        comp = "BBBB",
-                                        sub = OBSubComp(sub = 88)))
+                                OBSimpleComp(comp = "AAAA", sub = OBSubComp(sub = 77)),
+                                OBSimpleComp(comp = "BBBB", sub = OBSubComp(sub = 88)))
                 )
 
         val connection = dbConfig.connection

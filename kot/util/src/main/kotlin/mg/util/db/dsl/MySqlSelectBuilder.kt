@@ -20,13 +20,10 @@ class MySqlSelectBuilder {
         p.tableFragments.add(0, buildTableFragment(t))
         // p.joinsMap.putAll(buildJoinsMap(t, mutableMapOf()))
 
-        FieldAccessor.childrenByParent(t)
-                .also {
-                    p.joinsMap.putAll(it)
-                }
+        p.joinsMap.putAll(FieldAccessor.uniqueChildrenByParent(t))
 
         // XXX: 100000, joinsmap is not getting all sub-relations
-        p.joinsMap.also { Common.printClassSimpleNames(it.toMap()) }
+        Common.printClassSimpleNames(p.joinsMap.toMap())
 
         p.toOpt()
                 .map { buildJoinsForNaturalRefs(it) }
