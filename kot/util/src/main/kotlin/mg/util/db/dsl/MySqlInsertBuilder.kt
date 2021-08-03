@@ -32,8 +32,7 @@ class MySqlInsertBuilder {
         val parent = entry.key
         val parentUid = UidBuilder.buildUniqueId(parent)
         val isFirstEntry = index == 0
-
-        // println("\nbuildInsertIntos: parent: $parent")
+        parentIdBuilder.next(parentUid)
 
         parent.toOpt()
                 .map(FieldCache::fieldsFor)
@@ -41,7 +40,7 @@ class MySqlInsertBuilder {
                     sqls += buildInsert(parent)
                 }
                 .match({ isFirstEntry && it.hasChildren() }) {
-                    sqls += "SELECT LAST_INSERT_ID() INTO @${(parentUid + childIdBuilder.next(parentUid))}"
+                    sqls += "SELECT LAST_INSERT_ID() INTO @${(parentUid + parentIdBuilder[parentUid])}"
                 }
                 .match(Fields::hasChildren) { fields ->
                     sqls += fields.customs
@@ -59,10 +58,11 @@ class MySqlInsertBuilder {
                 "INSERT INTO $uid ($fields) VALUES ($fieldsValues)"
             }
 
-    private fun buildOneToOne(child: Any, parent: Any): String =
-            buildInsert(child) { childUid, childFields, childFieldsValues ->
-                buildParentToChild(parent, childUid, childFields, childFieldsValues)
-            }
+    private fun buildOneToOne(child: Any, parent: Any): String {
+        return buildInsert(child) { childUid, childFields, childFieldsValues ->
+            buildParentToChild(parent, childUid, childFields, childFieldsValues)
+        }
+    }
 
     // TODO: 90 add test coverage: one-to-many relation
     private fun buildOneToMany(children: List<*>, parent: Any): String {
@@ -84,7 +84,7 @@ class MySqlInsertBuilder {
     ): String {
         val parentUid = UidBuilder.buildUniqueId(parent)
         val tableJoinUid = parentUid + childUid
-        val parentLastId = parentUid + parentIdBuilder.next(parentUid)
+        val parentLastId = parentUid + parentIdBuilder[parentUid]
         println("\nbuildParentToChild: parentLastId: $parentLastId")
         val childLastId = childUid + childIdBuilder.next(childUid)
         println("buildParentToChild: childLastId: $childLastId")

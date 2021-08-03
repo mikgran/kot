@@ -108,13 +108,14 @@ internal class DslMapperTest {
     @Test
     fun testInsertOneToOneRelation() {
 
-        val idBuilder = IncrementalIdBuilder()
+        val childIdBuilder = IncrementalIdBuilder()
+        val parentIdBuilder = IncrementalIdBuilder()
         val dslAddress2 = DSLAddress2("anAddress")
         val dslPlace2 = DSLPlace2(dslAddress2, rentInCents = 80000)
         val dslPlace2Uid = UidBuilder.buildUniqueId(dslPlace2)
         val dslAddress2Uid = UidBuilder.buildUniqueId(dslAddress2)
-        idBuilder.next(dslPlace2Uid)
-        idBuilder.next(dslAddress2Uid)
+        parentIdBuilder.next(dslPlace2Uid)
+        childIdBuilder.next(dslAddress2Uid)
 
         val sql = Sql insert dslPlace2
 
@@ -122,10 +123,10 @@ internal class DslMapperTest {
 
         val expected = "" +
                 buildInsertInto(dslPlace2Uid, l("rentInCents"), l("80000")) +
-                buildSelectLastInsertId(idBuilder, dslPlace2Uid) +
+                buildSelectLastInsertId(parentIdBuilder, dslPlace2Uid) +
                 buildInsertInto(dslAddress2Uid, l("fullAddress"), l("anAddress")) +
-                buildSelectLastInsertId(idBuilder, dslAddress2Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace2Uid, dslAddress2Uid, "")
+                buildSelectLastInsertId(childIdBuilder, dslAddress2Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace2Uid, dslAddress2Uid, "")
 
         TestUtil.expect(expected, candidate)
     }
@@ -133,7 +134,8 @@ internal class DslMapperTest {
     @Test
     fun testInsertOneToManyRelation() {
 
-        val idBuilder = IncrementalIdBuilder()
+        val childIdBuilder = IncrementalIdBuilder()
+        val parentIdBuilder = IncrementalIdBuilder()
         val dslAddress3 = DSLAddress3("anAddress")
         val dslFloors3 = listOf(DSLFloor3(10), DSLFloor3(20))
         val dslPlace3 = DSLPlace3(dslAddress3, dslFloors3, rentInCents = 80000)
@@ -141,30 +143,30 @@ internal class DslMapperTest {
         val dslAddress3Uid = UidBuilder.buildUniqueId(dslAddress3)
         val dslPlace3Uid = UidBuilder.buildUniqueId(dslPlace3)
         val dslFloor3Uid = UidBuilder.buildUniqueId(DSLFloor3())
-        idBuilder.next(dslPlace3Uid)
-        idBuilder.next(dslAddress3Uid)
-        idBuilder.next(dslFloor3Uid)
+        parentIdBuilder.next(dslPlace3Uid)
+        childIdBuilder.next(dslAddress3Uid)
+        childIdBuilder.next(dslFloor3Uid)
 
         val sql = Sql insert dslPlace3
         val candidate: String = mapper.map(sql)
 
         val expected = "" +
                 buildInsertInto(dslPlace3Uid, l("rentInCents"), l("80000")) +
-                buildSelectLastInsertId(idBuilder, dslPlace3Uid) +
+                buildSelectLastInsertId(parentIdBuilder, dslPlace3Uid) +
 
                 buildInsertInto(dslAddress3Uid, l("fullAddress"), l("anAddress")) +
-                buildSelectLastInsertId(idBuilder, dslAddress3Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace3Uid, dslAddress3Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslAddress3Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace3Uid, dslAddress3Uid) +
 
                 buildInsertInto(dslFloor3Uid, l("number"), l("10")) +
-                buildSelectLastInsertId(idBuilder, dslFloor3Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace3Uid, dslFloor3Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslFloor3Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace3Uid, dslFloor3Uid) +
 
-                "".also { idBuilder.next(dslFloor3Uid) } +
+                "".also { childIdBuilder.next(dslFloor3Uid) } +
 
                 buildInsertInto(dslFloor3Uid, l("number"), l("20")) +
-                buildSelectLastInsertId(idBuilder, dslFloor3Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace3Uid, dslFloor3Uid, "")
+                buildSelectLastInsertId(childIdBuilder, dslFloor3Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace3Uid, dslFloor3Uid, "")
 
         TestUtil.expect(expected, candidate)
     }
@@ -184,41 +186,41 @@ internal class DslMapperTest {
         val dslPlace4Uid = UidBuilder.buildUniqueId(dslPlace4)
         val dslFloor4Uid = UidBuilder.buildUniqueId(DSLFloor4())
 
-        idBuilder.next(dslPlace4Uid)
-        idBuilder.next(dslPerson4Uid)
-        idBuilder.next(dslAddress4Uid)
-        idBuilder.next(dslFloor4Uid)
+        parentIdBuilder.next(dslPlace4Uid)
+        childIdBuilder.next(dslPerson4Uid)
+        childIdBuilder.next(dslAddress4Uid)
+        childIdBuilder.next(dslFloor4Uid)
 
         val sql = Sql insert dslPlace4
         val candidate: String = mapper.map(sql)
 
         val expected = "" +
                 buildInsertInto(dslPlace4Uid, l("rentInCents"), l("50000")) +
-                buildSelectLastInsertId(idBuilder, dslPlace4Uid) +
+                buildSelectLastInsertId(parentIdBuilder, dslPlace4Uid) +
 
                 buildInsertInto(dslPerson4Uid, l("firstName", "lastName"), l("FFFF", "LLLL")) +
-                buildSelectLastInsertId(idBuilder, dslPerson4Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace4Uid, dslPerson4Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslPerson4Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace4Uid, dslPerson4Uid) +
 
                 buildInsertInto(dslFloor4Uid, l("number"), l("1")) +
-                buildSelectLastInsertId(idBuilder, dslFloor4Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace4Uid, dslFloor4Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslFloor4Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace4Uid, dslFloor4Uid) +
 
-                "".also { idBuilder.next(dslFloor4Uid) } +
+                "".also { childIdBuilder.next(dslFloor4Uid) } +
 
                 buildInsertInto(dslFloor4Uid, l("number"), l("2")) +
-                buildSelectLastInsertId(idBuilder, dslFloor4Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace4Uid, dslFloor4Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslFloor4Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace4Uid, dslFloor4Uid) +
 
-                "".also { idBuilder.next(dslFloor4Uid) } +
+                "".also { childIdBuilder.next(dslFloor4Uid); parentIdBuilder.next(dslPerson4Uid) } +
 
                 buildInsertInto(dslFloor4Uid, l("number"), l("3")) +
-                buildSelectLastInsertId(idBuilder, dslFloor4Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace4Uid, dslFloor4Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslFloor4Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace4Uid, dslFloor4Uid) +
 
                 buildInsertInto(dslAddress4Uid, l("fullAddress"), l("AAAA")) +
-                buildSelectLastInsertId(idBuilder, dslAddress4Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPerson4Uid, dslAddress4Uid, "")
+                buildSelectLastInsertId(childIdBuilder, dslAddress4Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPerson4Uid, dslAddress4Uid, "")
 
         TestUtil.expect(expected, candidate)
     }
@@ -226,8 +228,9 @@ internal class DslMapperTest {
     @Test
     fun testInsertOneToManyMultiDepth2() {
 
-        val idBuilder = IncrementalIdBuilder()
-        val dslType5 = DSLType5(typeName = "TTTT")
+        val childIdBuilder = IncrementalIdBuilder()
+        val parentIdBuilder = IncrementalIdBuilder()
+        val dslType5 = DSLType5(typeName = "TTTT") // rows doubled in DB, no uniques cared about
         val dslCar5a = DSLCar5(name = "AAAA", type = dslType5)
         val dslCar5b = DSLCar5(name = "BBBB", type = dslType5)
         val dslPlace5 = DSLPlace5(l(dslCar5a, dslCar5b), rentInCents = 555)
@@ -237,33 +240,35 @@ internal class DslMapperTest {
         val dslPlace5Uid = UidBuilder.buildUniqueId(dslPlace5)
         val dslCar5Uid = UidBuilder.buildUniqueId(dslCar5a)
         val dslType5Uid = UidBuilder.buildUniqueId(dslType5)
-        idBuilder.next(dslPlace5Uid)
-        idBuilder.next(dslCar5Uid)
-        idBuilder.next(dslType5Uid)
+        parentIdBuilder.next(dslPlace5Uid)
+        childIdBuilder.next(dslCar5Uid)
+        childIdBuilder.next(dslType5Uid)
 
         val expected = "" +
                 buildInsertInto(dslPlace5Uid, l("rentInCents"), l("555")) +
-                buildSelectLastInsertId(idBuilder, dslPlace5Uid) +
+                buildSelectLastInsertId(parentIdBuilder, dslPlace5Uid) +
 
                 buildInsertInto(dslCar5Uid, l("name"), l("AAAA")) +
-                buildSelectLastInsertId(idBuilder, dslCar5Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace5Uid, dslCar5Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslCar5Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace5Uid, dslCar5Uid) +
 
-                "".also { idBuilder.next(dslCar5Uid) } +
+                "".also { childIdBuilder.next(dslCar5Uid) } +
 
                 buildInsertInto(dslCar5Uid, l("name"), l("BBBB")) +
-                buildSelectLastInsertId(idBuilder, dslCar5Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslPlace5Uid, dslCar5Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslCar5Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslPlace5Uid, dslCar5Uid) +
+
+                "".also { parentIdBuilder.next(dslCar5Uid) } +
 
                 buildInsertInto(dslType5Uid, l("typeName"), l("TTTT")) +
-                buildSelectLastInsertId(idBuilder, dslType5Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslCar5Uid, dslType5Uid) +
+                buildSelectLastInsertId(childIdBuilder, dslType5Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslCar5Uid, dslType5Uid) +
 
-                "".also { idBuilder.next(dslType5Uid) } +
+                "".also { childIdBuilder.next(dslType5Uid); parentIdBuilder.next(dslCar5Uid) } +
 
                 buildInsertInto(dslType5Uid, l("typeName"), l("TTTT")) +
-                buildSelectLastInsertId(idBuilder, dslType5Uid) +
-                buildInsertJoinForParentAndChild(idBuilder, dslCar5Uid, dslType5Uid, "")
+                buildSelectLastInsertId(childIdBuilder, dslType5Uid) +
+                buildInsertJoinForParentAndChild(childIdBuilder, parentIdBuilder, dslCar5Uid, dslType5Uid, "")
 
         TestUtil.expect(expected, candidate)
     }
@@ -437,9 +442,9 @@ internal class DslMapperTest {
         return "INSERT INTO $tableName ($colsSql) VALUES ($valuesSql)$trail"
     }
 
-    private fun buildInsertJoinForParentAndChild(idBuilder: IncrementalIdBuilder, parentUid: String, childUid: String, trail: String = ";"): String {
-        val parentLastId = parentUid + idBuilder[parentUid]
-        val childLastId = childUid + idBuilder[childUid]
+    private fun buildInsertJoinForParentAndChild(childIdBuilder: IncrementalIdBuilder, parentIdBuilder: IncrementalIdBuilder, parentUid: String, childUid: String, trail: String = ";"): String {
+        val parentLastId = parentUid + parentIdBuilder[parentUid]
+        val childLastId = childUid + childIdBuilder[childUid]
 
         return "INSERT INTO $parentUid$childUid (${parentUid}refid, ${childUid}refid) " +
                 "VALUES (@$parentLastId, @$childLastId)$trail"
