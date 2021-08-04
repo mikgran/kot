@@ -3,7 +3,7 @@ package mg.util.db.dsl
 import mg.util.common.Cache
 import mg.util.functional.toOpt
 
-class IncrementalIdBuilder {
+class IncrementalNumberBuilder {
 
     private val cache = Cache.of<String, Int>()
 
@@ -23,5 +23,5 @@ class IncrementalIdBuilder {
 
     operator fun get(key: String): Int? = cache[key]
 
-    internal fun contents() = cache
+    internal fun cache() = cache
 }

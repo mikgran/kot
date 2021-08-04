@@ -8,8 +8,8 @@ import mg.util.functional.toOpt
 
 class MySqlInsertBuilder {
 
-    private val childIdBuilder = IncrementalIdBuilder()
-    private val parentIdBuilder = IncrementalIdBuilder()
+    private val childIdBuilder = IncrementalNumberBuilder()
+    private val parentIdBuilder = IncrementalNumberBuilder()
 
     fun build(@Suppress("UNUSED_PARAMETER") p: Sql.Parameters, sql: Sql): String {
 

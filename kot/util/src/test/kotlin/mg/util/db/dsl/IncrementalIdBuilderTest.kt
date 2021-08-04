@@ -7,10 +7,12 @@ import org.junit.jupiter.api.Test
 
 internal class IncrementalIdBuilderTest {
 
-    private val idBuilder = IncrementalIdBuilder()
+    private fun IncrementalNumberBuilder.nextIncBuilderContentSize() = cache().contents().size
 
     @Test
     fun testBuildingLastId() {
+
+        val incBuilder = IncrementalNumberBuilder()
 
         data class TestClass1(var s: String = "s", var s2: String = "s")
         data class SomeTestClass2(var s: String = "s")
@@ -18,31 +20,42 @@ internal class IncrementalIdBuilderTest {
         val className = TestClass1().classSimpleName()
         var idCandidate: Int?
 
-        assertEquals(0, nextIdBuilderContentSize())
+        assertEquals(0, incBuilder.nextIncBuilderContentSize())
 
-        idCandidate = idBuilder.next(className)
+        idCandidate = incBuilder.next(className)
 
         assertEquals(1, idCandidate)
-        assertEquals(1, nextIdBuilderContentSize())
+        assertEquals(1, incBuilder.nextIncBuilderContentSize())
 
-        idCandidate = idBuilder.next(className)
+        idCandidate = incBuilder.next(className)
 
         assertEquals(2, idCandidate)
-        assertEquals(1, nextIdBuilderContentSize())
+        assertEquals(1, incBuilder.nextIncBuilderContentSize())
 
         val className2 = SomeTestClass2().classSimpleName()
-        idCandidate = idBuilder.next(className2)
+        idCandidate = incBuilder.next(className2)
 
         assertEquals(1, idCandidate)
-        assertEquals(2, nextIdBuilderContentSize())
+        assertEquals(2, incBuilder.nextIncBuilderContentSize())
 
         val expectedMap = mutableMapOf(className to 2, className2 to 1)
-        val contents = idBuilder.contents().contents()
+        val contents = incBuilder.cache().contents()
         assertTrue(contents.entries.containsAll(expectedMap.entries))
 
-        assertEquals(2, idBuilder[className])
-        assertEquals(1, idBuilder[className2])
+        assertEquals(2, incBuilder[className])
+        assertEquals(1, incBuilder[className2])
     }
 
-    private fun nextIdBuilderContentSize() = idBuilder.contents().contents().size
+    @Test
+    fun testId() {
+
+        val incBuilder = IncrementalNumberBuilder()
+
+
+
+
+
+    }
+
+
 }
