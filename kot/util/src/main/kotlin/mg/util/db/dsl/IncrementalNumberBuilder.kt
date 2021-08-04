@@ -16,7 +16,7 @@ class IncrementalNumberBuilder {
     }
 
     // return key + cache[key] or null if no key found
-    fun id(key: String): String? =
+    fun inc(key: String): String? =
             cache[key].toOpt()
                     .map { key + it }
                     .get()

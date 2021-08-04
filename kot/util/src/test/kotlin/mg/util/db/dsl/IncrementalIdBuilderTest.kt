@@ -1,6 +1,7 @@
 package mg.util.db.dsl
 
 import mg.util.common.Common.classSimpleName
+import mg.util.common.TestUtil
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -50,11 +51,14 @@ internal class IncrementalIdBuilderTest {
     fun testId() {
 
         val incBuilder = IncrementalNumberBuilder()
+        val str = "string"
+        var candidate: String? = incBuilder.inc(str)
 
+        TestUtil.expect("${str}1", candidate)
 
+        candidate = incBuilder.inc(str)
 
-
-
+        TestUtil.expect("${str}2", candidate)
     }
 
 
