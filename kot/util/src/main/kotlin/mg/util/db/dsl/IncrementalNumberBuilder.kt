@@ -14,7 +14,11 @@ class IncrementalNumberBuilder {
                     .c { cache[str] = it }
                     .value()
 
-    fun inc(key: String): String = key + next(key)
+    fun nextNamed(key: String): String = key + next(key)
+    fun getNamed(key: String): String? =
+            this[key].toOpt()
+                    .map { key + it }
+                    .get()
 
     operator fun get(key: String): Int? = cache[key]
 

@@ -2,16 +2,15 @@ package mg.util.db.dsl
 
 import mg.util.common.Common.classSimpleName
 import mg.util.common.TestUtil
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class IncrementalIdBuilderTest {
 
-    private fun IncrementalNumberBuilder.nextIncBuilderContentSize() = cache().contents().size
+    private fun IncrementalNumberBuilder.incBuilderContentSize() = cache().contents().size
 
     @Test
-    fun testBuildingLastId() {
+    fun testNext() {
 
         val incBuilder = IncrementalNumberBuilder()
 
@@ -19,25 +18,25 @@ internal class IncrementalIdBuilderTest {
         data class SomeTestClass2(var s: String = "s")
 
         val className = TestClass1().classSimpleName()
-        var idCandidate: Int?
+        var numberCandidate: Int?
 
-        assertEquals(0, incBuilder.nextIncBuilderContentSize())
+        assertEquals(0, incBuilder.incBuilderContentSize())
 
-        idCandidate = incBuilder.next(className)
+        numberCandidate = incBuilder.next(className)
 
-        assertEquals(1, idCandidate)
-        assertEquals(1, incBuilder.nextIncBuilderContentSize())
+        assertEquals(1, numberCandidate)
+        assertEquals(1, incBuilder.incBuilderContentSize())
 
-        idCandidate = incBuilder.next(className)
+        numberCandidate = incBuilder.next(className)
 
-        assertEquals(2, idCandidate)
-        assertEquals(1, incBuilder.nextIncBuilderContentSize())
+        assertEquals(2, numberCandidate)
+        assertEquals(1, incBuilder.incBuilderContentSize())
 
         val className2 = SomeTestClass2().classSimpleName()
-        idCandidate = incBuilder.next(className2)
+        numberCandidate = incBuilder.next(className2)
 
-        assertEquals(1, idCandidate)
-        assertEquals(2, incBuilder.nextIncBuilderContentSize())
+        assertEquals(1, numberCandidate)
+        assertEquals(2, incBuilder.incBuilderContentSize())
 
         val expectedMap = mutableMapOf(className to 2, className2 to 1)
         val contents = incBuilder.cache().contents()
@@ -48,19 +47,35 @@ internal class IncrementalIdBuilderTest {
     }
 
     @Test
-    fun testId() {
+    fun testNextNamed() {
 
         val incBuilder = IncrementalNumberBuilder()
         val str = "string"
-        var candidate: String? = incBuilder.inc(str)
+        var candidate: String? = incBuilder.nextNamed(str)
 
         TestUtil.expect("${str}1", candidate)
 
-        candidate = incBuilder.inc(str)
-
-        incBuilder.cache().contents().entries.forEach { println(it) }
+        candidate = incBuilder.nextNamed(str)
 
         TestUtil.expect("${str}2", candidate)
+    }
+
+    @Test
+    fun testGetNamed() {
+
+        val str = "string"
+        val incBuilder = IncrementalNumberBuilder()
+
+        incBuilder.next(str)
+        incBuilder.next(str)
+
+        var candidate: String? = incBuilder.getNamed(str)
+
+        TestUtil.expect("${str}2", candidate)
+
+        candidate = incBuilder.getNamed("string2")
+
+        assertNull(candidate)
     }
 
 

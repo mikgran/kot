@@ -291,7 +291,7 @@ internal class DslMapperTest {
     }
 
     private fun buildSelectLastInsertId(idBuilder: IncrementalNumberBuilder, lastId: String, trail: String = ";"): String =
-            "SELECT LAST_INSERT_ID() INTO @${lastId + idBuilder[lastId]}$trail"
+            "SELECT LAST_INSERT_ID() INTO @${idBuilder.getNamed(lastId)}$trail"
 
     @Test
     fun testBuildingSqlFromDslJoinByNaturalReference() {
@@ -443,8 +443,8 @@ internal class DslMapperTest {
     }
 
     private fun buildInsertJoinForParentAndChild(childIdBuilder: IncrementalNumberBuilder, parentIdBuilder: IncrementalNumberBuilder, parentUid: String, childUid: String, trail: String = ";"): String {
-        val parentLastId = parentUid + parentIdBuilder[parentUid]
-        val childLastId = childUid + childIdBuilder[childUid]
+        val parentLastId = parentIdBuilder.getNamed(parentUid)
+        val childLastId = childIdBuilder.getNamed(childUid)
 
         return "INSERT INTO $parentUid$childUid (${parentUid}refid, ${childUid}refid) " +
                 "VALUES (@$parentLastId, @$childLastId)$trail"
