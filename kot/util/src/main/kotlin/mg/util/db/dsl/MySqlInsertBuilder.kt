@@ -40,7 +40,7 @@ class MySqlInsertBuilder {
                     sqls += buildInsert(parent)
                 }
                 .match({ isFirstEntry && it.hasChildren() }) {
-                    sqls += "SELECT LAST_INSERT_ID() INTO @${(parentUid + parentIdBuilder[parentUid])}"
+                    sqls += "SELECT LAST_INSERT_ID() INTO @${(parentIdBuilder.getNamed(parentUid))}"
                 }
                 .match(Fields::hasChildren) { fields ->
                     sqls += fields.customs
@@ -84,10 +84,11 @@ class MySqlInsertBuilder {
     ): String {
         val parentUid = UidBuilder.buildUniqueId(parent)
         val tableJoinUid = parentUid + childUid
-        val parentLastId = parentUid + parentIdBuilder[parentUid]
-        println("\nbuildParentToChild: parentLastId: $parentLastId")
-        val childLastId = childUid + childIdBuilder.next(childUid)
-        println("buildParentToChild: childLastId: $childLastId")
+        val parentLastId = parentIdBuilder.getNamed(parentUid)
+        val childLastId = childIdBuilder.nextNamed(childUid)
+
+        // println("\nbuildParentToChild: parentLastId: $parentLastId")
+        // println("buildParentToChild: childLastId: $childLastId")
 
         return "INSERT INTO $childUid ($childFields) VALUES ($childFieldsValues);" +
                 "SELECT LAST_INSERT_ID() INTO @$childLastId;" +
