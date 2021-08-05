@@ -58,6 +58,8 @@ internal class IncrementalIdBuilderTest {
 
         candidate = incBuilder.inc(str)
 
+        incBuilder.cache().contents().entries.forEach { println(it) }
+
         TestUtil.expect("${str}2", candidate)
     }
 
