@@ -40,7 +40,7 @@ class MySqlInsertBuilder {
                     sqls += buildInsert(parent)
                 }
                 .match({ isFirstEntry && it.hasChildren() }) {
-                    sqls += "SELECT LAST_INSERT_ID() INTO @${(parentIdBuilder.getNamed(parentUid))}"
+                    sqls += "SELECT LAST_INSERT_ID() INTO @${parentIdBuilder.getNamed(parentUid)}"
                 }
                 .match(Fields::hasChildren) { fields ->
                     sqls += fields.customs
