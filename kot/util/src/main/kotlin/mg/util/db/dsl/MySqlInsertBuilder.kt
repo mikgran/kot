@@ -18,14 +18,13 @@ class MySqlInsertBuilder {
 
         FieldAccessor.childrenByParent(type).toOpt()
                 .x {
-                    // this.entries.forEach { println("key: ${it.key}, value: ${it.value}") }
                     putIfAbsent(type, listOf())
                     entries.forEachIndexed { index, entry ->
                         buildInsertIntos(index, entry, sqls)
                     }
                 }
 
-        return sqls.joinToString(";")//.also { println("insertIntos:\n${it.split(";").joinToString(";\n")}\n")}
+        return sqls.joinToString(";")
     }
 
     private fun buildInsertIntos(index: Int, entry: MutableMap.MutableEntry<Any, List<Any>>, sqls: MutableList<String>) {
@@ -71,7 +70,6 @@ class MySqlInsertBuilder {
                 .joinToString(";") {
                     buildInsert(it) { childUid, childFields, childFieldsValues ->
                         buildParentToChild(parent, childUid, childFields, childFieldsValues)
-                        // .also { sql -> println("buildParentToChild: $sql") }
                     }
                 }
     }
@@ -86,9 +84,6 @@ class MySqlInsertBuilder {
         val tableJoinUid = parentUid + childUid
         val parentLastId = parentIdBuilder.getNamed(parentUid)
         val childLastId = childIdBuilder.nextNamed(childUid)
-
-        // println("\nbuildParentToChild: parentLastId: $parentLastId")
-        // println("buildParentToChild: childLastId: $childLastId")
 
         return "INSERT INTO $childUid ($childFields) VALUES ($childFieldsValues);" +
                 "SELECT LAST_INSERT_ID() INTO @$childLastId;" +
