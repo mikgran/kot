@@ -50,7 +50,6 @@ class MySqlInsertBuilder {
                             .map { FieldAccessor.fieldGet(it, parent) as List<*> }
                             .map { buildOneToMany(it, parent) }
                 }
-        println(sqls)
     }
 
     private fun buildInsert(type: Any): String =
