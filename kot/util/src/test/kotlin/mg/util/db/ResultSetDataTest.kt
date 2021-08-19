@@ -1,10 +1,10 @@
 package mg.util.db
 
-import mg.util.common.TestUtil
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
 import mg.util.db.dsl.DefaultDslMapper
 import mg.util.functional.Opt2
+import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.sql.Connection
@@ -31,13 +31,9 @@ internal class ResultSetDataTest {
 
         val from = ResultSetData.from(resultSet)
 
-        val expected = ResultSetDatas(
-                listOf(
-                        listOf(
-                                ResultSetDataCell("", "", ""),
-                        )
-                )
-        )
+        val expected = ResultSetData.empty()
+
+
 
         // TestUtil.expect()
 
