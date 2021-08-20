@@ -1,26 +1,66 @@
 package mg.util.db
 
+import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.mapIf
 import java.sql.ResultSet
 import java.util.*
 
 class ResultSetData private constructor() {
 
-    private val rows: List<ResultSetDataRow> = LinkedList()
+    private val rows: MutableList<ResultSetDataRow> = LinkedList()
 
     operator fun get(row: Int): DataRow =
-            (row > -1 && row < rows.size)
+            (row > 0 && row <= rows.size)
                     .mapIf { rows[row] }
                     .mapTo(DataRow::class)
                     .getOrElse { EmptyResultSetDataRow() }
 
     fun isEmpty() = rows.isEmpty()
 
+    override fun toString(): String {
+
+        val rowStrings: MutableList<String> = LinkedList()
+
+        rows.isNotEmpty().mapIf {
+            rowStrings += rows.first().rsColumnNames.joinToString(", ")
+        }
+        rows.forEach {
+            rowStrings += it.rsColumns.joinToString(", ") { cell ->
+                cell.cellData.toString()
+            }
+        }
+
+        return rowStrings.joinToString("\n")
+    }
+
     companion object {
 
         fun from(resultSet: ResultSet): ResultSetData {
 
-            return ResultSetData()
+            val data = ResultSetData()
+            val columnNames = mutableListOf<String>()
+            val columnCount = resultSet.metaData.columnCount
+
+            (1..columnCount).forEach {
+                columnNames += resultSet.metaData.getColumnName(it)
+            }
+
+            resultSet.toResultSetIterator()
+                    .forEach { rs ->
+
+                        val cells = mutableListOf<ResultSetDataCell>()
+                        (1..columnCount).forEach { index ->
+                            val newCell = ResultSetDataCell(
+                                    cellData = rs.getString(index),
+                                    cellType = rs.metaData.getColumnTypeName(index),
+                                    cellName = rs.metaData.getColumnName(index),
+                            )
+                            cells.add(newCell)
+                        }
+
+                        data.rows.add(ResultSetDataRow(cells, columnNames))
+                    }
+            return data
         }
 
         internal fun empty() = ResultSetData()

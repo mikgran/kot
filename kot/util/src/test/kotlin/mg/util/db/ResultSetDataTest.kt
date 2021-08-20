@@ -6,6 +6,7 @@ import mg.util.db.dsl.DefaultDslMapper
 import mg.util.functional.Opt2
 import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
@@ -19,28 +20,31 @@ internal class ResultSetDataTest {
     @Test
     fun testCreatingRSD1() {
 
-        data class RSDTest(var str: String = "str")
+        data class RSDTest(var str: String = "")
 
-        val rsdTest = RSDTest()
+        val rsdTest = RSDTest("stringValue")
+        val rsdTest2 = RSDTest("somethingElseValue")
         cleaner.register(rsdTest)
 
         dbo.ensureTable(rsdTest, connection)
         dbo.save(rsdTest, connection)
+        dbo.save(rsdTest2, connection)
 
         val resultSet = getResultSet(connection, "SELECT * FROM ${UidBuilder.buildUniqueId(rsdTest)}")
 
-        val from = ResultSetData.from(resultSet)
+        val resultSetData = ResultSetData.from(resultSet)
 
-        val expected = ResultSetData.empty()
+        println(resultSetData)
+
+        // val expected = ResultSetData.empty()
 
 
 
         // TestUtil.expect()
-
     }
 
     private fun getResultSet(connection: Connection, sqlString: String): ResultSet {
-        return Opt2.of(connection)
+        return connection.toOpt()
                 .map(Connection::createStatement)
                 .map { it.executeQuery(sqlString) }
                 .value()
