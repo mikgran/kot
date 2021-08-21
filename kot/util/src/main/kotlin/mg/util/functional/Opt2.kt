@@ -171,7 +171,10 @@ class Opt2<T : Any> {
         }
     }
 
-    fun <V : Any> mapTo(toType: KClass<V>): Opt2<V> = of(toType.safeCast(value!!))
+    fun <V : Any> mapTo(toType: KClass<V>): Opt2<V> = when {
+        isPresent() -> toType.safeCast(value!!).toOpt()
+        else -> empty()
+    }
 
     fun <R : Any> xmap(extensionMapper: T.() -> R): Opt2<R> = when {
         isPresent() -> of(value!!.extensionMapper())
