@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.common.Common.classSimpleName
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.mapIf
 import java.sql.ResultSet
@@ -8,6 +9,7 @@ import java.util.*
 class ResultSetData private constructor() {
 
     private val rows: MutableList<ResultSetDataRow> = LinkedList()
+    internal fun contents() = rows
 
     operator fun get(row: Int): DataRow =
             (row > 0 && row <= rows.size)
@@ -29,8 +31,7 @@ class ResultSetData private constructor() {
                 cell.cellData.toString()
             }
         }
-
-        return rowStrings.joinToString("\n")
+        return this.classSimpleName() + ":\n" + rowStrings.joinToString("\n")
     }
 
     companion object {

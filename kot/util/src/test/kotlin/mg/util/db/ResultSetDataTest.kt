@@ -1,15 +1,15 @@
 package mg.util.db
 
+import mg.util.common.TestUtil
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
 import mg.util.db.dsl.DefaultDslMapper
-import mg.util.functional.Opt2
 import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
+import java.util.*
 
 internal class ResultSetDataTest {
 
@@ -32,15 +32,15 @@ internal class ResultSetDataTest {
 
         val resultSet = getResultSet(connection, "SELECT * FROM ${UidBuilder.buildUniqueId(rsdTest)}")
 
-        val resultSetData = ResultSetData.from(resultSet)
+        val candidate = ResultSetData.from(resultSet)
+        
+        val expectedData = ResultSetData.empty()
+        val expectedRows = expectedData.contents()
+        val expectedColumnNames = listOf("id", "str")
+        expectedRows += ResultSetDataRow(listOf(ResultSetDataCell("1", "Integer", "id"), ResultSetDataCell("stringValue", "String", "str")), expectedColumnNames)
+        expectedRows += ResultSetDataRow(listOf(ResultSetDataCell("2", "Integer", "id"), ResultSetDataCell("somethingElseValue", "String", "str")), expectedColumnNames)
 
-        println(resultSetData)
-
-        // val expected = ResultSetData.empty()
-
-
-
-        // TestUtil.expect()
+        TestUtil.expect(expectedData.toString(), candidate.toString())
     }
 
     private fun getResultSet(connection: Connection, sqlString: String): ResultSet {
