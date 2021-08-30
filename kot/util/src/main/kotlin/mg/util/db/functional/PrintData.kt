@@ -51,4 +51,13 @@ class PrintData(resultSet: ResultSet) {
 }
 
 fun ResultSet.getPrintData() = PrintData(this)
-fun ResultSet.print(): ResultSet = this.also { getPrintData().print() }
+fun ResultSet.printRows(): ResultSet = this.also { getPrintData().print() }
+fun ResultSet.printColumnInfo(): ResultSet {
+    val columnString =
+            (1..metaData.columnCount).joinToString(" ") { index ->
+                "\n${metaData.getTableName(index)}.${metaData.getColumnName(index)}"
+            }
+    println(columnString)
+    return this
+}
+

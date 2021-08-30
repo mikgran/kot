@@ -9,7 +9,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.*
 
 internal class ResultSetDataTest {
 
@@ -33,7 +32,7 @@ internal class ResultSetDataTest {
         val resultSet = getResultSet(connection, "SELECT * FROM ${UidBuilder.buildUniqueId(rsdTest)}")
 
         val candidate = ResultSetData.from(resultSet)
-        
+
         val expectedData = ResultSetData.empty()
         val expectedRows = expectedData.contents()
         val expectedColumnNames = listOf("id", "str")

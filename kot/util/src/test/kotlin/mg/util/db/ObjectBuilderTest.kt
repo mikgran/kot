@@ -65,7 +65,7 @@ internal class ObjectBuilderTest {
 
         val listT = ObjectBuilder().buildListOfT(results, obMultipleComp)
 
-        assertTrue(listT.isNotEmpty(), "while building OBMultipleComposition from results should produce at least one object")
+        assertTrue(listT.isNotEmpty(), "while calling buildListOfT OBMultipleComposition from results building should produce at least one object")
         // assertTrue(containsFirstNameLastName(listT))
     }
 
