@@ -37,15 +37,9 @@ open class ObjectBuilder {
                     beforeFirst()
                     printRows()
                     println()
-                }
-
-        results.toOpt()
-                .x {
-                    beforeFirst()
                     printColumnInfo()
                     println()
                 }
-
 
         // FIXME: 10000
 //        val uniquesByParent2 = FieldAccessor.uniquesByParent(typeT, HashMap())

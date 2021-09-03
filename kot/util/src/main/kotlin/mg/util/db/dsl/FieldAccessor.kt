@@ -30,17 +30,17 @@ class FieldAccessor private constructor() {
         fun uniqueChildrenByParent(type: Any) = childrenByParentImpl(type, ::getUniqueChildren)
         fun childrenByParent(type: Any) = childrenByParentImpl(type, ::getChildren)
 
-        // parent -> childrenList
-        // 0 -> 1, 2, 3, queue = 1, 2, 3
-        // 1 -> 4, 5, queue =  2, 3, 4, 5
-        // 2 -> 6, 7, queue = 3, 4, 5, 6, 7
-        // queue = 4, 5, 6, 7
-        // queue = 5, 6, 7
-        // 5 -> 8, 9, queue = 6, 7, 8, 9
-        // queue = 7, 8, 9
-        // queue = 8, 9
-        // queue = 9
-        // queue = []
+        // parent -> childrenList, only non-empty lists added
+        // 0 -> [1, 2, 3], queue = [1, 2, 3]
+        // 1 -> [4, 5], queue =  [2, 3, 4, 5]
+        // 2 -> [6, 7], queue = [3, 4, 5, 6, 7]
+        // 3 -> [], queue = [4, 5, 6, 7]
+        // 4 -> [], queue = [5, 6, 7]
+        // 5 -> [8, 9], queue = [6, 7, 8, 9]
+        // 6 -> [], queue = [7, 8, 9]
+        // 7 -> [], queue = [8, 9]
+        // 8 -> [], queue = [9]
+        // 9 -> [], queue = []
         private tailrec fun childrenByParentImpl(
                 parent: Any?,
                 childrenGetter: (Any) -> List<Any>,
