@@ -6,7 +6,7 @@ import java.util.*
 open class DataRow(
         private val columns: List<ResultSetDataCell> = LinkedList(),
         private val columnNames: List<String> = LinkedList(),
-) {
+) : Iterable<DataCell> {
     fun isEmpty() = columns.isEmpty()
     fun size() = columns.size
 
@@ -17,4 +17,5 @@ open class DataRow(
                     .getOrElse { EmptyResultSetDataCell() }
 
     operator fun get(columnName: String): DataCell = this[columnNames.indexOf(columnName)]
+    override fun iterator(): Iterator<DataCell> = DataCellIterator(this)
 }

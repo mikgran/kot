@@ -4,6 +4,7 @@ import mg.util.common.TestUtil
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
 import mg.util.db.dsl.DefaultDslMapper
+import mg.util.db.functional.data.DataCell
 import mg.util.db.functional.data.ResultSetData
 import mg.util.db.functional.data.ResultSetDataCell
 import mg.util.db.functional.data.ResultSetDataRow
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.ResultSet
+import java.util.*
 
 internal class ResultSetDataTest {
 
@@ -39,10 +41,18 @@ internal class ResultSetDataTest {
         val expectedData = ResultSetData.empty()
         val expectedRows = expectedData.contents()
         val expectedColumnNames = listOf("id", "str")
-        expectedRows += ResultSetDataRow(listOf(ResultSetDataCell("1", "Integer", "id"), ResultSetDataCell("stringValue", "String", "str")), expectedColumnNames)
-        expectedRows += ResultSetDataRow(listOf(ResultSetDataCell("2", "Integer", "id"), ResultSetDataCell("somethingElseValue", "String", "str")), expectedColumnNames)
+        expectedRows += ResultSetDataRow(listOf(cellR1C1, cellR1C2), expectedColumnNames)
+        expectedRows += ResultSetDataRow(listOf(cellR2C1, cellR2C2), expectedColumnNames)
 
         TestUtil.expect(expectedData.toString(), candidate.toString())
+
+        val expectedCells = listOf(cellR1C1, cellR1C2, cellR2C1, cellR2C2)
+        val candidateCells: MutableList<DataCell> = LinkedList<DataCell>()
+        candidate.forEach {
+            it.forEach(candidateCells::add)
+        }
+
+        TestUtil.expect(expectedCells, candidateCells)
     }
 
     private fun getResultSet(connection: Connection, sqlString: String): ResultSet {
@@ -59,5 +69,10 @@ internal class ResultSetDataTest {
         @AfterAll
         @JvmStatic
         internal fun afterAll() = cleaner.dropAll()
+
+        private val cellR1C1 = ResultSetDataCell("1", "MEDIUMINT", "id")
+        private val cellR1C2 = ResultSetDataCell("stringValue", "VARCHAR", "str")
+        private val cellR2C1 = ResultSetDataCell("2", "MEDIUMINT", "id")
+        private val cellR2C2 = ResultSetDataCell("somethingElseValue", "VARCHAR", "str")
     }
 }

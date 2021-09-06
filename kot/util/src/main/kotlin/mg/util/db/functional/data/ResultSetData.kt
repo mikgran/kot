@@ -12,7 +12,7 @@ class ResultSetData private constructor(): Iterable<DataRow> {
     internal fun contents() = rows
 
     operator fun get(row: Int): DataRow =
-            (row > 0 && row <= rows.size)
+            (row > -1 && row <= rows.size)
                     .mapIf { rows[row] }
                     .mapTo(DataRow::class)
                     .getOrElse { EmptyResultSetDataRow() }
