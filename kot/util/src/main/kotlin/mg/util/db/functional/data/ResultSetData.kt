@@ -1,4 +1,4 @@
-package mg.util.db
+package mg.util.db.functional.data
 
 import mg.util.common.Common.classSimpleName
 import mg.util.db.functional.toResultSetIterator
@@ -6,7 +6,7 @@ import mg.util.functional.mapIf
 import java.sql.ResultSet
 import java.util.*
 
-class ResultSetData private constructor() {
+class ResultSetData private constructor(): Iterable<DataRow> {
 
     private val rows: MutableList<ResultSetDataRow> = LinkedList()
     internal fun contents() = rows
@@ -18,6 +18,9 @@ class ResultSetData private constructor() {
                     .getOrElse { EmptyResultSetDataRow() }
 
     fun isEmpty() = rows.isEmpty()
+    fun size() = rows.size
+
+    override fun iterator(): Iterator<DataRow> = DataRowIterator(this)
 
     override fun toString(): String {
 
@@ -68,40 +71,6 @@ class ResultSetData private constructor() {
     }
 }
 
-open class DataRow(
-        private val columns: List<ResultSetDataCell> = LinkedList(),
-        private val columnNames: List<String> = LinkedList(),
-) {
-    fun isEmpty() = columns.isEmpty()
-
-    operator fun get(column: Int): DataCell =
-            (column > -1 && column < columns.size)
-                    .mapIf { columns[column] }
-                    .mapTo(DataCell::class)
-                    .getOrElse { EmptyResultSetDataCell() }
-
-    operator fun get(columnName: String): DataCell = this[columnNames.indexOf(columnName)]
-}
-
-data class ResultSetDataRow(
-        val rsColumns: List<ResultSetDataCell>,
-        val rsColumnNames: List<String>
-) : DataRow(rsColumns, rsColumnNames)
-
-data class EmptyResultSetDataRow(var emptyState: String = "") : DataRow()
-
-open class DataCell(val data: Any = Any(),
-                    val type: String = "",
-                    val name: String = "",
-                    val isEmpty: Boolean = true)
-
-data class ResultSetDataCell(
-        val cellData: Any,
-        val cellType: String,
-        val cellName: String,
-) : DataCell(cellData, cellType, cellName, isEmpty = false)
-
-data class EmptyResultSetDataCell(var emptyState: String = "") : DataCell()
 
 
 

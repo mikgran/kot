@@ -4,6 +4,7 @@ import mg.util.common.Wrap
 import mg.util.db.dsl.FieldAccessor
 import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
 import mg.util.db.dsl.FieldAccessor.Companion.isCustomThatContainsCustoms
+import mg.util.db.functional.data.ResultSetData
 import mg.util.db.functional.printRows
 import mg.util.db.functional.printColumnInfo
 import mg.util.db.functional.toResultSetIterator
@@ -32,49 +33,22 @@ open class ObjectBuilder {
     }
 
     private fun <T : Any> buildListOfCustomsMadeOfCustoms(results: ResultSet?, typeT: T): MutableList<T> {
-        results.toOpt()
-                .x {
-                    beforeFirst()
-                    printRows()
-                    println()
-                    printColumnInfo()
-                    println()
-                }
+        results.toOpt().x {
+            beforeFirst()
+            printRows()
+            println()
+            printColumnInfo()
+            println()
+            beforeFirst()
+
+            val rsData = ResultSetData.from(this)
+
+
+
+
+        }
 
         // FIXME: 10000
-//        val uniquesByParent2 = FieldAccessor.uniquesByParent(typeT, HashMap())
-//                .also { map ->
-//                    map.entries.forEach { entry ->
-//                        entry.key.toOpt().map(::classSimpleName).x { print("\nk2: $this v2: ") }
-//                        entry.value.map(::classSimpleName).joinToString(", ").also(::println)
-//                    }
-//                    println("\n\n")
-//                }
-
-
-        val uniquesByParent = collectUniquesByParent(typeT)
-//                .also { map ->
-//                    map.entries.forEach { entry ->
-//                        entry.key.toOpt().map(::classSimpleName).x { print("\nk: $this v: ") }
-//                        entry.value.map(::classSimpleName).joinToString(", ").also(::println)
-//                    }
-//                    println("\n\n")
-//                }
-
-        println("typeT: $typeT")
-
-        results.toOpt()
-                .x(ResultSet::beforeFirst)
-                .filter(ResultSet::next)
-                .x { setPrimitiveFieldValues(typeT, this) }
-                .x {
-                    while (next()) {
-                        setValuesToCustomsAndListsOfCustoms(uniquesByParent, this)
-                    }
-                }
-
-        println("typeT: $typeT")
-
         return mutableListOf()
     }
 

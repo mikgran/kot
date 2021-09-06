@@ -4,6 +4,9 @@ import mg.util.common.TestUtil
 import mg.util.db.config.DBConfig
 import mg.util.db.config.TestConfig
 import mg.util.db.dsl.DefaultDslMapper
+import mg.util.db.functional.data.ResultSetData
+import mg.util.db.functional.data.ResultSetDataCell
+import mg.util.db.functional.data.ResultSetDataRow
 import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
