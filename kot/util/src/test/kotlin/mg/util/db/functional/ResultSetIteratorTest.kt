@@ -25,8 +25,9 @@ internal class ResultSetIteratorTest {
     @Test
     fun testIteratingResultSet() {
 
-        val person1 = cleaner.register(RSIPerson("test1", "test11"))
-        val person2 = cleaner.register(RSIPerson("test2", "test33"))
+        val person1 = RSIPerson("test1", "test11")
+        val person2 = RSIPerson("test2", "test33")
+        cleaner.register(person1)
 
         with(dbo) {
             ensureTable(person1, connection)
