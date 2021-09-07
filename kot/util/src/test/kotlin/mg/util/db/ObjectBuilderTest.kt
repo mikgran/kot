@@ -49,10 +49,14 @@ internal class ObjectBuilderTest {
                 )
 
         val connection = dbConfig.connection
-        val obMultipleComp = cleaner.register(OBMultipleComposition())
-        val obSimple = cleaner.register(OBSimple())
-        val obSimpleComp = cleaner.register(OBSimpleComp())
-        val obSubComp = cleaner.register(OBSubComp())
+        val obMultipleComp = OBMultipleComposition()
+        val obSimple = OBSimple()
+        val obSimpleComp = OBSimpleComp()
+        val obSubComp = OBSubComp()
+        cleaner.register(obMultipleComp)
+        cleaner.register(obSimple)
+        cleaner.register(obSimpleComp)
+        cleaner.register(obSubComp)
         cleaner.registerJoin(obMultipleComp to obSimple)
         cleaner.registerJoin(obMultipleComp to obSimpleComp)
         cleaner.registerJoin(obSimpleComp to obSubComp)
