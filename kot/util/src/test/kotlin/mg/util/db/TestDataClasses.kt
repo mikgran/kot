@@ -51,4 +51,9 @@ class TestDataClasses {
     data class SMTPerson(val firstName: String = "", val lastName: String = "")
     data class RSIPerson(val firstName: String = "", val lastName: String = "")
     data class RSIPerson2(val firstName: String = "aaaa", val lastName: String = "bbbb")
+    data class TDSimple(val simple: String = "")
+    data class TDSubComp(val sub: Int = 0)
+    data class TDSimpleComp(var comp: String = "", var sub: TDSubComp = TDSubComp())
+    data class TDMultipleComposition(val compositionValue: Int = 0, val tdSimple: TDSimple = TDSimple(""), val tdSimpleComps: List<TDSimpleComp> = listOf(TDSimpleComp(""), TDSimpleComp("")))
+
 }
