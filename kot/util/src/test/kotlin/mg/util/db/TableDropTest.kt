@@ -27,7 +27,7 @@ internal class TableDropTest {
         expectedTables.sortBy { it.classSimpleName() }
         expectedJoinTables.sortBy { it.first.classSimpleName() + it.second.classSimpleName() }
 
-        cleaner.registerAll(tdMultipleComposition)
+        cleaner.registerRelational(tdMultipleComposition)
 
         TestUtil.expect(expectedTables, cleaner.contentsTables())
         TestUtil.expect(expectedJoinTables, cleaner.contentsJoinTables())

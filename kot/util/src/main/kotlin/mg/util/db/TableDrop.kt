@@ -35,7 +35,7 @@ class TableDrop {
     fun <T : Any> register(obj: T): T =
             obj.also { tablesToDrop += it }
 
-    fun registerAll(any: Any) {
+    fun registerRelational(any: Any) {
 
         val uniquesByParent = FieldAccessor.uniqueChildrenByParent(any)
         val uniques: MutableSet<Any> = HashSet()

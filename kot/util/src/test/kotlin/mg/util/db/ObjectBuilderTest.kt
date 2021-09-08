@@ -50,7 +50,7 @@ internal class ObjectBuilderTest {
 
         val connection = dbConfig.connection
         val obMultipleComp = OBMultipleComposition()
-        cleaner.registerAll(OBMultipleComposition())
+        cleaner.registerRelational(OBMultipleComposition())
 
         dbo.ensureTable(obMultipleComp, connection)
 
