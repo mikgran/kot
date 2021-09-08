@@ -4,4 +4,5 @@ data class ResultSetDataCell(
         val cellData: Any,
         val cellType: String,
         val cellName: String,
-) : DataCell(cellData, cellType, cellName, isEmpty = false)
+        val cellTableName: String,
+) : DataCell(cellData, cellType, cellName, isEmpty = false, cellTableName)

@@ -70,9 +70,9 @@ internal class ResultSetDataTest {
         @JvmStatic
         internal fun afterAll() = cleaner.dropAll()
 
-        private val cellR1C1 = ResultSetDataCell("1", "MEDIUMINT", "id")
-        private val cellR1C2 = ResultSetDataCell("stringValue", "VARCHAR", "str")
-        private val cellR2C1 = ResultSetDataCell("2", "MEDIUMINT", "id")
-        private val cellR2C2 = ResultSetDataCell("somethingElseValue", "VARCHAR", "str")
+        private val cellR1C1 = ResultSetDataCell("1", "MEDIUMINT", "id", rs.metaData.getTableName(index))
+        private val cellR1C2 = ResultSetDataCell("stringValue", "VARCHAR", "str", rs.metaData.getTableName(index))
+        private val cellR2C1 = ResultSetDataCell("2", "MEDIUMINT", "id", rs.metaData.getTableName(index))
+        private val cellR2C2 = ResultSetDataCell("somethingElseValue", "VARCHAR", "str", rs.metaData.getTableName(index))
     }
 }

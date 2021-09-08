@@ -58,6 +58,7 @@ class ResultSetData private constructor(): Iterable<DataRow> {
                                     cellData = rs.getString(index),
                                     cellType = rs.metaData.getColumnTypeName(index),
                                     cellName = rs.metaData.getColumnName(index),
+                                    cellTableName = rs.metaData.getTableName(index)
                             )
                             cells.add(newCell)
                         }

@@ -53,7 +53,6 @@ internal class ObjectBuilderTest {
         cleaner.registerRelational(OBMultipleComposition())
 
         dbo.ensureTable(obMultipleComp, connection)
-
         dbo.save(obMultipleComposition, connection)
 
         val results = queryResults(obMultipleComposition, connection)
@@ -64,7 +63,7 @@ internal class ObjectBuilderTest {
         // assertTrue(containsFirstNameLastName(listT))
     }
 
-    private fun queryResults(t: Any, connection: Connection): ResultSet? {
+    private fun queryResults(t: Any, connection: Connection): ResultSet {
         val uid = buildUniqueId(t)
         val sql = Sql select t
         sql.parameters().isPrimaryIdIncluded = true
@@ -72,7 +71,8 @@ internal class ObjectBuilderTest {
         return Opt2.of(connection.createStatement())
                 .map { it.executeQuery(sqlStr) }
                 .filter { it.next() }
-                .getOrElseThrow { Exception("no results in table $uid.") }
+                .ifMissingThrow { Exception("no results in table $uid.") }
+                .value()
     }
 
     private fun containsFirstNameLastName(candidateMapped: List<OBPersonB>): Boolean {
