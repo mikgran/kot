@@ -1,5 +1,6 @@
 package mg.util.db
 
+import mg.util.common.Common
 import mg.util.db.TestDataClasses.*
 import mg.util.db.UidBuilder.buildUniqueId
 import mg.util.db.config.DBConfig
@@ -67,7 +68,16 @@ internal class ObjectBuilderTest {
         val uid = buildUniqueId(t)
         val sql = Sql select t
         sql.parameters().isPrimaryIdIncluded = true
-        val sqlStr = DslMapperFactory.get().map(sql)//.also { println(it) }
+        val sqlStr = DslMapperFactory.get().map(sql)
+
+        println("\n$sqlStr\n")
+
+        val delimiters = listOf("JOIN", "AND", "FROM", "ON")
+        Common.splitWithDelimiters(sqlStr, delimiters)
+                .joinToString("\n")
+                .also(::println)
+        println()
+
         return Opt2.of(connection.createStatement())
                 .map { it.executeQuery(sqlStr) }
                 .filter { it.next() }

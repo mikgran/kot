@@ -46,6 +46,28 @@ object Common {
                     }
         }
     }
+
+    fun splitWithDelimiters(str: String, delimiters: List<String>): List<String> {
+        val indecesOfDelimiters = mutableListOf<Int>()
+        val lines = mutableListOf<String>()
+        var index = 0
+        while (index > -1) {
+            index = str.indexOfAny(delimiters, index)
+            if (index > -1) {
+                indecesOfDelimiters.add(index)
+                index++
+            }
+        }
+        if (indecesOfDelimiters.isNotEmpty()) {
+            var subIndex = 0
+            indecesOfDelimiters.forEach {
+                lines += str.substring(subIndex, it)
+                subIndex = it
+            }
+            lines += str.substring(subIndex)
+        }
+        return lines
+    }
 }
 
 // shameless rip from the net:
@@ -67,3 +89,4 @@ fun <E> List<E>.flatten(): List<Any?> =
 
 operator fun StringBuilder.plus(s: String): StringBuilder = append(s)
 operator fun StringBuilder.plus(sb: StringBuilder): StringBuilder = append(sb.toString())
+

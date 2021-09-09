@@ -5,8 +5,8 @@ import mg.util.db.dsl.FieldAccessor
 import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
 import mg.util.db.dsl.FieldAccessor.Companion.isCustomThatContainsCustoms
 import mg.util.db.functional.data.ResultSetData
-import mg.util.db.functional.printRows
 import mg.util.db.functional.printColumnInfo
+import mg.util.db.functional.printRows
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
 import java.lang.reflect.Constructor
@@ -41,10 +41,21 @@ open class ObjectBuilder {
             println()
             beforeFirst()
 
+            /*
+                id compositionValue id simple id comp id sub
+                1  555              1  1111   1  AAAA 1  77
+                1  555              1  1111   2  BBBB 2  88
+
+                [      0,  1,  2,  3,  4,  5,  6,  7,
+                    0: []  []  []  []  []  []  []  [],
+                    1: []  []  []  []  []  []  []  []
+                ]
+
+             */
+
             val rsData = ResultSetData.from(this)
 
-
-
+            val dataCell = rsData[0][7]
 
         }
 
