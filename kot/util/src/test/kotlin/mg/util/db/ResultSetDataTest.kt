@@ -41,6 +41,11 @@ internal class ResultSetDataTest {
         val expectedData = ResultSetData.empty()
         val expectedRows = expectedData.contents()
         val expectedColumnNames = listOf("id", "str")
+        val cellTableName = UidBuilder.buildUniqueId(rsdTest).lowercase()
+        val cellR1C1 = ResultSetDataCell("1", "MEDIUMINT", "id", cellTableName)
+        val cellR1C2 = ResultSetDataCell("stringValue", "VARCHAR", "str", cellTableName)
+        val cellR2C1 = ResultSetDataCell("2", "MEDIUMINT", "id", cellTableName)
+        val cellR2C2 = ResultSetDataCell("somethingElseValue", "VARCHAR", "str", cellTableName)
         expectedRows += ResultSetDataRow(listOf(cellR1C1, cellR1C2), expectedColumnNames)
         expectedRows += ResultSetDataRow(listOf(cellR2C1, cellR2C2), expectedColumnNames)
 
@@ -69,10 +74,5 @@ internal class ResultSetDataTest {
         @AfterAll
         @JvmStatic
         internal fun afterAll() = cleaner.dropAll()
-
-        private val cellR1C1 = ResultSetDataCell("1", "MEDIUMINT", "id", rs.metaData.getTableName(index))
-        private val cellR1C2 = ResultSetDataCell("stringValue", "VARCHAR", "str", rs.metaData.getTableName(index))
-        private val cellR2C1 = ResultSetDataCell("2", "MEDIUMINT", "id", rs.metaData.getTableName(index))
-        private val cellR2C2 = ResultSetDataCell("somethingElseValue", "VARCHAR", "str", rs.metaData.getTableName(index))
     }
 }
