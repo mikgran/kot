@@ -2,8 +2,6 @@ package mg.util.common
 
 import mg.util.common.Common.hasAnyContent
 import mg.util.common.Common.hasContent
-import mg.util.db.TestDataClasses.*
-import mg.util.db.dsl.FieldAccessor
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -76,15 +74,21 @@ internal class CommonTest {
     }
 
     @Test
-    fun testIsMultiDepthCustomObject() {
+    fun testSplitWithDelimiters() {
 
-        val isMultiDepthCustomObject = FieldAccessor.isCustomThatContainsCustoms(CPerson1())
-        assertNotNull(isMultiDepthCustomObject)
-        assertFalse(isMultiDepthCustomObject, "CPerson1 should not be a multidepth object.")
+        val testString = "hello TO world MY dear friend"
 
-        val isMultiDepthCustomObject2 = FieldAccessor.isCustomThatContainsCustoms(CPerson2())
-        assertNotNull(isMultiDepthCustomObject2)
-        assertTrue(isMultiDepthCustomObject2, "CPerson2 should be a multidepth object.")
+        val candidate = Common.splitWithDelimiters(testString, listOf("TO", "MY"))
+
+        val expected = listOf("hello ", "TO world ", "MY dear friend")
+
+        TestUtil.expect(expected.toString(), candidate.toString())
+
+        val candidate2 = Common.splitWithDelimiters(testString, listOf("NOTFOUND"))
+
+        val expected2 = listOf(testString)
+
+        TestUtil.expect(expected2, candidate2)
     }
 
     companion object {

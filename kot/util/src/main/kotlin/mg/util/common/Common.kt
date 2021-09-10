@@ -48,24 +48,20 @@ object Common {
     }
 
     fun splitWithDelimiters(str: String, delimiters: List<String>): List<String> {
-        val indecesOfDelimiters = mutableListOf<Int>()
         val lines = mutableListOf<String>()
         var index = 0
+        var previousIndex = 0
+
         while (index > -1) {
             index = str.indexOfAny(delimiters, index)
             if (index > -1) {
-                indecesOfDelimiters.add(index)
+                lines += str.substring(previousIndex, index)
+                previousIndex = index
                 index++
             }
         }
-        if (indecesOfDelimiters.isNotEmpty()) {
-            var subIndex = 0
-            indecesOfDelimiters.forEach {
-                lines += str.substring(subIndex, it)
-                subIndex = it
-            }
-            lines += str.substring(subIndex)
-        }
+        
+        lines += if (index != previousIndex) str.substring(previousIndex) else str
         return lines
     }
 }

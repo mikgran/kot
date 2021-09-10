@@ -3,6 +3,7 @@ package mg.util.db.dsl
 import mg.util.common.TestUtil
 import mg.util.db.FieldCache
 import mg.util.db.FieldCache.Fields
+import mg.util.db.TestDataClasses
 import mg.util.db.dsl.FieldAccessor.Companion.isList
 import mg.util.functional.toOpt
 import org.junit.jupiter.api.Assertions.*
@@ -88,6 +89,18 @@ internal class FieldAccessorTest {
         )
 
         TestUtil.expect(expected, candidate)
+    }
+
+    @Test
+    fun testIsMultiDepthCustomObject() {
+
+        val isMultiDepthCustomObject = FieldAccessor.isCustomThatContainsCustoms(TestDataClasses.CPerson1())
+        assertNotNull(isMultiDepthCustomObject)
+        assertFalse(isMultiDepthCustomObject, "CPerson1 should not be a multidepth object.")
+
+        val isMultiDepthCustomObject2 = FieldAccessor.isCustomThatContainsCustoms(TestDataClasses.CPerson2())
+        assertNotNull(isMultiDepthCustomObject2)
+        assertTrue(isMultiDepthCustomObject2, "CPerson2 should be a multidepth object.")
     }
 
     companion object {
