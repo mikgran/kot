@@ -70,13 +70,9 @@ internal class ObjectBuilderTest {
         sql.parameters().isPrimaryIdIncluded = true
         val sqlStr = DslMapperFactory.get().map(sql)
 
-        println("\n$sqlStr\n")
-
         val delimiters = listOf("JOIN", "AND", "FROM", "ON")
         Common.splitWithDelimiters(sqlStr, delimiters)
                 .joinToString("\n")
-                .also(::println)
-        println()
 
         return Opt2.of(connection.createStatement())
                 .map { it.executeQuery(sqlStr) }

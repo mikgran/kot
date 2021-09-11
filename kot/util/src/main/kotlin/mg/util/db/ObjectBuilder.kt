@@ -5,7 +5,6 @@ import mg.util.db.dsl.FieldAccessor
 import mg.util.db.dsl.FieldAccessor.Companion.hasCustomPackageName
 import mg.util.db.dsl.FieldAccessor.Companion.isCustomThatContainsCustoms
 import mg.util.db.functional.data.ResultSetData
-import mg.util.db.functional.printColumnInfo
 import mg.util.db.functional.printRows
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.toOpt
@@ -33,31 +32,42 @@ open class ObjectBuilder {
     }
 
     private fun <T : Any> buildListOfCustomsMadeOfCustoms(results: ResultSet?, typeT: T): MutableList<T> {
-        results.toOpt().x {
-            beforeFirst()
-            printRows()
-            println()
-            printColumnInfo()
-            println()
-            beforeFirst()
 
-            /*
-                id compositionValue id simple id comp id sub
-                1  555              1  1111   1  AAAA 1  77
-                1  555              1  1111   2  BBBB 2  88
+        results?.beforeFirst()
+        results?.printRows()
+        println()
+        results?.beforeFirst()
 
-                [      0,  1,  2,  3,  4,  5,  6,  7,
-                    0: []  []  []  []  []  []  []  [],
-                    1: []  []  []  []  []  []  []  []
-                ]
+        results.toOpt()
+                .x {
+                    beforeFirst()
+                    printRows()
+                    println()
+                    beforeFirst()
 
-             */
+                    /*
+                        id compositionValue id simple id comp id sub
+                        1  555              1  1111   1  AAAA 1  77
+                        1  555              1  1111   2  BBBB 2  88
 
-            val rsData = ResultSetData.from(this)
+                        [      0,  1,  2,  3,  4,  5,  6,  7,
+                            0: []  []  []  []  []  []  []  [],
+                            1: []  []  []  []  []  []  []  []
+                        ]
+                     */
 
-            val dataCell = rsData[0][7]
+                    val rsData = ResultSetData.from(this)
 
-        }
+                    println()
+                    rsData.forEachIndexed { index, row ->
+                        println("row: $index")
+                        row.forEach { cell ->
+                            println(" $cell")
+                        }
+                        println()
+                    }
+
+                }
 
         // FIXME: 10000
         return mutableListOf()
