@@ -33,44 +33,20 @@ open class ObjectBuilder {
 
     private fun <T : Any> buildListOfCustomsMadeOfCustoms(results: ResultSet?, typeT: T): MutableList<T> {
 
-        results?.beforeFirst()
-        results?.printRows()
-        println()
-        results?.beforeFirst()
-
-        results.toOpt()
+        return results.toOpt()
                 .x {
                     beforeFirst()
                     printRows()
                     println()
                     beforeFirst()
-
-                    /*
-                        id compositionValue id simple id comp id sub
-                        1  555              1  1111   1  AAAA 1  77
-                        1  555              1  1111   2  BBBB 2  88
-
-                        [      0,  1,  2,  3,  4,  5,  6,  7,
-                            0: []  []  []  []  []  []  []  [],
-                            1: []  []  []  []  []  []  []  []
-                        ]
-                     */
-
-                    val rsData = ResultSetData.from(this)
-
-                    println()
-                    rsData.forEachIndexed { index, row ->
-                        println("row: $index")
-                        row.forEach { cell ->
-                            println(" $cell")
-                        }
-                        println()
-                    }
-
                 }
+                .map(ResultSetData::from)
+                .map {
+                    JoinSelectObjectBuilder.build(it, typeT)
+                }
+                .value()
 
         // FIXME: 10000
-        return mutableListOf()
     }
 
     private fun setValuesToCustomsAndListsOfCustoms(uniquesByParent: HashMap<Any, MutableList<Any>>, results: ResultSet) {

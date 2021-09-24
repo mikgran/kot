@@ -18,6 +18,7 @@ class ResultSetData private constructor(): Iterable<DataRow> {
                     .getOrElse { EmptyResultSetDataRow() }
 
     fun isEmpty() = rows.isEmpty()
+    fun isNotEmpty() = rows.isNotEmpty()
     fun size() = rows.size
 
     override fun iterator(): Iterator<DataRow> = DataRowIterator(this)
