@@ -6,9 +6,9 @@ import mg.util.functional.mapIf
 import java.sql.ResultSet
 import java.util.*
 
-class ResultSetData private constructor(): Iterable<DataRow> {
+class ResultSetData private constructor() : Iterable<DataRow> {
 
-    private val rows: MutableList<ResultSetDataRow> = LinkedList()
+    private val rows: MutableList<DataRow> = LinkedList()
     internal fun contents() = rows
 
     operator fun get(row: Int): DataRow =
@@ -28,11 +28,11 @@ class ResultSetData private constructor(): Iterable<DataRow> {
         val rowStrings: MutableList<String> = LinkedList()
 
         rows.isNotEmpty().mapIf {
-            rowStrings += rows.first().rsColumnNames.joinToString(", ")
+            rowStrings += rows.first().columnNames.joinToString(", ")
         }
         rows.forEach {
-            rowStrings += it.rsColumns.joinToString(", ") { cell ->
-                cell.cellData.toString()
+            rowStrings += it.columns.joinToString(", ") { cell ->
+                cell.data.toString()
             }
         }
         return this.classSimpleName() + ":\n" + rowStrings.joinToString("\n")
@@ -43,7 +43,7 @@ class ResultSetData private constructor(): Iterable<DataRow> {
         fun from(resultSet: ResultSet): ResultSetData {
 
             val data = ResultSetData()
-            val columnNames = mutableListOf<String>()
+            val columnNames = LinkedList<String>()
             val columnCount = resultSet.metaData.columnCount
 
             (1..columnCount).forEach {
@@ -53,18 +53,18 @@ class ResultSetData private constructor(): Iterable<DataRow> {
             resultSet.toResultSetIterator()
                     .forEach { rs ->
 
-                        val cells = mutableListOf<ResultSetDataCell>()
+                        val cells = LinkedList<DataCell>()
                         (1..columnCount).forEach { index ->
-                            val newCell = ResultSetDataCell(
-                                    cellData = rs.getString(index),
-                                    cellType = rs.metaData.getColumnTypeName(index),
-                                    cellName = rs.metaData.getColumnName(index),
-                                    cellTableName = rs.metaData.getTableName(index)
+                            val newCell = DataCell(
+                                    data = rs.getString(index),
+                                    type = rs.metaData.getColumnTypeName(index),
+                                    name = rs.metaData.getColumnName(index),
+                                    tableName = rs.metaData.getTableName(index)
                             )
                             cells.add(newCell)
                         }
 
-                        data.rows.add(ResultSetDataRow(cells, columnNames))
+                        data.rows.add(DataRow(cells, columnNames))
                     }
             return data
         }

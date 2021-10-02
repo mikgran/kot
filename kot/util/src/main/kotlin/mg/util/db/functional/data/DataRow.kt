@@ -4,8 +4,8 @@ import mg.util.functional.mapIf
 import java.util.*
 
 open class DataRow(
-        private val columns: List<ResultSetDataCell> = LinkedList(),
-        private val columnNames: List<String> = LinkedList(),
+        val columns: List<DataCell> = LinkedList(),
+        val columnNames: List<String> = LinkedList(),
 ) : Iterable<DataCell> {
     fun isEmpty() = columns.isEmpty()
     fun size() = columns.size
