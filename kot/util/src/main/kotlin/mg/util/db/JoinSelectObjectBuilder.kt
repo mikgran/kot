@@ -38,7 +38,7 @@ class JoinSelectObjectBuilder {
             /*
                 - group by uids
                 - collect uids
-                - uids distinct by id
+                - distinct by uid && id
                 - map all new typeT
                 - assign to owners by id
              */
@@ -46,15 +46,17 @@ class JoinSelectObjectBuilder {
             rsData.isNotEmpty()
                     .mapIf {
 
-                        rsData[0].groupBy { it.tableName }
-                                .forEach { key, cells ->
+                        rsData.forEach { row ->
+                            row.groupBy { it.tableName }
+                                    .forEach { (t, u) ->
+                                        println(t)
+                                        u.forEach { println(it) }
+                                    }
+                            println()
+                        }
 
-                                }
+
                     }
-
-
-
-
 
             return mutableListOfT
         }

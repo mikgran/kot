@@ -14,7 +14,7 @@ open class DataRow(
             (column > -1 && column < columns.size)
                     .mapIf { columns[column] }
                     .mapTo(DataCell::class)
-                    .getOrElse { EmptyResultSetDataCell() }
+                    .getOrElse { DataCell() }
 
     operator fun get(columnName: String): DataCell = this[columnNames.indexOf(columnName)]
     override fun iterator(): Iterator<DataCell> = DataCellIterator(this)

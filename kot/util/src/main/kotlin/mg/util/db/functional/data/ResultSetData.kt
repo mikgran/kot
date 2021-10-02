@@ -15,7 +15,7 @@ class ResultSetData private constructor(): Iterable<DataRow> {
             (row > -1 && row <= rows.size)
                     .mapIf { rows[row] }
                     .mapTo(DataRow::class)
-                    .getOrElse { EmptyResultSetDataRow() }
+                    .getOrElse { DataRow() }
 
     fun isEmpty() = rows.isEmpty()
     fun isNotEmpty() = rows.isNotEmpty()
