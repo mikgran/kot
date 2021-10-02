@@ -8,7 +8,7 @@ import java.util.*
 
 class ResultSetData private constructor() : Iterable<DataRow> {
 
-    private val rows: LinkedList<DataRow> = LinkedList()
+    private val rows = LinkedList<DataRow>()
     internal fun contents() = rows
 
     operator fun get(row: Int): DataRow =
@@ -21,7 +21,7 @@ class ResultSetData private constructor() : Iterable<DataRow> {
     fun isNotEmpty() = rows.isNotEmpty()
     fun size() = rows.size
 
-    override fun iterator(): Iterator<DataRow> = DataRowIterator(this)
+    override fun iterator() = DataRowIterator(this)
 
     override fun toString(): String {
 
