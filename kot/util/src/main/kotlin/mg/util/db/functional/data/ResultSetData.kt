@@ -8,7 +8,7 @@ import java.util.*
 
 class ResultSetData private constructor() : Iterable<DataRow> {
 
-    private val rows: MutableList<DataRow> = LinkedList()
+    private val rows: LinkedList<DataRow> = LinkedList()
     internal fun contents() = rows
 
     operator fun get(row: Int): DataRow =
@@ -25,7 +25,7 @@ class ResultSetData private constructor() : Iterable<DataRow> {
 
     override fun toString(): String {
 
-        val rowStrings: MutableList<String> = LinkedList()
+        val rowStrings = LinkedList<String>()
 
         rows.isNotEmpty().mapIf {
             rowStrings += rows.first().columnNames.joinToString(", ")

@@ -38,26 +38,24 @@ internal class ResultSetDataTest {
         val candidate = ResultSetData.from(resultSet)
 
         val expectedData = ResultSetData.empty()
-        val expectedRows = LinkedList(expectedData.contents())
-        val expectedColumnNames = LinkedList(listOf("id", "str"))
+        val expectedColumnNames = listOf("id", "str")
         val cellTableName = UidBuilder.buildUniqueId(rsdTest).lowercase()
         val cellR1C1 = DataCell("1", "MEDIUMINT", "id", false, cellTableName)
         val cellR1C2 = DataCell("stringValue", "VARCHAR", "str", false, cellTableName)
         val cellR2C1 = DataCell("2", "MEDIUMINT", "id", false, cellTableName)
         val cellR2C2 = DataCell("somethingElseValue", "VARCHAR", "str", false, cellTableName)
-        expectedRows += DataRow(listOf(cellR1C1, cellR1C2), expectedColumnNames)
-        expectedRows += DataRow(listOf(cellR2C1, cellR2C2), expectedColumnNames)
-        expectedData.contents().addAll(expectedRows)
+        expectedData.contents() += DataRow(listOf(cellR1C1, cellR1C2), expectedColumnNames)
+        expectedData.contents() += DataRow(listOf(cellR2C1, cellR2C2), expectedColumnNames)
 
         TestUtil.expect(expectedData.toString(), candidate.toString())
 
-        val expectedCells = listOf(cellR1C1, cellR1C2, cellR2C1, cellR2C2)
-        val candidateCells: MutableList<DataCell> = LinkedList<DataCell>()
+        val expectedCells = LinkedList(listOf(cellR1C1, cellR1C2, cellR2C1, cellR2C2))
+        val candidateCells = LinkedList<DataCell>()
         candidate.forEach {
             it.forEach(candidateCells::add)
         }
 
-        TestUtil.expect(expectedCells, candidateCells)
+        TestUtil.expect(expectedCells.toString(), candidateCells.toString())
     }
 
     private fun getResultSet(connection: Connection, sqlString: String): ResultSet {
