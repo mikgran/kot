@@ -1,6 +1,5 @@
 package mg.kot.rgen.service
 
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class RgenServiceTest {
@@ -12,7 +11,7 @@ internal class RgenServiceTest {
         // map into db viable
 
         val rgenService = RgenService()
-        rgenService.service()
+        // rgenService.service()
     }
 
 

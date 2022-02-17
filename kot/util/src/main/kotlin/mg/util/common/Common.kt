@@ -60,7 +60,7 @@ object Common {
                 index++
             }
         }
-        
+
         lines += if (index != previousIndex) str.substring(previousIndex) else str
         return lines
     }

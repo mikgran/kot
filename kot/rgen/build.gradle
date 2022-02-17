@@ -2,7 +2,7 @@ apply plugin: 'java'
 
 dependencies {
 
-    implementation 'mg.util:util:1.0-SNAPSHOT'
+    // implementation 'mg.util:util:1.0-SNAPSHOT'
 
     implementation project(':mg.kot.util')
 
