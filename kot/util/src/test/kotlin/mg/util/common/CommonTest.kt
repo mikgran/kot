@@ -96,4 +96,17 @@ internal class CommonTest {
         private const val HELLO = "hello"
         private const val WORLD = "world"
     }
+
+    @Test
+    fun testInside() {
+
+        val list = listOf("a", "b", "c")
+        val lowBoundary = -1
+        val indexInside = 1
+        val upperBoundary = 3
+
+        TestUtil.expect(false, list.inside(lowBoundary))
+        TestUtil.expect(true, list.inside(indexInside))
+        TestUtil.expect(false, list.inside(upperBoundary))
+    }
 }
