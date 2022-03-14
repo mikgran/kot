@@ -78,7 +78,7 @@ fun List<*>.flattenTo(toFlatList: MutableList<Any> = mutableListOf()): MutableLi
     return toFlatList
 }
 
-fun List<*>.inside(index: Int): Boolean = (index > -1 && index < this.size)
+fun List<*>.indexValid(index: Int): Boolean = (index > -1 && index < this.size)
 
 fun <E> List<E>.flatten(): List<Any?> =
         this.flatMap {
