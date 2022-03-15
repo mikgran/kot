@@ -1,5 +1,6 @@
 package mg.util.db.functional.data
 
+import mg.util.common.isIndexValid
 import mg.util.functional.mapIf
 import java.util.*
 
@@ -11,7 +12,7 @@ open class DataRow(
     fun size() = columns.size
 
     operator fun get(column: Int): DataCell =
-            (column > -1 && column < columns.size)
+            columns.isIndexValid(column)
                     .mapIf { columns[column] }
                     .mapTo(DataCell::class)
                     .getOrElse { DataCell() }

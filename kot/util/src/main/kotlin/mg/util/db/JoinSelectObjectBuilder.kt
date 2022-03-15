@@ -35,11 +35,9 @@ class JoinSelectObjectBuilder {
             val mutableListOfT = mutableListOf<T>()
 
             /*
-                - group by uids
-                - collect uids
-                - distinct by uid && id
-                - map all new typeT
-                - assign to owners by id
+                - iterate typeT
+                -- from last item of the row to the first
+                -- instantiate with fields in appearing order 1) assume the field order is the appearance order
              */
 
             resultSetData.forEach { dataRow ->

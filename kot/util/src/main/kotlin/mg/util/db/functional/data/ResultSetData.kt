@@ -1,7 +1,7 @@
 package mg.util.db.functional.data
 
 import mg.util.common.Common.classSimpleName
-import mg.util.common.indexValid
+import mg.util.common.isIndexValid
 import mg.util.db.functional.toResultSetIterator
 import mg.util.functional.mapIf
 import java.sql.ResultSet
@@ -13,7 +13,7 @@ class ResultSetData private constructor() : Iterable<DataRow> {
     internal fun contents() = rows
 
     operator fun get(row: Int): DataRow =
-                    rows.indexValid(row)
+                    rows.isIndexValid(row)
                     .mapIf { rows[row] }
                     .mapTo(DataRow::class)
                     .getOrElse { DataRow() }

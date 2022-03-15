@@ -11,7 +11,6 @@ import mg.util.functional.toOpt
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.sql.Connection
-import java.sql.ResultSet
 import java.util.*
 
 internal class ResultSetDataTest {
@@ -33,7 +32,11 @@ internal class ResultSetDataTest {
         dbo.save(rsdTest, connection)
         dbo.save(rsdTest2, connection)
 
-        val resultSet = getResultSet(connection, "SELECT * FROM ${UidBuilder.buildUniqueId(rsdTest)}")
+        val resultSet =
+                connection.toOpt()
+                        .map(Connection::createStatement)
+                        .map { it.executeQuery("SELECT * FROM ${UidBuilder.buildUniqueId(rsdTest)}") }
+                        .value()
 
         val candidate = ResultSetData.from(resultSet)
 
@@ -56,13 +59,6 @@ internal class ResultSetDataTest {
         }
 
         TestUtil.expect(expectedCells.toString(), candidateCells.toString())
-    }
-
-    private fun getResultSet(connection: Connection, sqlString: String): ResultSet {
-        return connection.toOpt()
-                .map(Connection::createStatement)
-                .map { it.executeQuery(sqlString) }
-                .value()
     }
 
     @Suppress("unused")

@@ -105,8 +105,8 @@ internal class CommonTest {
         val indexInside = 1
         val upperBoundary = 3
 
-        TestUtil.expect(false, list.indexValid(lowBoundary))
-        TestUtil.expect(true, list.indexValid(indexInside))
-        TestUtil.expect(false, list.indexValid(upperBoundary))
+        TestUtil.expect(false, list.isIndexValid(lowBoundary))
+        TestUtil.expect(true, list.isIndexValid(indexInside))
+        TestUtil.expect(false, list.isIndexValid(upperBoundary))
     }
 }
