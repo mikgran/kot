@@ -1,18 +1,22 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-buildscript {
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.20'
+}
 
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31"
-    }
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
 allprojects {
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
 
     group = 'mg.kot'
     version = '1.0-SNAPSHOT'
@@ -20,90 +24,11 @@ allprojects {
     ext.failedTests = []
 }
 
-subprojects {
 
-    task wrapper(type: Wrapper) {
-        gradleVersion = '7.0'
-    }
+task report(type: Exec) {
+    workingDir './build/reports/tests/test'
 
-    apply plugin: 'java'
-    apply plugin: 'org.jetbrains.kotlin.jvm'
-
-    sourceCompatibility = 11
-    targetCompatibility = 11
-
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-    }
-
-    sourceSets {
-        main.kotlin.srcDirs += 'src/main/kotlin'
-        main.java.srcDirs += 'src/main/java'
-    }
-
-    repositories {
-        flatDir { dir rootProject.file('libs') }
-        // mavenLocal()
-        // maven { url "http://repo.maven.apache.org/maven2" }
-        mavenCentral()
-    }
-
-    dependencies {
-        implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.5.0'
-
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
-    }
-
-    test {
-        useJUnitPlatform()
-
-        afterTest { TestDescriptor descriptor, TestResult result ->
-
-            if (result.resultType == TestResult.ResultType.FAILURE) {
-                def failedTestStr = "${descriptor.className}.${descriptor.name}"
-                def length = failedTestStr.length()
-                failedTests << failedTestStr.substring(0, length - 2)
-            }
-        }
-
-        testLogging {
-            events TestLogEvent.FAILED,
-                    TestLogEvent.PASSED,
-                    TestLogEvent.SKIPPED,
-                    TestLogEvent.STANDARD_ERROR,
-                    TestLogEvent.STANDARD_OUT
-
-            exceptionFormat TestExceptionFormat.FULL
-            showCauses true
-            showExceptions true
-            showStackTraces true
-        }
-
-        afterSuite { desc, result ->
-            if (!desc.parent) {
-                println "\nTest result: ${result.resultType}"
-                println "Test summary: ${result.testCount} tests, " +
-                        "${result.successfulTestCount} succeeded, " +
-                        "${result.failedTestCount} failed, " +
-                        "${result.skippedTestCount} skipped"
-
-                if (!failedTests.empty) {
-                    def prefix = "gradle test --tests="
-                    print "Failed tests: \n"
-                    failedTests.each { Object failedTest ->
-                        println prefix + failedTest.toString()
-                    }
-                    println ""
-                }
-            }
-        }
-    }
-
-    task report(type: Exec) {
-        workingDir './build/reports/tests/test'
-
-        //on windows:
-        commandLine 'cmd', '/c', 'start index.html'
-    }
+    //on windows:
+    commandLine 'cmd', '/c', 'start index.html'
 }
+
