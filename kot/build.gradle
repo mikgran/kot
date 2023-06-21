@@ -1,34 +1,40 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.8.20'
 }
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+repositories {
+    flatDir { dir rootProject.file('libs') }
+    // mavenLocal()
+    // maven { url "http://repo.maven.apache.org/maven2" }
+    mavenCentral()
 }
 
 allprojects {
 
+    //noinspection GroovyAssignabilityCheck
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         kotlinOptions {
             jvmTarget = "11"
         }
     }
 
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
     group = 'mg.kot'
     version = '1.0-SNAPSHOT'
 
     ext.failedTests = []
+
+    task report(type: Exec) {
+        workingDir './build/reports/tests/test'
+
+        //on windows:
+        commandLine 'cmd', '/c', 'start index.html'
+    }
 }
 
 
-task report(type: Exec) {
-    workingDir './build/reports/tests/test'
-
-    //on windows:
-    commandLine 'cmd', '/c', 'start index.html'
-}
 
