@@ -3,13 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-repositories {
-    flatDir { dir rootProject.file('libs') }
-    // mavenLocal()
-    // maven { url "http://repo.maven.apache.org/maven2" }
-    mavenCentral()
-}
-
 group = 'mg.kot'
 version = '1.0-SNAPSHOT'
 description = 'mg-kot-rgen'
