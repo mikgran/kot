@@ -26,3 +26,26 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.1'
 }
 
+apply from: '../utils.gradle'
+
+tasks.withType(Test) {
+
+    useJUnitPlatform()
+
+    def failedTests = rootProject.ext.failedTests
+    afterTest { descriptor, result -> utils.appendFailed(descriptor, result, failedTests) }
+    afterSuite { descriptor, result -> utils.formatSummary(descriptor, result, failedTests) }
+
+    testLogging {
+        events TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STANDARD_ERROR,
+                TestLogEvent.STANDARD_OUT
+
+        exceptionFormat TestExceptionFormat.FULL
+        showCauses true
+        showExceptions true
+        showStackTraces true
+    }
+}

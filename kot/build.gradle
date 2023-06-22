@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id 'java'
@@ -11,9 +9,9 @@ allprojects {
     ext.failedTests = []
 
     repositories {
+
         flatDir { dir rootProject.file('libs') }
-        // mavenLocal()
-        // maven { url "http://repo.maven.apache.org/maven2" }
+
         mavenCentral()
     }
 
@@ -39,51 +37,3 @@ allprojects {
     }
 }
 
-subprojects {
-
-    tasks.withType(Test) {
-
-        useJUnitPlatform()
-
-        afterTest { TestDescriptor descriptor, TestResult result ->
-
-            if (result.resultType == TestResult.ResultType.FAILURE) {
-                def failedTestStr = "${descriptor.className}.${descriptor.name}".toString()
-                def length = failedTestStr.length()
-                failedTests << failedTestStr.substring(0, length - 2)
-            }
-        }
-
-        testLogging {
-            events TestLogEvent.FAILED,
-                    TestLogEvent.PASSED,
-                    TestLogEvent.SKIPPED,
-                    TestLogEvent.STANDARD_ERROR,
-                    TestLogEvent.STANDARD_OUT
-
-            exceptionFormat TestExceptionFormat.FULL
-            showCauses true
-            showExceptions true
-            showStackTraces true
-        }
-
-        afterSuite { desc, result ->
-            if (!desc.parent) {
-                println "\nTest result: ${result.resultType}"
-                println "Test summary: ${result.testCount} tests, " +
-                        "${result.successfulTestCount} succeeded, " +
-                        "${result.failedTestCount} failed, " +
-                        "${result.skippedTestCount} skipped"
-
-                if (!failedTests.empty) {
-                    def prefix = "gradle test --tests="
-                    print "Failed tests: \n"
-                    failedTests.each { Object failedTest ->
-                        println prefix + failedTest.toString()
-                    }
-                    println ""
-                }
-            }
-        }
-    }
-}
