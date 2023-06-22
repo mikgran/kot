@@ -1,0 +1,31 @@
+ext.utils = [
+
+        appendFailed : { TestDescriptor descriptor, TestResult result, ArrayList failedTests ->
+
+            if (result.resultType == TestResult.ResultType.FAILURE) {
+                def failedTestStr = "${descriptor.className}.${descriptor.name}".toString()
+                def length = failedTestStr.length()
+                failedTests << failedTestStr.substring(0, length - 2)
+            }
+        },
+
+        formatSummary: { TestDescriptor descriptor, TestResult result, ArrayList failedTests ->
+
+            if (!descriptor.parent) {
+                println "\nTest result: ${result.resultType}"
+                println "Test summary: ${result.testCount} tests, " +
+                        "${result.successfulTestCount} succeeded, " +
+                        "${result.failedTestCount} failed, " +
+                        "${result.skippedTestCount} skipped"
+
+                if (!failedTests.empty) {
+                    def prefix = "gradle test --tests="
+                    print "Failed tests: \n"
+                    failedTests.each { Object failedTest ->
+                        println prefix + failedTest.toString()
+                    }
+                    println ""
+                }
+            }
+        },
+]
