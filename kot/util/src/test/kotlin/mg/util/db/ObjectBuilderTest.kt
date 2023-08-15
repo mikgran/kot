@@ -43,6 +43,7 @@ internal class ObjectBuilderTest {
         val obMultipleComposition =
                 OBMultipleComposition(
                         compositionValue = 555,
+                        anotherValue = 666,
                         obSimple = OBSimple(simple = "1111"),
                         obSimpleComps = listOf(
                                 OBSimpleComp(comp = "AAAA", sub = OBSubComp(sub = 77)),

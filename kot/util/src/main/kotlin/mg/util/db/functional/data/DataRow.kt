@@ -9,6 +9,7 @@ open class DataRow(
         val columnNames: List<String> = LinkedList(),
 ) : Iterable<DataCell> {
     fun isEmpty() = columns.isEmpty()
+    fun isNotEmpty() = columns.isNotEmpty()
     fun size() = columns.size
 
     operator fun get(column: Int): DataCell =
